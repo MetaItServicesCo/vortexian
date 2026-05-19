@@ -1,0 +1,132 @@
+"use client";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, Loader2, Save, FileImage, Globe } from "lucide-react";
+import toast, { Toaster } from "react-hot-toast";
+import Link from "next/link";
+
+export default function CreatePortfolioAssetForm() {
+    const router = useRouter();
+    const [loading, setLoading] = useState(false);
+    const [fileObj, setFileObj] = useState(null);
+
+    const [form, setForm] = useState({
+        title: "", category: "Web Development", year: new Date().getFullYear().toString(),
+        challenge: "", solution: "", seoTitle: "", seoDescription: "", seoKeywords: ""
+    });
+
+    const dispatchSubmission = async (e) => {
+        e.preventDefault();
+        if (!form.title || !form.challenge || !form.solution || !fileObj) {
+            toast.error("Please deploy all baseline mandatory metrics!");
+            return;
+        }
+
+        setLoading(true);
+        const bundle = new FormData();
+        Object.keys(form).forEach(key => bundle.append(key, form[key]));
+        bundle.append("mainImage", fileObj);
+
+        try {
+            const res = await fetch("/api/portfolio", { method: "POST", body: bundle });
+            if (res.ok) {
+                toast.success("Case study compiled natively inside system nodes!");
+                setTimeout(() => router.push("/dashboard/portfolio"), 1200);
+            } else {
+                toast.error("Transaction deployment error.");
+            }
+        } catch {
+            toast.error("API proxy cluster loss.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const inputStyles = "w-full p-3.5 bg-white border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-[#1D1D7E] text-sm font-semibold text-slate-800 transition-all shadow-sm";
+    const labelStyles = "text-[10px] font-black uppercase text-slate-400 block mb-1.5 tracking-wider";
+
+    return (
+        <div className="p-6 md:p-10 min-h-screen bg-slate-50/40 text-slate-800 max-w-3xl mx-auto">
+            <Toaster />
+            <div className="flex items-center gap-4 mb-10">
+                <Link href="/dashboard/portfolio" className="w-11 h-11 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-gray-400 hover:text-black transition-all shadow-sm">
+                    <ArrowLeft size={18} />
+                </Link>
+                <div>
+                    <h1 className="text-2xl font-black text-[#1D1D7E] uppercase tracking-tight">Instantiate Project Node</h1>
+                    <p className="text-gray-400 text-xs font-bold uppercase tracking-wider mt-0.5">Deploy advanced dynamic case studies</p>
+                </div>
+            </div>
+
+            <form onSubmit={dispatchSubmission} className="bg-white p-6 md:p-10 rounded-[2rem] border border-gray-100 shadow-xl shadow-slate-100 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="md:col-span-2">
+                        <label className={labelStyles}>Project Title *</label>
+                        <input type="text" className={inputStyles} placeholder="e.g. Quantum Analytics Suite" required onChange={e => setForm({ ...form, title: e.target.value })} />
+                    </div>
+                    <div>
+                        <label className={labelStyles}>Category Node *</label>
+                        <select className={inputStyles} onChange={e => setForm({ ...form, category: e.target.value })}>
+                            <option value="Web Development">Web Development</option>
+                            <option value="Graphic Design">Graphic Design</option>
+                            <option value="UI/UX Design">UI/UX Design</option>
+                            <option value="App Development">App Development</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="md:col-span-1">
+                        <label className={labelStyles}>Deployment Year *</label>
+                        <input type="number" value={form.year} className={inputStyles} required onChange={e => setForm({ ...form, year: e.target.value })} />
+                    </div>
+                    <div className="md:col-span-2">
+                        <label className={labelStyles}>Primary Representation Graphic *</label>
+                        <div className="border-2 border-dashed border-gray-200 hover:border-[#1D1D7E] rounded-xl p-3.5 transition-all bg-slate-50/50 flex items-center gap-4 relative">
+                            <FileImage className="text-gray-400 shrink-0" size={24} />
+                            <span className="text-xs font-bold uppercase text-gray-400 truncate">{fileObj ? fileObj.name : "Upload binary canvas file"}</span>
+                            <input type="file" required className="absolute inset-0 opacity-0 cursor-pointer" onChange={e => setFileObj(e.target.files[0])} />
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label className={labelStyles}>The Business Challenge Statement *</label>
+                    <textarea rows="4" className={`${inputStyles} resize-none`} placeholder="What structural anomalies did the client face?" required onChange={e => setForm({ ...form, challenge: e.target.value })}></textarea>
+                </div>
+
+                <div>
+                    <label className={labelStyles}>Vortexian Strategic Solution Node *</label>
+                    <textarea rows="4" className={`${inputStyles} resize-none`} placeholder="Describe our technical architectural resolution approach..." required onChange={e => setForm({ ...form, solution: e.target.value })}></textarea>
+                </div>
+
+                {/* --- DYNAMIC SEO PROGRAMMATIC CONFIGURATION SECTION --- */}
+                <div className="border-t border-gray-100 pt-6 space-y-6">
+                    <div className="flex items-center gap-2 text-[#1D1D7E] font-black text-xs uppercase tracking-widest">
+                        <Globe size={16} /> Google Crawler Automation SEO Fields
+                    </div>
+
+                    <div>
+                        <label className={labelStyles}>Meta Target Title Mapping</label>
+                        <input type="text" className={inputStyles} placeholder="Optimized Search Layout Title Tag (Leave empty for default)" onChange={e => setForm({ ...form, seoTitle: e.target.value })} />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label className={labelStyles}>Meta Index Description String</label>
+                            <textarea rows="3" className={`${inputStyles} resize-none`} placeholder="High CTR snippet description for search logs..." onChange={e => setForm({ ...form, seoDescription: e.target.value })}></textarea>
+                        </div>
+                        <div>
+                            <label className={labelStyles}>Meta Priority Context Keywords</label>
+                            <textarea rows="3" className={`${inputStyles} resize-none`} placeholder="e.g. nextjs app, enterprise logistics database, fintech api" onChange={e => setForm({ ...form, seoKeywords: e.target.value })}></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" disabled={loading} className="w-full bg-[#1D1D7E] text-white py-4 rounded-xl font-black uppercase tracking-widest hover:bg-neutral-900 transition-all flex items-center justify-center gap-2 disabled:opacity-50 text-xs cursor-pointer shadow-md">
+                    {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Provisioning Cluster...</> : <><Save size={16} /> Deploy Portfolio Unit</>}
+                </button>
+            </form>
+        </div>
+    );
+}
