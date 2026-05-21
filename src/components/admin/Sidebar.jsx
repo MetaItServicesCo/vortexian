@@ -1,7 +1,6 @@
 "use client";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { signOut } from "next-auth/react";
+import { usePathname, useRouter } from "next/navigation";
 import {
   FiHome,
   FiLayers,
@@ -29,7 +28,11 @@ const menuItems = [
 
 const Sidebar = () => {
   const pathname = usePathname();
-
+  const router = useRouter();
+  const logout = () => {
+    localStorage.removeItem("token");
+    router.push("/login");
+  };
   return (
     <aside className="w-[280px] min-h-screen h-screen sticky top-0 flex flex-col bg-gradient-to-b from-[#0f0f2d] via-[#1a1a4e] to-[#0e1a3a] border-r border-[#5DB4D1]/10 overflow-hidden">
       {/* Top glow */}
@@ -118,7 +121,7 @@ const Sidebar = () => {
         <div className="mb-3 h-px bg-gradient-to-r from-[#5DB4D1]/15 to-transparent" />
 
         <button
-          onClick={() => signOut({ callbackUrl: "/login" })}
+          onClick={() => logout()}
           className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl border border-transparent hover:bg-red-500/[0.08] hover:border-red-500/20 transition-all duration-200 group cursor-pointer"
         >
           {/* Logout Icon Box */}

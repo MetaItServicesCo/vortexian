@@ -1,14 +1,25 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import { FiDatabase, FiLayers, FiUsers, FiPlus } from "react-icons/fi";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const DashboardHome = () => {
+    const router = useRouter();
+
     const stats = [
         { label: "Total Services", value: "19", icon: <FiLayers />, color: "bg-blue-500" },
         { label: "Total Categories", value: "4", icon: <FiDatabase />, color: "bg-cyan-500" },
         { label: "Team Members", value: "8", icon: <FiUsers />, color: "bg-[#1D1D7E]" },
     ];
+    useEffect(() => {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            router.push("/login");
+        }
+    }, []);
+  
 
     return (
         <div className="space-y-8">
