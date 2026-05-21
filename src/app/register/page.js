@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast";
-import { Loader2, Eye, EyeOff } from "lucide-react"; // Icons import ki hain
+import { Loader2, Eye, EyeOff } from "lucide-react";
 
 export default function RegisterPage() {
   const [data, setData] = useState({
@@ -12,10 +12,8 @@ export default function RegisterPage() {
     adminSecret: "",
   });
 
-  // Visibility states
   const [showPass, setShowPass] = useState(false);
   const [showSecret, setShowSecret] = useState(false);
-
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -28,15 +26,20 @@ export default function RegisterPage() {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        },
+          body: JSON.stringify({
+            username: data.name,             
+            email: data.email,
+            password: data.password,
+            admin_secret_key: data.adminSecret, 
+          }),
+        }
       );
       const result = await res.json();
       if (res.ok) {
         toast.success("Admin account created successfully!");
         setTimeout(() => router.push("/login"), 1500);
       } else {
-        toast.error(result.message || "Registration failed.");
+        toast.error(result.detail || "Registration failed."); 
       }
     } catch (err) {
       toast.error("Something went wrong. Please try again.");
