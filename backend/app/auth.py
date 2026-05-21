@@ -33,10 +33,10 @@ def create_access_token(data:dict,expire_delta:timedelta | None)->str:
 
 def verify_access_token(token:str)->str|None:
     try:
-        payload=jwt.encode(
+        payload=jwt.decode(
             token,
             settings.secret_key.get_secret_value(),
-            algorithm=[settings.algorithm],
+            algorithms=[settings.algorithm],
             options={'require':['exp','sub']}
         )
     except jwt.InvalidTokenError:

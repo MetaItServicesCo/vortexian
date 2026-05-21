@@ -4,10 +4,11 @@ from app import models
 from datetime import timedelta
 from app.config import settings
 from app.auth import verify_password,hash_password,create_access_token,verify_access_token
-from app.schema import CreateAdmin,Token
+from app.schema import CreateAdmin,Token,BaseAdmin
 from typing import Annotated
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import select
+from app.auth import admin_oauth2_scheme
 from app.config import ADMIN_SECRET_KEY
 from sqlalchemy.orm import Session
 
@@ -59,8 +60,35 @@ def login_for_access_token(from_data:Annotated[OAuth2PasswordRequestForm,Depends
     access_token=create_access_token(
         data={'sub':str(admin.id),
               "role":'admin'},
-        expire_delta=access_token_expire
+        expire_delta=access_token_expire,
     )
 
     return Token(access_token=access_token,
                  token_type='bearer')
+
+def get_current_admin_dependence(
+        token:str=Depends(admin_oauth2_scheme),
+        db:Session=Depends(get_db)
+):
+    payload=verify_access_token(token)
+
+    if not payload or payload.get('role') != 'admin':
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired token",
+        )
+    admin_id=int(payload.get('sub'))
+    admin=db.query(models.Admin).filter(models.Admin.id==admin_id).first()
+
+    if not admin:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Admin not found"
+        )
+    return admin
+
+@router.get("/login",response_model=BaseAdmin)
+def get_current_admin(
+    admin:models.Admin=Depends(get_current_admin_dependence)
+):
+    return admin
