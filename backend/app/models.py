@@ -33,3 +33,16 @@ class Service(Base):
     meta_title:Mapped[str]=mapped_column(String(200),nullable=False)
     keywords:Mapped[str]=mapped_column(Text,nullable=False)
     meta_description:Mapped[str]=mapped_column(Text,nullable=False)
+
+
+class Team(Base):
+    __tablename__ = "Team"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    full_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    designation: Mapped[str] = mapped_column(String(150), nullable=False)
+    bio_description: Mapped[str] = mapped_column(Text, nullable=False)
+    profile_image: Mapped[str] = mapped_column(Text, nullable=False)
+    facebook_link: Mapped[str] = mapped_column(Text, nullable=True)
+    instagram_link: Mapped[str] = mapped_column(Text, nullable=True)
+    linkedin_link: Mapped[str] = mapped_column(Text, nullable=True)

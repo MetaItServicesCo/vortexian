@@ -71,3 +71,37 @@ class UpdateService(BaseModel):
     meta_title: Optional[str] = None
     keywords: Optional[str] = None
     meta_description: Optional[str] = None
+
+
+class BaseTeam(BaseModel):
+
+    full_name: str
+    designation: str
+    bio_description: str
+    profile_image: str
+    facebook_link: Optional[str] = None
+    instagram_link: Optional[str] = None
+    linkedin_link: Optional[str] = None
+
+
+class CreateTeam(BaseTeam):
+    pass
+
+
+class TeamResponse(BaseTeam):
+    id: int
+
+    class Config:
+        from_attributes = True
+
+
+class UpdateTeam(BaseModel):
+
+    full_name: Optional[str] = None
+    designation: Optional[str] = None
+    bio_description: Optional[str] = None
+    profile_image: Optional[str] = None
+    facebook_link: Optional[str] = None
+    instagram_link: Optional[str] = None
+    linkedin_link: Optional[str] = None
+
