@@ -46,3 +46,19 @@ class Team(Base):
     facebook_link: Mapped[str] = mapped_column(Text, nullable=True)
     instagram_link: Mapped[str] = mapped_column(Text, nullable=True)
     linkedin_link: Mapped[str] = mapped_column(Text, nullable=True)
+
+
+
+class Portfolio(Base):
+    __tablename__ = "Portfolio"
+
+    id = mapped_column(Integer, primary_key=True, index=True)
+    project_title = mapped_column(String(200), nullable=False)
+    category_node = mapped_column(String(100), nullable=False)
+    deployment_year = mapped_column(String(10), nullable=False)
+    primary_image = mapped_column(Text, nullable=False)
+    business_challenge = mapped_column(Text, nullable=False)
+    solution_node = mapped_column(Text, nullable=False)
+    meta_title = mapped_column(String(200), nullable=True)
+    meta_description = mapped_column(Text, nullable=True)
+    meta_keywords = mapped_column(Text, nullable=True)

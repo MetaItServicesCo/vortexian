@@ -105,3 +105,35 @@ class UpdateTeam(BaseModel):
     instagram_link: Optional[str] = None
     linkedin_link: Optional[str] = None
 
+# ////portfolio/////
+
+class BasePortfolio(BaseModel):
+    project_title: str
+    category_node: str
+    deployment_year: str
+    business_challenge: str
+    solution_node: str
+    meta_title: Optional[str] = None
+    meta_description: Optional[str] = None
+    meta_keywords: Optional[str] = None
+
+
+class CreatePortfolio(BasePortfolio):
+    pass
+
+class PortfolioResponse(BasePortfolio):
+    id: int
+    primary_image: str
+
+    class Config:
+        from_attributes = True
+
+class UpdatePortfolio(BaseModel):
+    project_title: Optional[str] = None
+    category_node: Optional[str] = None
+    deployment_year: Optional[str] = None
+    business_challenge: Optional[str] = None
+    solution_node: Optional[str] = None
+    meta_title: Optional[str] = None
+    meta_description: Optional[str] = None
+    meta_keywords: Optional[str] = None
