@@ -1,13 +1,73 @@
 from pydantic import BaseModel,Field,EmailStr
+from typing import Optional
 
 class BaseAdmin(BaseModel):
     username:str=Field(min_length=1,max_length=15)
-    email:EmailStr
-
+    
 class CreateAdmin(BaseAdmin):
+    email:EmailStr
     password:str=Field(max_length=8)
     admin_secret_key:str
 
 class Token(BaseModel):
     access_token:str
     token_type:str
+
+
+class BaseService(BaseModel):
+
+    service_title:str
+    url_slug:str
+    category_stack:str
+    lucide_icon:str
+    image_source_type:str
+    image_showcase_url:str
+    short_description:str
+    long_description:str
+    feature_1:Optional[str]=None
+    feature_2:Optional[str]=None
+    feature_3:Optional[str]=None
+    feature_4:Optional[str]=None
+    why_choose_1:Optional[str]=None
+    why_choose_2:Optional[str]=None
+    why_choose_3:Optional[str]=None
+    meta_title:str
+    keywords:str
+    meta_description:str
+
+
+class CreateService(BaseService):
+    pass
+
+
+class ServiceResponse(BaseService):
+    id:int
+
+    class Config:
+        from_attributes=True
+
+class UpdateService(BaseModel):
+
+    service_title: Optional[str] = None
+    url_slug: Optional[str] = None
+    category_stack: Optional[str] = None
+    lucide_icon: Optional[str] = None
+
+    image_source_type: Optional[str] = None
+    image_showcase_url: Optional[str] = None
+
+    short_description: Optional[str] = None
+    long_description: Optional[str] = None
+
+    feature_1: Optional[str] = None
+    feature_2: Optional[str] = None
+    feature_3: Optional[str] = None
+    feature_4: Optional[str] = None
+
+    why_choose_1: Optional[str] = None
+    why_choose_2: Optional[str] = None
+    why_choose_3: Optional[str] = None
+
+    meta_title: Optional[str] = None
+    keywords: Optional[str] = None
+    meta_description: Optional[str] = None

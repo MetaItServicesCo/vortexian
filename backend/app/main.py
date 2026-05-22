@@ -1,7 +1,8 @@
 from fastapi import FastAPI
-from app.database import engine, Base
-from app.routes import admin
-from fastapi.middleware.cors import CORSMiddleware  # ✅ import karo
+from app.database import engine , Base
+from app.routes.admin import router as admin_router
+from app.routes.service import router as service_router
+from fastapi.middleware.cors import CORSMiddleware
 
 Base.metadata.create_all(bind=engine)
 
@@ -16,4 +17,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(admin.router, prefix="/api/admins", tags=["admins"])
+app.include_router(admin_router,prefix="/api/admins",tags=["admins"])
+app.include_router(service_router,prefix="/api/admins",tags=["admins"])
+
