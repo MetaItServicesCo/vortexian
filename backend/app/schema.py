@@ -70,4 +70,74 @@ class UpdateService(BaseModel):
 
     meta_title: Optional[str] = None
     keywords: Optional[str] = None
+<<<<<<< HEAD
     meta_description: Optional[str] = None
+=======
+    meta_description: Optional[str] = None
+
+
+class BaseTeam(BaseModel):
+
+    full_name: str
+    designation: str
+    bio_description: str
+    profile_image: str
+    facebook_link: Optional[str] = None
+    instagram_link: Optional[str] = None
+    linkedin_link: Optional[str] = None
+
+
+class CreateTeam(BaseTeam):
+    pass
+
+
+class TeamResponse(BaseTeam):
+    id: int
+
+    class Config:
+        from_attributes = True
+
+
+class UpdateTeam(BaseModel):
+
+    full_name: Optional[str] = None
+    designation: Optional[str] = None
+    bio_description: Optional[str] = None
+    profile_image: Optional[str] = None
+    facebook_link: Optional[str] = None
+    instagram_link: Optional[str] = None
+    linkedin_link: Optional[str] = None
+
+# ////portfolio/////
+
+class BasePortfolio(BaseModel):
+    project_title: str
+    category_node: str
+    deployment_year: str
+    business_challenge: str
+    solution_node: str
+    meta_title: Optional[str] = None
+    meta_description: Optional[str] = None
+    meta_keywords: Optional[str] = None
+
+
+class CreatePortfolio(BasePortfolio):
+    pass
+
+class PortfolioResponse(BasePortfolio):
+    id: int
+    primary_image: str
+
+    class Config:
+        from_attributes = True
+
+class UpdatePortfolio(BaseModel):
+    project_title: Optional[str] = None
+    category_node: Optional[str] = None
+    deployment_year: Optional[str] = None
+    business_challenge: Optional[str] = None
+    solution_node: Optional[str] = None
+    meta_title: Optional[str] = None
+    meta_description: Optional[str] = None
+    meta_keywords: Optional[str] = None
+>>>>>>> c6c635392c4137ba4a81ae6f3ecad13538d4b004
