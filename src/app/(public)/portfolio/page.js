@@ -1,63 +1,97 @@
-import dbConnect from "@/lib/db";
-import Portfolio from "@/models/Portfolio";
 import BreadcrumbHero from "@/components/BreadcrumbHero";
 import CtaBanner from "@/components/CtaBanner";
 import PortfolioGrid from "@/components/portfolio/PortfolioGrid";
 
-// Helper function to fetch data for both Metadata and the Page Component Natively
+// Next.js ko force karne ke liye ke har request par naya data laye aur SEO tags live generate hon
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 async function getLivePortfolioData() {
     try {
-        await dbConnect();
-        // Fetch projects sorted by latest entry
-        const projects = await Portfolio.find({}).sort({ createdAt: -1 });
-        return JSON.parse(JSON.stringify(projects));
+        // Localhost fallback: 127.0.0.1 use kiya hai kyonki Next.js server 'localhost' ko '::1' par resolve karta hai jo FastAPI block kar deta hai
+        const res = await fetch("http://127.0.0.1:8000/api/portfolio", {
+            method: "GET",
+            headers: {
+                "Accept": "application/json",
+            },
+            next: { revalidate: 0 },
+            cache: "no-store"
+        });
+
+        if (!res.ok) {
+            console.error(`Backend Server Error: Status ${res.status}`);
+            return [];
+        }
+
+        return await res.json();
     } catch (error) {
-        console.error("Critical Exception fetching portfolio streams:", error);
+        console.error("Critical Exception fetching portfolio streams from API:", error);
         return [];
     }
 }
 
 // ==========================================
-// DYNAMIC METADATA (Keywords mapped from live items)
+// DYNAMIC SEO METADATA FOR GOOGLE BOT
 // ==========================================
 export async function generateMetadata() {
     const projects = await getLivePortfolioData();
 
-    // Extract all unique custom SEO keywords from active database nodes
-    const dbKeywords = projects.map(p => p.seoKeywords).filter(Boolean).join(", ");
+    // Map keywords from active database nodes
+    const dbKeywords = projects
+        .map(p => p.meta_keywords)
+        .filter(Boolean)
+        .join(", ");
+        
     const baseKeywords = "Portfolio, Vortexian Tech, Web Development Projects, Case Studies, UI/UX Showcases";
     const combinedKeywords = dbKeywords ? `${baseKeywords}, ${dbKeywords}` : baseKeywords;
 
+    // Map description from latest project for dynamic context
+    const dynamicDescription = projects[0]?.meta_description || 
+        "Explore our elite range of projects in web development, serverless applications, enterprise platforms, and custom digital architectures.";
+
     return {
         title: "Portfolio | Vortexian Tech - Showcasing Digital Excellence",
-        description: "Explore our elite range of projects in web development, serverless applications, enterprise platforms, and custom digital architectures. See how we drive business scalability.",
+        description: dynamicDescription.substring(0, 160), // Google prefers max 160 chars
         keywords: combinedKeywords,
+        alternates: {
+            canonical: `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/portfolio`,
+        },
         openGraph: {
             title: "Portfolio | Vortexian Tech - Showcasing Excellence",
-            description: "Explore our elite range of projects in web development and technical architectures.",
+            description: dynamicDescription.substring(0, 160),
             url: `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/portfolio`,
-            type: "website"
+            type: "website",
+            images: [
+                {
+                    url: projects[0]?.primary_image ? `http://127.0.0.1:8000${projects[0].primary_image}` : "/og-image.jpg",
+                    width: 1200,
+                    height: 630,
+                    alt: "Vortexian Tech Portfolio Overlay",
+                },
+            ],
+        },
+        twitter: {
+            card: "summary_large_image",
+            title: "Portfolio | Vortexian Tech",
+            description: dynamicDescription.substring(0, 160),
         }
     };
 }
-
-export const revalidate = 0; // Fresh extraction tag
 
 export default async function PortfolioPage() {
     const liveProjects = await getLivePortfolioData();
 
     return (
         <main>
-            {/* Reusable Hero Section */}
+            {/* Structural Breadcrumb */}
             <BreadcrumbHero
                 title="PORTFOLIO"
                 currentPage="PORTFOLIO"
             />
 
-            {/* Portfolio Projects Grid - Injecting live database records dataset */}
+            {/* Injected Server side fetched dataset directly passed to layout client grid */}
             <PortfolioGrid initialProjects={liveProjects} />
 
-            {/* Call to Action Banner */}
             <CtaBanner />
         </main>
     );

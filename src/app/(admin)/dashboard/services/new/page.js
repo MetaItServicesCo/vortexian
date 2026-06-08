@@ -30,8 +30,8 @@ export default function CreateNewService() {
     const [previewUrl, setPreviewUrl] = useState("");
 
     // FASTAPI URL
-    const API_URL =
-        "http://127.0.0.1:8000/api/admins/create-service";
+    const API_URL = "http://127.0.0.1:8000/api/services/create-service";
+
 
     const [formData, setFormData] = useState({
         title: "",
@@ -165,10 +165,7 @@ export default function CreateNewService() {
 
             } else {
 
-                submitData.append(
-                    "image",
-                    selectedFile
-                );
+                submitData.append("image_file", selectedFile);
             }
 
             // FEATURES

@@ -1,5 +1,5 @@
-import dbConnect from "@/lib/db";
-import Portfolio from "@/models/Portfolio";
+// import dbConnect from "@/lib/db";
+// import Portfolio from "@/models/Portfolio";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import BreadcrumbHero from "@/components/BreadcrumbHero";

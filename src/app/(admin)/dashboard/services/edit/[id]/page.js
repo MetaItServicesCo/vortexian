@@ -5,6 +5,8 @@ import { ArrowLeft, Loader2, Save, Image as ImageIcon, Upload, Link2 } from "luc
 import toast, { Toaster } from "react-hot-toast";
 import Link from "next/link";
 
+const BASE_URL = "http://127.0.0.1:8000/api/services";
+
 export default function EditServicePage({ params }) {
     const { id } = use(params);
     const router = useRouter();
@@ -29,42 +31,46 @@ export default function EditServicePage({ params }) {
         seo: { title: "", description: "", keywords: "" }
     });
 
-    // --- FETCH CURRENT NODE SPECIFICATIONS ---
+    // ✅ FETCH — backend field names se map karo
     useEffect(() => {
         async function getServiceDetails() {
             try {
-                const res = await fetch(`/api/services/${id}`);
-                if (!res.ok) throw new Error("Failed to pull record information");
+                const res = await fetch(`${BASE_URL}/id/${id}`);
+                if (!res.ok) throw new Error("Failed");
 
                 const data = await res.json();
 
-                // Detect if existing path is a locally hosted upload or string URL
-                const isLocalUpload = data.image?.startsWith("/uploads/");
+                const isLocalUpload = data.image_showcase_url?.startsWith("/uploads/");
                 setUploadType(isLocalUpload ? "file" : "url");
-                setPreviewUrl(data.image || "");
+                setPreviewUrl(data.image_showcase_url || "");
 
                 setFormData({
-                    title: data.title || "",
-                    slug: data.slug || "",
-                    category: data.category || "Marketing",
-                    shortDesc: data.shortDesc || "",
-                    icon: data.icon || "Share2",
-                    image: isLocalUpload ? "" : (data.image || ""),
-                    longDesc: data.longDesc || "",
-                    features: data.features?.length ? data.features : ["", "", "", ""],
+                    title: data.service_title || "",
+                    slug: data.url_slug || "",
+                    category: data.category_stack || "Marketing",
+                    shortDesc: data.short_description || "",
+                    icon: data.lucide_icon || "Share2",
+                    image: isLocalUpload ? "" : (data.image_showcase_url || ""),
+                    longDesc: data.long_description || "",
+                    features: [
+                        data.feature_1 || "",
+                        data.feature_2 || "",
+                        data.feature_3 || "",
+                        data.feature_4 || "",
+                    ],
                     whyChoose: {
-                        expertise: data.whyChoose?.expertise || "",
-                        scalability: data.whyChoose?.scalability || "",
-                        quality: data.whyChoose?.quality || ""
+                        expertise: data.why_choose_1 || "",
+                        scalability: data.why_choose_2 || "",
+                        quality: data.why_choose_3 || "",
                     },
                     seo: {
-                        title: data.seo?.title || "",
-                        description: data.seo?.description || "",
-                        keywords: data.seo?.keywords ? data.seo.keywords.join(", ") : ""
+                        title: data.meta_title || "",
+                        description: data.meta_description || "",
+                        keywords: data.keywords || "",
                     }
                 });
             } catch (err) {
-                toast.error("Error loading service data nodes.");
+                toast.error("Error loading service data.");
                 router.push("/dashboard/services");
             } finally {
                 setFetching(false);
@@ -89,57 +95,58 @@ export default function EditServicePage({ params }) {
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (!file) return;
-
         setSelectedFile(file);
         setPreviewUrl(URL.createObjectURL(file));
         toast.success("New asset image targeted!");
     };
 
-    // --- MUTATION OPERATION SUBMIT ---
+    // ✅ SUBMIT — backend field names, PATCH, JSON body
     const handleFormSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
 
-        // Standard dynamic structured multi-part dataset assembler
-        const submissionData = new FormData();
-        submissionData.append("title", formData.title);
-        submissionData.append("slug", formData.slug);
-        submissionData.append("category", formData.category);
-        submissionData.append("shortDesc", formData.shortDesc);
-        submissionData.append("icon", formData.icon);
-        submissionData.append("longDesc", formData.longDesc);
-        submissionData.append("features", JSON.stringify(formData.features));
-        submissionData.append("whyChoose", JSON.stringify(formData.whyChoose));
-
-        const keywordsArray = formData.seo.keywords.split(",").map(k => k.trim()).filter(Boolean);
-        submissionData.append("seo", JSON.stringify({
-            title: formData.seo.title,
-            description: formData.seo.description,
-            keywords: keywordsArray
-        }));
-
-        submissionData.append("uploadType", uploadType);
-        if (uploadType === "url") {
-            submissionData.append("imageUrl", formData.image);
-        } else if (selectedFile) {
-            submissionData.append("serviceImage", selectedFile);
-        }
-
         try {
-            const res = await fetch(`/api/services/${id}`, {
-                method: "PUT",
-                body: submissionData
+            const token = localStorage.getItem("token");
+
+            const updatePayload = {
+                service_title: formData.title,
+                url_slug: formData.slug,
+                category_stack: formData.category,
+                lucide_icon: formData.icon,
+                short_description: formData.shortDesc,
+                long_description: formData.longDesc,
+                image_source_type: uploadType,
+                image_showcase_url: uploadType === "url" ? formData.image : undefined,
+                feature_1: formData.features[0],
+                feature_2: formData.features[1],
+                feature_3: formData.features[2],
+                feature_4: formData.features[3],
+                why_choose_1: formData.whyChoose.expertise,
+                why_choose_2: formData.whyChoose.scalability,
+                why_choose_3: formData.whyChoose.quality,
+                meta_title: formData.seo.title,
+                meta_description: formData.seo.description,
+                keywords: formData.seo.keywords,
+            };
+
+            const res = await fetch(`${BASE_URL}/update-service/${id}`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify(updatePayload),
             });
 
             if (res.ok) {
-                toast.success("Capability parameters updated dynamically!");
+                toast.success("Service updated successfully!");
                 setTimeout(() => router.push("/dashboard/services"), 1500);
             } else {
                 const errorData = await res.json();
-                toast.error(errorData.message || "Failed committing node mutations.");
+                toast.error(errorData.detail || "Update failed.");
             }
         } catch (err) {
-            toast.error("Internal pipeline execution fault exception error.");
+            toast.error("Something went wrong.");
         } finally {
             setLoading(false);
         }
@@ -158,7 +165,6 @@ export default function EditServicePage({ params }) {
         <div className="p-6 md:p-10 min-h-screen bg-gray-50 text-slate-800 font-sans max-w-4xl mx-auto text-base">
             <Toaster position="top-center" />
 
-            {/* --- FORM EDIT HEADER PANEL --- */}
             <div className="flex items-center gap-4 mb-8">
                 <Link href="/dashboard/services" className="w-11 h-11 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:text-black transition-all shadow-sm">
                     <ArrowLeft size={18} />
@@ -170,7 +176,7 @@ export default function EditServicePage({ params }) {
             </div>
 
             <form onSubmit={handleFormSubmit} className="space-y-6">
-                {/* --- SECTION 1: CORE METRICS --- */}
+                {/* CORE PARAMETERS */}
                 <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xl shadow-slate-100 space-y-4">
                     <h2 className="text-sm font-black text-[#1D1D7E] uppercase tracking-widest border-b border-gray-100 pb-2">Core Parameters</h2>
 
@@ -243,15 +249,14 @@ export default function EditServicePage({ params }) {
                         )}
                     </div>
 
-                    {/* --- UNIVERSAL LIVE GRAPHICS PREVIEW MANAGER --- */}
                     {previewUrl && (
                         <div className="mt-2 p-2 border border-dashed border-gray-200 rounded-2xl bg-gray-50">
                             <p className="text-[10px] font-black uppercase text-gray-400 mb-2 flex items-center gap-1">
                                 <ImageIcon size={12} /> Active Live Preview Matrix
                             </p>
                             <div className="relative w-full h-52 rounded-xl overflow-hidden shadow-inner bg-white flex items-center justify-center">
-                                <img src={previewUrl} alt="Preview Pipeline" className="w-full h-full object-cover"
-                                    onError={(e) => { e.target.src = "https://placehold.co/600x400?text=Invalid+Image+Resource"; }} />
+                                <img src={previewUrl} alt="Preview" className="w-full h-full object-cover"
+                                    onError={(e) => { e.target.src = "https://placehold.co/600x400?text=Invalid+Image"; }} />
                             </div>
                         </div>
                     )}
@@ -261,7 +266,6 @@ export default function EditServicePage({ params }) {
                         <textarea rows="2" required value={formData.shortDesc || ""} className="w-full p-3.5 bg-gray-50 border border-gray-200 rounded-xl text-base outline-none focus:ring-2 focus:ring-[#5DB4D1] focus:bg-white transition-all"
                             onChange={(e) => setFormData({ ...formData, shortDesc: e.target.value })} />
                     </div>
-
                     <div>
                         <label className="text-xs font-black uppercase text-gray-400 block mb-1.5">Deep Long Content Description</label>
                         <textarea rows="4" required value={formData.longDesc || ""} className="w-full p-3.5 bg-gray-50 border border-gray-200 rounded-xl text-base outline-none focus:ring-2 focus:ring-[#5DB4D1] focus:bg-white transition-all"
@@ -269,21 +273,21 @@ export default function EditServicePage({ params }) {
                     </div>
                 </div>
 
-                {/* --- SECTION 2: FEATURES ARRAYS MATRIX --- */}
+                {/* FEATURES */}
                 <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xl shadow-slate-100 space-y-4">
                     <h2 className="text-sm font-black text-[#1D1D7E] uppercase tracking-widest border-b border-gray-100 pb-2">Technical Operational Features</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {formData.features.map((feat, index) => (
                             <div key={index}>
                                 <label className="text-[10px] font-black uppercase text-gray-400 block mb-1.5">Feature Module #{index + 1}</label>
-                                <input type="text" required value={feat || ""} className="w-full p-3.5 bg-gray-50 border border-gray-200 rounded-xl text-base outline-none focus:ring-2 focus:ring-[#5DB4D1] focus:bg-white transition-all"
+                                <input type="text" value={feat || ""} className="w-full p-3.5 bg-gray-50 border border-gray-200 rounded-xl text-base outline-none focus:ring-2 focus:ring-[#5DB4D1] focus:bg-white transition-all"
                                     onChange={(e) => handleFeatureArray(index, e.target.value)} />
                             </div>
                         ))}
                     </div>
                 </div>
 
-                {/* --- SECTION 3: WHY CHOOSE LOGIC MODULES --- */}
+                {/* WHY CHOOSE */}
                 <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xl shadow-slate-100 space-y-4">
                     <h2 className="text-sm font-black text-[#1D1D7E] uppercase tracking-widest border-b border-gray-100 pb-2">Why Choose Matrix Framework</h2>
                     <div className="space-y-4">
@@ -305,7 +309,7 @@ export default function EditServicePage({ params }) {
                     </div>
                 </div>
 
-                {/* --- SECTION 4: PROGRAMMATIC SEO CONFIGURATIONS --- */}
+                {/* SEO */}
                 <div className="bg-blue-50/50 p-6 rounded-2xl border border-blue-100/60 space-y-4">
                     <h2 className="text-sm font-black text-[#1D1D7E] uppercase tracking-widest border-b border-blue-100 pb-2">Programmatic SEO Head Parameters</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -327,7 +331,7 @@ export default function EditServicePage({ params }) {
                     </div>
                 </div>
 
-                {/* --- FORM OPERATION ACTION TRIGGER --- */}
+                {/* SUBMIT */}
                 <button type="submit" disabled={loading} className="w-full bg-[#1D1D7E] text-white py-4 rounded-xl font-black uppercase tracking-widest hover:bg-[#5DB4D1] hover:text-black transition-all shadow-xl shadow-blue-900/10 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 text-sm">
                     {loading ? <><Loader2 className="w-5 h-5 animate-spin" /> Re-Deploying Core State Data...</> : <><Save size={18} /> Save Changes & Re-Deploy</>}
                 </button>

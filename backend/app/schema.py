@@ -70,10 +70,9 @@ class UpdateService(BaseModel):
 
     meta_title: Optional[str] = None
     keywords: Optional[str] = None
-<<<<<<< HEAD
+
     meta_description: Optional[str] = None
-=======
-    meta_description: Optional[str] = None
+
 
 
 class BaseTeam(BaseModel):
@@ -140,4 +139,4 @@ class UpdatePortfolio(BaseModel):
     meta_title: Optional[str] = None
     meta_description: Optional[str] = None
     meta_keywords: Optional[str] = None
->>>>>>> c6c635392c4137ba4a81ae6f3ecad13538d4b004
+

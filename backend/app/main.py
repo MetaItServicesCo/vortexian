@@ -2,9 +2,7 @@ from fastapi import FastAPI
 from app.database import engine , Base
 from app.routes.admin import router as admin_router
 from app.routes.service import router as service_router
-<<<<<<< HEAD
-from fastapi.middleware.cors import CORSMiddleware
-=======
+
 from app.routes.team import router as team_router
 from app.routes.portfolio import router as portfolio_router
 from fastapi.middleware.cors import CORSMiddleware
@@ -13,7 +11,7 @@ from fastapi.staticfiles import StaticFiles
 
 
 
->>>>>>> c6c635392c4137ba4a81ae6f3ecad13538d4b004
+
 
 Base.metadata.create_all(bind=engine)
 
@@ -28,10 +26,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-<<<<<<< HEAD
-app.include_router(admin_router,prefix="/api/admins",tags=["admins"])
-app.include_router(service_router,prefix="/api/admins",tags=["admins"])
-=======
+
 @app.get("/")
 def root():
     return {"message": "Backend Running Successfully"}
@@ -42,5 +37,5 @@ app.include_router(admin_router,prefix="/api/admins",tags=["Admins"])
 app.include_router(service_router,prefix="/api/services",tags=["Services"])
 app.include_router(team_router,prefix="/api/team",tags=["Team"])
 app.include_router(portfolio_router,prefix="/api/portfolio",tags=["Portfolio"])
->>>>>>> c6c635392c4137ba4a81ae6f3ecad13538d4b004
+
 

@@ -10,7 +10,7 @@ export default function DashboardPortfolioList() {
 
     const fetchRecords = async () => {
         try {
-            const res = await fetch("/api/portfolio");
+            const res = await fetch("http://localhost:8000/api/portfolio"); 
             const data = await res.json();
             setItems(Array.isArray(data) ? data : []);
         } catch {
@@ -20,15 +20,38 @@ export default function DashboardPortfolioList() {
         }
     };
 
-    useEffect(() => { fetchRecords(); }, []);
+    useEffect(() => { 
+        fetchRecords(); 
+    }, []);
 
     const triggerDeletion = async (id) => {
         if (!confirm("Are you absolutely sure you want to purge this record?")) return;
+
+        const token = localStorage.getItem("token");
+
         try {
-            const res = await fetch(`/api/portfolio/${id}`, { method: "DELETE" });
+            const res = await fetch(
+                `http://localhost:8000/api/portfolio/delete/${id}`,
+                {
+                    method: "DELETE",
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+
+            const data = await res.json();
+
             if (res.ok) {
-                toast.success("Project eliminated.");
-                setItems(items.filter(item => item._id !== id));
+                const successMessage = typeof data.message === "string" ? data.message : "Deleted successfully";
+                toast.success(successMessage);
+                fetchRecords();
+            } else {
+                if (Array.isArray(data.detail)) {
+                    toast.error(data.detail[0]?.msg || "Delete failed");
+                } else {
+                    toast.error(data.detail || "Delete failed");
+                }
             }
         } catch {
             toast.error("Process termination error.");
@@ -43,7 +66,6 @@ export default function DashboardPortfolioList() {
                     <h1 className="text-3xl font-black text-[#1D1D7E] uppercase tracking-tight">Portfolio Canvas Nodes</h1>
                     <p className="text-gray-400 text-xs font-bold uppercase tracking-wider mt-0.5">Control pipeline for Vortexian Tech projects</p>
                 </div>
-                {/* REDIRECTION CONTROL BUTTON FOR CREATION PANEL */}
                 <Link href="/dashboard/portfolio/create" className="bg-[#1D1D7E] text-white px-6 py-3.5 rounded-xl font-bold text-xs uppercase tracking-widest flex items-center gap-2 shadow-md hover:bg-neutral-900 transition-all cursor-pointer">
                     <Plus size={16} /> Add New Project
                 </Link>
@@ -71,22 +93,34 @@ export default function DashboardPortfolioList() {
                             </thead>
                             <tbody className="divide-y divide-gray-50 text-sm font-semibold text-slate-700">
                                 {items.map((item) => (
-                                    <tr key={item._id} className="hover:bg-slate-50/30 transition-colors">
+                                    <tr key={item.id} className="hover:bg-slate-50/30 transition-colors">
                                         <td className="p-6">
-                                            <img src={item.mainImage} alt="" className="w-16 h-12 object-cover rounded-xl border border-gray-100 shadow-sm" />
+                                            {item.primary_image ? (
+                                                <img
+                                                    src={`http://localhost:8000${item.primary_image}`}
+                                                    alt={item.project_title}
+                                                    className="w-16 h-12 object-cover rounded-xl border border-gray-100 shadow-sm"
+                                                />
+                                            ) : (
+                                                <div className="w-16 h-12 bg-slate-100 rounded-xl border border-gray-100 flex items-center justify-center text-slate-400 text-[10px] font-bold">NO IMG</div>
+                                            )}
                                         </td>
                                         <td className="p-6">
-                                            <p className="font-bold text-slate-900 text-base">{item.title}</p>
-                                            <p className="text-xs text-gray-400 mt-0.5">/{item.slug}</p>
+                                            <p className="font-bold text-slate-900 text-base">{item.project_title}</p>
+                                            <p className="text-xs text-gray-400 mt-0.5">{item.category_node}</p>
                                         </td>
-                                        <td className="p-6"><span className="bg-slate-100 text-slate-600 px-3 py-1 rounded-md text-xs uppercase font-bold tracking-wider">{item.category}</span></td>
-                                        <td className="p-6 font-mono text-gray-500">{item.year}</td>
+                                        <td className="p-6">
+                                            <span className="bg-slate-100 text-slate-600 px-3 py-1 rounded-md text-xs uppercase font-bold tracking-wider">
+                                                {item.category_node}
+                                            </span>
+                                        </td>
+                                        <td className="p-6 font-mono text-gray-500">{item.deployment_year}</td>
                                         <td className="p-6 text-right">
                                             <div className="flex justify-end gap-2">
-                                                <Link href={`/dashboard/portfolio/edit/${item._id}`} className="w-10 h-10 bg-slate-50 hover:bg-sky-50 text-slate-500 hover:text-sky-600 rounded-xl flex items-center justify-center border border-gray-100 shadow-sm transition-all">
+                                                <Link href={`/dashboard/portfolio/edit/${item.id}`} className="w-10 h-10 bg-slate-50 hover:bg-sky-50 text-slate-500 hover:text-sky-600 rounded-xl flex items-center justify-center border border-gray-100 shadow-sm transition-all">
                                                     <Edit3 size={16} />
                                                 </Link>
-                                                <button onClick={() => triggerDeletion(item._id)} className="w-10 h-10 bg-slate-50 hover:bg-rose-50 text-slate-500 hover:text-rose-600 rounded-xl flex items-center justify-center border border-gray-100 shadow-sm transition-all cursor-pointer">
+                                                <button onClick={() => triggerDeletion(item.id)} className="w-10 h-10 bg-slate-50 hover:bg-rose-50 text-slate-500 hover:text-rose-600 rounded-xl flex items-center justify-center border border-gray-100 shadow-sm transition-all cursor-pointer">
                                                     <Trash2 size={16} />
                                                 </button>
                                             </div>

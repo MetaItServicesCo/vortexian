@@ -17,7 +17,7 @@ export default function AdminServicesList() {
     const [loading, setLoading] = useState(true);
 
     // FastAPI Base URL
-    const API_URL = "http://127.0.0.1:8000/api/admins";
+    const API_URL = "http://127.0.0.1:8000/api/services"; // ✅ fix 1
 
     // GET ALL SERVICES
     useEffect(() => {
@@ -39,22 +39,20 @@ export default function AdminServicesList() {
         fetchServices();
     }, []);
 
-    // DELETE SERVICE
     const handleDelete = async (id) => {
-        if (!confirm("Are you sure you want to delete this capability?"))
-            return;
+        if (!confirm("Are you sure you want to delete this capability?")) return;
 
         try {
-            await axios.delete(`${API_URL}/${id}`);
+            const token = localStorage.getItem("token"); // ✅ fix 2
+            await axios.delete(`${API_URL}/delete-service/${id}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
 
-            setServices((prev) =>
-                prev.filter((service) => service.id !== id)
-            );
-
+            setServices((prev) => prev.filter((service) => service.id !== id));
             toast.success("Service deleted successfully");
         } catch (error) {
             console.error(error);
-            toast.error("Failed to delete service");
+            toast.error(error?.response?.data?.detail || "Failed to delete service");
         }
     };
 
@@ -138,8 +136,8 @@ export default function AdminServicesList() {
                                                     {iconMap[
                                                         service.lucide_icon
                                                     ] || (
-                                                        <Layers className="w-4 h-4" />
-                                                    )}
+                                                            <Layers className="w-4 h-4" />
+                                                        )}
                                                 </div>
 
                                                 <div>

@@ -10,14 +10,24 @@ export default function CreatePortfolioAssetForm() {
     const [loading, setLoading] = useState(false);
     const [fileObj, setFileObj] = useState(null);
 
+    // ✅ CHANGED: field names API ke mutabiq
     const [form, setForm] = useState({
-        title: "", category: "Web Development", year: new Date().getFullYear().toString(),
-        challenge: "", solution: "", seoTitle: "", seoDescription: "", seoKeywords: ""
+        project_title: "",
+        category_node: "Web Development",
+        deployment_year: new Date().getFullYear().toString(),
+        business_challenge: "",
+        solution_node: "",
+        meta_title: "",
+        meta_description: "",
+        meta_keywords: ""
     });
 
     const dispatchSubmission = async (e) => {
         e.preventDefault();
-        if (!form.title || !form.challenge || !form.solution || !fileObj) {
+            const token = localStorage.getItem("token");
+
+        // ✅ CHANGED: validation mein naye field names
+        if (!form.project_title || !form.business_challenge || !form.solution_node || !fileObj) {
             toast.error("Please deploy all baseline mandatory metrics!");
             return;
         }
@@ -25,10 +35,20 @@ export default function CreatePortfolioAssetForm() {
         setLoading(true);
         const bundle = new FormData();
         Object.keys(form).forEach(key => bundle.append(key, form[key]));
-        bundle.append("mainImage", fileObj);
+        bundle.append("image_file", fileObj); // ✅ CHANGED: mainImage → image_file
 
         try {
-            const res = await fetch("/api/portfolio", { method: "POST", body: bundle });
+            // ✅ CHANGED: URL /api/portfolio/create
+            const res = await fetch(
+                "http://localhost:8000/api/portfolio/create",
+                {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    },
+                    body: bundle
+                }
+            );
             if (res.ok) {
                 toast.success("Case study compiled natively inside system nodes!");
                 setTimeout(() => router.push("/dashboard/portfolio"), 1200);
@@ -62,11 +82,13 @@ export default function CreatePortfolioAssetForm() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="md:col-span-2">
                         <label className={labelStyles}>Project Title *</label>
-                        <input type="text" className={inputStyles} placeholder="e.g. Quantum Analytics Suite" required onChange={e => setForm({ ...form, title: e.target.value })} />
+                        {/* ✅ CHANGED */}
+                        <input type="text" className={inputStyles} placeholder="e.g. Quantum Analytics Suite" required onChange={e => setForm({ ...form, project_title: e.target.value })} />
                     </div>
                     <div>
                         <label className={labelStyles}>Category Node *</label>
-                        <select className={inputStyles} onChange={e => setForm({ ...form, category: e.target.value })}>
+                        {/* ✅ CHANGED */}
+                        <select className={inputStyles} onChange={e => setForm({ ...form, category_node: e.target.value })}>
                             <option value="Web Development">Web Development</option>
                             <option value="Graphic Design">Graphic Design</option>
                             <option value="UI/UX Design">UI/UX Design</option>
@@ -78,7 +100,8 @@ export default function CreatePortfolioAssetForm() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="md:col-span-1">
                         <label className={labelStyles}>Deployment Year *</label>
-                        <input type="number" value={form.year} className={inputStyles} required onChange={e => setForm({ ...form, year: e.target.value })} />
+                        {/* ✅ CHANGED */}
+                        <input type="number" value={form.deployment_year} className={inputStyles} required onChange={e => setForm({ ...form, deployment_year: e.target.value })} />
                     </div>
                     <div className="md:col-span-2">
                         <label className={labelStyles}>Primary Representation Graphic *</label>
@@ -92,15 +115,16 @@ export default function CreatePortfolioAssetForm() {
 
                 <div>
                     <label className={labelStyles}>The Business Challenge Statement *</label>
-                    <textarea rows="4" className={`${inputStyles} resize-none`} placeholder="What structural anomalies did the client face?" required onChange={e => setForm({ ...form, challenge: e.target.value })}></textarea>
+                    {/* ✅ CHANGED */}
+                    <textarea rows="4" className={`${inputStyles} resize-none`} placeholder="What structural anomalies did the client face?" required onChange={e => setForm({ ...form, business_challenge: e.target.value })}></textarea>
                 </div>
 
                 <div>
                     <label className={labelStyles}>Vortexian Strategic Solution Node *</label>
-                    <textarea rows="4" className={`${inputStyles} resize-none`} placeholder="Describe our technical architectural resolution approach..." required onChange={e => setForm({ ...form, solution: e.target.value })}></textarea>
+                    {/* ✅ CHANGED */}
+                    <textarea rows="4" className={`${inputStyles} resize-none`} placeholder="Describe our technical architectural resolution approach..." required onChange={e => setForm({ ...form, solution_node: e.target.value })}></textarea>
                 </div>
 
-                {/* --- DYNAMIC SEO PROGRAMMATIC CONFIGURATION SECTION --- */}
                 <div className="border-t border-gray-100 pt-6 space-y-6">
                     <div className="flex items-center gap-2 text-[#1D1D7E] font-black text-xs uppercase tracking-widest">
                         <Globe size={16} /> Google Crawler Automation SEO Fields
@@ -108,17 +132,20 @@ export default function CreatePortfolioAssetForm() {
 
                     <div>
                         <label className={labelStyles}>Meta Target Title Mapping</label>
-                        <input type="text" className={inputStyles} placeholder="Optimized Search Layout Title Tag (Leave empty for default)" onChange={e => setForm({ ...form, seoTitle: e.target.value })} />
+                        {/* ✅ CHANGED */}
+                        <input type="text" className={inputStyles} placeholder="Optimized Search Layout Title Tag (Leave empty for default)" onChange={e => setForm({ ...form, meta_title: e.target.value })} />
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label className={labelStyles}>Meta Index Description String</label>
-                            <textarea rows="3" className={`${inputStyles} resize-none`} placeholder="High CTR snippet description for search logs..." onChange={e => setForm({ ...form, seoDescription: e.target.value })}></textarea>
+                            {/* ✅ CHANGED */}
+                            <textarea rows="3" className={`${inputStyles} resize-none`} placeholder="High CTR snippet description for search logs..." onChange={e => setForm({ ...form, meta_description: e.target.value })}></textarea>
                         </div>
                         <div>
                             <label className={labelStyles}>Meta Priority Context Keywords</label>
-                            <textarea rows="3" className={`${inputStyles} resize-none`} placeholder="e.g. nextjs app, enterprise logistics database, fintech api" onChange={e => setForm({ ...form, seoKeywords: e.target.value })}></textarea>
+                            {/* ✅ CHANGED */}
+                            <textarea rows="3" className={`${inputStyles} resize-none`} placeholder="e.g. nextjs app, enterprise logistics database, fintech api" onChange={e => setForm({ ...form, meta_keywords: e.target.value })}></textarea>
                         </div>
                     </div>
                 </div>

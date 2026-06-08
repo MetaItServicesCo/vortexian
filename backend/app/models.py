@@ -32,10 +32,9 @@ class Service(Base):
     why_choose_3:Mapped[str| None]=mapped_column(Text,nullable=True)
     meta_title:Mapped[str]=mapped_column(String(200),nullable=False)
     keywords:Mapped[str]=mapped_column(Text,nullable=False)
-<<<<<<< HEAD
+
     meta_description:Mapped[str]=mapped_column(Text,nullable=False)
-=======
-    meta_description:Mapped[str]=mapped_column(Text,nullable=False)
+
 
 
 class Team(Base):
@@ -65,4 +64,4 @@ class Portfolio(Base):
     meta_title = mapped_column(String(200), nullable=True)
     meta_description = mapped_column(Text, nullable=True)
     meta_keywords = mapped_column(Text, nullable=True)
->>>>>>> c6c635392c4137ba4a81ae6f3ecad13538d4b004
+
