@@ -86,15 +86,19 @@ class BaseTeam(BaseModel):
     linkedin_link: Optional[str] = None
 
 
-class CreateTeam(BaseTeam):
-    pass
+class CreateTeam(BaseModel):
+    full_name: str
+    designation: str
+    bio_description: str
+    profile_image: Optional[str] = None # Make optional
+    # ... rest of the fields
 
 
 class TeamResponse(BaseTeam):
     id: int
 
     class Config:
-        from_attributes = True
+        from_attributes=True
 
 
 class UpdateTeam(BaseModel):
