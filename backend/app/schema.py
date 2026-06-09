@@ -70,7 +70,9 @@ class UpdateService(BaseModel):
 
     meta_title: Optional[str] = None
     keywords: Optional[str] = None
+
     meta_description: Optional[str] = None
+
 
 
 class BaseTeam(BaseModel):
@@ -84,15 +86,19 @@ class BaseTeam(BaseModel):
     linkedin_link: Optional[str] = None
 
 
-class CreateTeam(BaseTeam):
-    pass
+class CreateTeam(BaseModel):
+    full_name: str
+    designation: str
+    bio_description: str
+    profile_image: Optional[str] = None # Make optional
+    # ... rest of the fields
 
 
 class TeamResponse(BaseTeam):
     id: int
 
     class Config:
-        from_attributes = True
+        from_attributes=True
 
 
 class UpdateTeam(BaseModel):
@@ -137,3 +143,58 @@ class UpdatePortfolio(BaseModel):
     meta_title: Optional[str] = None
     meta_description: Optional[str] = None
     meta_keywords: Optional[str] = None
+
+# //////////contact us /////////////
+
+class CreateContact(BaseModel):
+    first_name: str
+    last_name: str
+    phone: str
+    email: EmailStr
+    preferred_contact_method: str
+    service: str
+    website_url: Optional[str] = None
+    completion_date: Optional[str] = None
+    message: str
+
+
+class ContactResponse(CreateContact):
+    id: int
+    project_file: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
+# //////contact us staatic form //////////
+
+class CreateContactUs(BaseModel):
+    full_name: str
+    company_name: str
+    website_url: Optional[str] = None
+    email: EmailStr
+    phone_number: str
+    designation: Optional[str] = None
+    subject: str
+    message: str
+
+
+class ContactUsResponse(CreateContactUs):
+    id: int
+
+    class Config:
+        from_attributes = True
+
+
+#///////////////news letter ///////////
+
+class CreateNewsletter(BaseModel):
+    email: EmailStr
+
+
+class NewsletterResponse(BaseModel):
+    id: int
+    email: EmailStr
+
+    class Config:
+        from_attributes = True 
