@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form 
 from sqlalchemy.orm import Session
 import shutil, uuid, os
 
@@ -61,11 +61,18 @@ def create_contact(
 
 
 @router.get("/", response_model=list[ContactResponse])
-def get_all_contacts(
-    db: Session = Depends(get_db),
-    admin: models.Admin = Depends(get_current_admin_dependence)
-):
-    return db.query(models.Contact).order_by(models.Contact.id.desc()).all()
+def get_all_contacts(db: Session = Depends(get_db), admin=Depends(get_current_admin_dependence)):
+
+    contacts = db.query(models.Contact).order_by(models.Contact.id.desc()).all()
+
+    valid_contacts = []
+    for c in contacts:
+        try:
+            valid_contacts.append(ContactResponse.model_validate(c))
+        except ValidationError:
+            continue  # skip bad DB rows
+
+    return valid_contacts
 
 
 @router.delete("/{contact_id}")

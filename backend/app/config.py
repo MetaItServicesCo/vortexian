@@ -16,7 +16,7 @@ class Settings(BaseSettings):
 
     secret_key:SecretStr
     algorithm:str="HS256"
-    access_token_time_expire:int=30
+    access_token_time_expire:int=1440
 
 settings=Settings()
 

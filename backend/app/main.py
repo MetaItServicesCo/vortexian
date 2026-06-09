@@ -4,6 +4,10 @@ from app.routes.admin import router as admin_router
 from app.routes.service import router as service_router
 from app.routes.team import router as team_router
 from app.routes.portfolio import router as portfolio_router
+from app.routes.contact import router as contact_router
+from app.routes.contactUs import router as contactUs_router
+from app.routes.newsletter import router as newsletter_router
+from app.routes.blog import router as blog_router
 from fastapi.middleware.cors import CORSMiddleware
 
 from fastapi.staticfiles import StaticFiles
@@ -34,4 +38,8 @@ app.include_router(admin_router,prefix="/api/admins",tags=["Admins"])
 app.include_router(service_router,prefix="/api/services",tags=["Services"])
 app.include_router(team_router,prefix="/api/team",tags=["Team"])
 app.include_router(portfolio_router,prefix="/api/portfolio",tags=["Portfolio"])
+app.include_router(contact_router,prefix="/api/contact",tags=["Contact"])
+app.include_router(contactUs_router,prefix="/api/contact",tags=["ContactUs"])
+app.include_router(newsletter_router,prefix="/api/contact",tags=["Newsletter"])
+app.include_router(blog_router,prefix="/api/contact",tags=["Blog"])
 

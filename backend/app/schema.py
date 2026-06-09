@@ -198,3 +198,37 @@ class NewsletterResponse(BaseModel):
 
     class Config:
         from_attributes = True 
+
+
+# /////////blog/////////
+class BlogBase(BaseModel):
+    title: str
+    excerpt: str
+    content: str
+    category: str
+    author: str
+
+    meta_title: str
+    meta_description: str
+
+
+class CreateBlog(BlogBase):
+    pass
+
+
+class UpdateBlog(BaseModel):
+    title: Optional[str] = None
+    excerpt: Optional[str] = None
+    content: Optional[str] = None
+    category: Optional[str] = None
+    author: Optional[str] = None
+    meta_title: Optional[str] = None
+    meta_description: Optional[str] = None
+
+
+class BlogResponse(BlogBase):
+    id: int
+    featured_image: Optional[str] = None
+
+    class Config:
+        from_attributes = True

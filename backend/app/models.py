@@ -122,3 +122,23 @@ class Newsletter(Base):
         unique=True,
         nullable=False
     ) 
+
+# /////////blog//////////
+
+class Blog(Base):
+    __tablename__ = "Blog"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    excerpt: Mapped[str] = mapped_column(Text, nullable=False)
+
+    content: Mapped[str] = mapped_column(Text, nullable=False)  # HTML or Markdown
+
+    category: Mapped[str] = mapped_column(String(100), nullable=False)
+    author: Mapped[str] = mapped_column(String(100), nullable=False)
+
+    featured_image: Mapped[str] = mapped_column(Text, nullable=True)
+
+    meta_title: Mapped[str] = mapped_column(String(60), nullable=False)
+    meta_description: Mapped[str] = mapped_column(String(160), nullable=False)
