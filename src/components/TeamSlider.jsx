@@ -23,11 +23,14 @@ const TeamSlider = () => {
   useEffect(() => {
     async function getTeamRoster() {
       try {
-        const response = await fetch("/api/team", { cache: "no-store" });
+        const response = await fetch("http://localhost:8000/api/team/teams", {
+          cache: "no-store",
+        });
         if (response.ok) {
           const dataset = await response.json();
           setTeamMembers(dataset);
         }
+        console.log("Fetched Team Roster:", teamMembers);
       } catch (error) {
         console.error(
           "Pipeline failure compiling public team view state:",
