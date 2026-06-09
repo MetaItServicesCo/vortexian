@@ -1,37 +1,54 @@
+# =====================
 # Python
+# =====================
 __pycache__/
-*.pyc
+*.py[cod]
 
+# =====================
 # Database
+# =====================
 *.db
 *.sqlite3
 
-# Uploads
+# =====================
+# Uploads / Media
+# =====================
 uploads/
 backend/uploads/
 
+# =====================
 # Next.js
+# =====================
 .next/
 client/.next/
 
+# =====================
 # Node
+# =====================
 node_modules/
 client/node_modules/
 
+# =====================
 # Environment
+# =====================
 .env
 .env.*
 
+# =====================
 # IDE
+# =====================
 .vscode/
 .idea/
 
+# =====================
 # TypeScript
+# =====================
 *.tsbuildinfo
 next-env.d.ts
 
-
+# =====================
 # Logs
+# =====================
 *.log
 npm-debug.log*
 yarn-debug.log*

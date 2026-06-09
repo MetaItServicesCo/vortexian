@@ -144,3 +144,91 @@ class UpdatePortfolio(BaseModel):
     meta_description: Optional[str] = None
     meta_keywords: Optional[str] = None
 
+# //////////contact us /////////////
+
+class CreateContact(BaseModel):
+    first_name: str
+    last_name: str
+    phone: str
+    email: EmailStr
+    preferred_contact_method: str
+    service: str
+    website_url: Optional[str] = None
+    completion_date: Optional[str] = None
+    message: str
+
+
+class ContactResponse(CreateContact):
+    id: int
+    project_file: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
+# //////contact us staatic form //////////
+
+class CreateContactUs(BaseModel):
+    full_name: str
+    company_name: str
+    website_url: Optional[str] = None
+    email: EmailStr
+    phone_number: str
+    designation: Optional[str] = None
+    subject: str
+    message: str
+
+
+class ContactUsResponse(CreateContactUs):
+    id: int
+
+    class Config:
+        from_attributes = True
+
+
+#///////////////news letter ///////////
+
+class CreateNewsletter(BaseModel):
+    email: EmailStr
+
+
+class NewsletterResponse(BaseModel):
+    id: int
+    email: EmailStr
+
+    class Config:
+        from_attributes = True 
+
+
+# /////////blog/////////
+class BlogBase(BaseModel):
+    title: str
+    excerpt: str
+    content: str
+    category: str
+    author: str
+
+    meta_title: str
+    meta_description: str
+
+
+class CreateBlog(BlogBase):
+    pass
+
+
+class UpdateBlog(BaseModel):
+    title: Optional[str] = None
+    excerpt: Optional[str] = None
+    content: Optional[str] = None
+    category: Optional[str] = None
+    author: Optional[str] = None
+    meta_title: Optional[str] = None
+    meta_description: Optional[str] = None
+
+
+class BlogResponse(BlogBase):
+    id: int
+    featured_image: Optional[str] = None
+
+    class Config:
+        from_attributes = True
