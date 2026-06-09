@@ -23,7 +23,8 @@ const ReactQuill = dynamic(() => import("react-quill-new"), {
 export default function AddBlog() {
     const [formData, setFormData] = useState({
         title: "", slug: "", category: "", image: "",
-        metaTitle: "", metaDesc: "", content: "", faqs: ""
+        metaTitle: "", metaDesc: "", content: "",
+        // faqs: ""
     });
 
     const handleSubmit = async (e) => {
@@ -31,7 +32,7 @@ export default function AddBlog() {
         try {
             await axios.post("http://localhost:8000/api/blog/create", formData);
             alert("Blog successfully created!");
-            setFormData({ title: "", slug: "", category: "", image: "", metaTitle: "", metaDesc: "", content: "", faqs: "" });
+            setFormData({ title: "", slug: "", category: "", image: "", metaTitle: "", metaDesc: "", content: "",  });
         } catch (error) {
             console.error("Error:", error);
             alert("Failed to save. Check console.");
@@ -69,10 +70,10 @@ export default function AddBlog() {
                     />
                 </div>
 
-                <div className="flex flex-col pt-4">
+                {/* <div className="flex flex-col pt-4">
                     <label className="text-sm font-semibold text-gray-600 mb-1">FAQs (JSON Schema)</label>
                     <textarea className="border p-2 rounded w-full h-24" onChange={e => setFormData({ ...formData, faqs: e.target.value })} value={formData.faqs} />
-                </div>
+                </div> */}
 
                 <button
                     type="submit"
