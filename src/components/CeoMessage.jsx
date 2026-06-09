@@ -17,9 +17,9 @@ const CeoMessage = () => {
           <div className="relative max-w-[400px]">
             {/* Grayscale image effect as seen in image_e6388b.png */}
             <img
-              src="/images/ceo-portrait.png"
+              src="/assets/images/ceo.png"
               alt="CEO Farina Sadiq"
-              className="w-full h-auto grayscale hover:grayscale-0 transition-all duration-700 ease-in-out rounded-sm shadow-sm"
+              className="w-full h-auto grayscale hover:grayscale-0 transition-all duration-700 ease-in-out rounded-sm shadow-"
             />
           </div>
         </motion.div>

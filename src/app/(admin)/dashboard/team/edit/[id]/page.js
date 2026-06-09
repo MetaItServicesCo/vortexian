@@ -1,14 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { ArrowLeft, Loader2, Save, FileImage } from "lucide-react";
+import { useRouter, useParams } from "next/navigation";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import Link from "next/link";
 
-export default function EditTeamProfilePanel({ params }) {
-    const { id } = params;
+export default function EditTeamProfilePanel() {
     const router = useRouter();
+    const params = useParams();
+    const id = params?.id;
 
     const [loading, setLoading] = useState(false);
     const [fetching, setFetching] = useState(true);
@@ -23,10 +24,15 @@ export default function EditTeamProfilePanel({ params }) {
         linkedin_link: ""
     });
 
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    const token =
+        typeof window !== "undefined"
+            ? localStorage.getItem("token")
+            : null;
 
-    // ================= FETCH SINGLE TEAM =================
+    // ================= FETCH DATA =================
     useEffect(() => {
+        if (!id) return;
+
         async function loadData() {
             try {
                 const res = await fetch(
@@ -40,7 +46,10 @@ export default function EditTeamProfilePanel({ params }) {
 
                 const data = await res.json();
 
-                if (!res.ok) throw new Error(data.detail);
+                if (!res.ok) {
+                    console.log("FETCH ERROR:", data);
+                    throw new Error(data.detail || "Fetch failed");
+                }
 
                 setFields({
                     full_name: data.full_name || "",
@@ -50,20 +59,24 @@ export default function EditTeamProfilePanel({ params }) {
                     instagram_link: data.instagram_link || "",
                     linkedin_link: data.linkedin_link || ""
                 });
-
             } catch (err) {
-                toast.error(err.message || "Fetch failed");
+                toast.error(err.message);
             } finally {
                 setFetching(false);
             }
         }
 
         loadData();
-    }, [id]);
+    }, [id, token]);
 
-    // ================= UPDATE TEAM =================
+    // ================= UPDATE =================
     const handleUpdate = async (e) => {
         e.preventDefault();
+
+        if (!token) {
+            toast.error("Unauthorized: Please login again");
+            return;
+        }
 
         setLoading(true);
 
@@ -73,7 +86,6 @@ export default function EditTeamProfilePanel({ params }) {
             formData.append("full_name", fields.full_name);
             formData.append("designation", fields.designation);
             formData.append("bio_description", fields.bio_description);
-
             formData.append("facebook_link", fields.facebook_link);
             formData.append("instagram_link", fields.instagram_link);
             formData.append("linkedin_link", fields.linkedin_link);
@@ -95,16 +107,24 @@ export default function EditTeamProfilePanel({ params }) {
 
             const data = await res.json();
 
-            if (!res.ok) throw new Error(data.detail);
+            // 🔥 IMPORTANT DEBUG
+            if (!res.ok) {
+                console.log("UPDATE ERROR:", data);
+                throw new Error(
+                    data.detail ||
+                    JSON.stringify(data) ||
+                    "Update failed"
+                );
+            }
 
             toast.success("Team updated successfully!");
 
             setTimeout(() => {
                 router.push("/dashboard/team");
-            }, 1200);
+            }, 1000);
 
         } catch (err) {
-            toast.error(err.message || "Update failed");
+            toast.error(err.message);
         } finally {
             setLoading(false);
         }
@@ -116,6 +136,7 @@ export default function EditTeamProfilePanel({ params }) {
     const labelStyles =
         "text-xs font-black uppercase text-slate-500 block mb-1.5";
 
+    // ================= LOADING =================
     if (fetching) {
         return (
             <div className="min-h-screen flex items-center justify-center">
@@ -133,8 +154,9 @@ export default function EditTeamProfilePanel({ params }) {
                 <Link href="/dashboard/team">
                     <ArrowLeft />
                 </Link>
-
-                <h1 className="text-xl font-bold">Edit Team Member</h1>
+                <h1 className="text-xl font-bold">
+                    Edit Team Member
+                </h1>
             </div>
 
             <form onSubmit={handleUpdate} className="space-y-5">
@@ -144,7 +166,10 @@ export default function EditTeamProfilePanel({ params }) {
                     <input
                         value={fields.full_name}
                         onChange={(e) =>
-                            setFields({ ...fields, full_name: e.target.value })
+                            setFields({
+                                ...fields,
+                                full_name: e.target.value
+                            })
                         }
                         className={inputStyles}
                     />
@@ -155,7 +180,10 @@ export default function EditTeamProfilePanel({ params }) {
                     <input
                         value={fields.designation}
                         onChange={(e) =>
-                            setFields({ ...fields, designation: e.target.value })
+                            setFields({
+                                ...fields,
+                                designation: e.target.value
+                            })
                         }
                         className={inputStyles}
                     />
@@ -166,10 +194,13 @@ export default function EditTeamProfilePanel({ params }) {
                     <textarea
                         value={fields.bio_description}
                         onChange={(e) =>
-                            setFields({ ...fields, bio_description: e.target.value })
+                            setFields({
+                                ...fields,
+                                bio_description: e.target.value
+                            })
                         }
                         className={inputStyles}
-                        rows="4"
+                        rows={4}
                     />
                 </div>
 
@@ -177,7 +208,9 @@ export default function EditTeamProfilePanel({ params }) {
                     <label className={labelStyles}>Image</label>
                     <input
                         type="file"
-                        onChange={(e) => setFileObj(e.target.files[0])}
+                        onChange={(e) =>
+                            setFileObj(e.target.files?.[0])
+                        }
                     />
                 </div>
 
@@ -186,7 +219,10 @@ export default function EditTeamProfilePanel({ params }) {
                     <input
                         value={fields.linkedin_link}
                         onChange={(e) =>
-                            setFields({ ...fields, linkedin_link: e.target.value })
+                            setFields({
+                                ...fields,
+                                linkedin_link: e.target.value
+                            })
                         }
                         className={inputStyles}
                     />
