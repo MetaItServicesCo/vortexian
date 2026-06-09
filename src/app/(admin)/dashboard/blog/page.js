@@ -14,7 +14,7 @@ export default function BlogList() {
         <div className="p-8">
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold">Manage Blogs</h1>
-                <Link href="/dashboard/add-blog" className="bg-blue-600 text-white px-4 py-2 rounded-lg">
+                <Link href="/dashboard/blog/create" className="bg-blue-600 text-white px-4 py-2 rounded-lg">
                     + Add Blog
                 </Link>
             </div>
