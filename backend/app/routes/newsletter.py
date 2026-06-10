@@ -85,7 +85,7 @@ def delete_subscriber(
 async def test_email():
 
     await send_newsletter_email(
-        email="your_email",  # your email
+        email="vortexian@gmail.com",  # your email
         subject="Test Email",
         body="<h1>Email Working Successfully 🚀</h1>"
     )

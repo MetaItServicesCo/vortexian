@@ -46,8 +46,8 @@ def start_scheduler():
     scheduler.add_job(
         send_newsletter_job,
         trigger="interval",
-        # days=7
-        minutes=1
+        days=7
+        # minutes=1
     )
 
     scheduler.start()
