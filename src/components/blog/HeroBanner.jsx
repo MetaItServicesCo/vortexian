@@ -67,7 +67,7 @@ export default function HeroBanner() {
                 className="relative h-[300px] sm:h-[400px] lg:h-[400px] w-full"
               >
                 <Image
-                  src="/assets/images/ceo.png"
+                  src="/assets/images/ceo.jpeg"
                   alt="Professional"
                   fill
                   priority

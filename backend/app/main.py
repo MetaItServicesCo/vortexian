@@ -41,9 +41,8 @@ app.include_router(admin_router,prefix="/api/admins",tags=["Admins"])
 app.include_router(service_router,prefix="/api/services",tags=["Services"])
 app.include_router(team_router,prefix="/api/team",tags=["Team"])
 app.include_router(portfolio_router,prefix="/api/portfolio",tags=["Portfolio"])
-app.include_router(contact_router,prefix="/api/contact",tags=["Contact"])
-app.include_router(contactUs_router,prefix="/api/contact",tags=["ContactUs"])
-app.include_router(newsletter_router,prefix="/api/contact",tags=["Newsletter"])
-app.include_router(blog_router,prefix="/api/contact",tags=["Blog"])
-
+app.include_router(contact_router, prefix="/api/contact", tags=["Contact"])
+app.include_router(contactUs_router, prefix="/api/contact-us", tags=["ContactUs"])
+app.include_router(newsletter_router, prefix="/api/newsletter", tags=["Newsletter"])
+app.include_router(blog_router, prefix="/api/blog", tags=["Blog"])
 

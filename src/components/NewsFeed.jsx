@@ -221,7 +221,8 @@ function CalendarIcon() {
 // ════════════════════════════════════════════════════════════
 export default function NewsFeed() {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden w-full max-w-md">
+    <div className=" rounded-2xl border border-gray-100 shadow-sm  w-full max-w-md">
+      {" "}
       {/* ── Header ─────────────────────────────────────────── */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
         <div className="flex items-center gap-2.5">
@@ -248,7 +249,6 @@ export default function NewsFeed() {
           {NEWS_DATA.length} updates
         </span>
       </div>
-
       {/* ── News items ─────────────────────────────────────── */}
       <div className="divide-y divide-gray-50">
         {NEWS_DATA.map((item) => {
@@ -303,28 +303,8 @@ export default function NewsFeed() {
           );
         })}
       </div>
-
       {/* ── Footer ─────────────────────────────────────────── */}
-      <div className="px-5 py-3 border-t border-gray-50 text-center">
-        <Link
-          href="/news"
-          className="text-[12px] font-semibold text-[#6B21D4] hover:underline inline-flex items-center gap-1"
-        >
-          View all updates
-          <svg
-            className="w-3.5 h-3.5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M5 12h14M12 5l7 7-7 7" />
-          </svg>
-        </Link>
-      </div>
+      <div className="px-5 py-3 border-t border-gray-50 text-center"></div>
     </div>
   );
 }

@@ -43,10 +43,10 @@ const QuoteForm = () => {
   };
 
   // --- API TRANSMISSION HANDLER ---
+  // --- API TRANSMISSION HANDLER ---
   const handleFormSubmit = async (e) => {
     e.preventDefault();
 
-    // Required fields client side verification check
     if (
       !firstName ||
       !lastName ||
@@ -60,40 +60,44 @@ const QuoteForm = () => {
     }
 
     if (selectedServices.length === 0) {
-      toast.error("Please request at least one service node capability.");
+      toast.error("Please request at least one service.");
       return;
     }
 
-    setLoading(true);
-
-    // Creating multipart standard payload boundary token bundle
-    const payloadData = new FormData();
-    payloadData.append("firstName", firstName);
-    payloadData.append("lastName", lastName);
-    payloadData.append("phone", phone);
-    payloadData.append("email", email);
-    payloadData.append("contactPref", contactPref);
-    payloadData.append("services", JSON.stringify(selectedServices));
-    payloadData.append("url", url);
-    payloadData.append("completionDate", completionDate);
-    payloadData.append("message", message);
-
-    if (projectFile) {
-      payloadData.append("projectFile", projectFile); // Appends the raw HTML5 file object binary chunks
-    }
-
     try {
-      const res = await fetch("/api/quotes", {
+      setLoading(true);
+
+      const formData = new FormData();
+
+      formData.append("first_name", firstName);
+      formData.append("last_name", lastName);
+      formData.append("phone", phone);
+      formData.append("email", email);
+      formData.append("preferred_contact_method", contactPref);
+
+      // Backend me service string hai
+      formData.append("service", selectedServices.join(", "));
+
+      formData.append("website_url", url || "");
+      formData.append("completion_date", completionDate || "");
+      formData.append("message", message);
+
+      // File upload
+      if (projectFile) {
+        formData.append("file", projectFile);
+      }
+
+      const response = await fetch("http://127.0.0.1:8000/api/contact", {
         method: "POST",
-        body: payloadData, // Next.js automatically structures multipart boundary tracking descriptors
+        body: formData,
       });
 
-      if (res.ok) {
-        toast.success(
-          "Quote request transmitted to business backend successfully!",
-        );
+      const data = await response.json();
+      console.log("Form Submission Response:", data);
+      if (response.ok) {
+        toast.success(data.message || "Contact request submitted successfully");
 
-        // Resetting local visual inputs variables state matrices
+        // Reset Form
         setFirstName("");
         setLastName("");
         setPhone("");
@@ -105,19 +109,15 @@ const QuoteForm = () => {
         setProjectFile(null);
         setSelectedServices([]);
       } else {
-        const errPayload = await res.json();
-        toast.error(
-          errPayload.message || "Failed committing lead data entry parameters.",
-        );
+        toast.error(data.detail || data.message || "Failed to submit form");
       }
-    } catch (err) {
-      console.error(err);
-      toast.error("Network pipe transmission breakdown fault runtime error.");
+    } catch (error) {
+      console.error("Contact Form Error:", error);
+      toast.error("Something went wrong");
     } finally {
       setLoading(false);
     }
   };
-
   const labelStyles =
     "block text-[#5DB4D1] text-[13px] font-bold uppercase tracking-wider mb-2";
   const inputStyles =

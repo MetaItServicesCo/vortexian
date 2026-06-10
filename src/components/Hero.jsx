@@ -14,31 +14,30 @@ const Hero = () => {
   };
 
   return (
-    <section className="relative h-screen w-full overflow-hidden bg-black mt-10">
-      {/* --- VIDEO BACKGROUND --- */}
+    <section className="relative w-full overflow-hidden bg-black mt-10 h-[30vh] sm:h-[40vh] md:h-screen">
+      {/* VIDEO BACKGROUND */}
       <video
         ref={videoRef}
         autoPlay
         loop
-        muted={isMuted} // State se controlled
+        muted={isMuted}
         playsInline
-        className="absolute inset-0 w-full h-full object-cover z-10"
+        className="absolute inset-0 w-full h-full object-cover object-center z-10"
       >
         <source src="/assets/video/video-6mb.mp4" type="video/mp4" />
         Your browser does not support the video tag.
       </video>
 
-      {/* --- MUTE/UNMUTE BUTTON --- */}
+      {/* MUTE BUTTON */}
       <motion.button
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onClick={toggleMute}
-        className="absolute bottom-10 right-10 z-20 p-3 bg-white/20 backdrop-blur-md rounded-full text-white border border-white/30 hover:bg-white/40 transition-all"
+        className="absolute bottom-5 right-5 sm:bottom-10 sm:right-10 z-20 p-2 sm:p-3 bg-white/20 backdrop-blur-md rounded-full text-white border border-white/30 hover:bg-white/40 transition-all"
       >
         {isMuted ? (
-          // Mute Icon
           <svg
-            className="w-6 h-6"
+            className="w-5 h-5 sm:w-6 sm:h-6"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -57,9 +56,8 @@ const Hero = () => {
             />
           </svg>
         ) : (
-          // Unmute (Speaker) Icon
           <svg
-            className="w-6 h-6"
+            className="w-5 h-5 sm:w-6 sm:h-6"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"

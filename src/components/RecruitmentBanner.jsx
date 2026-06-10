@@ -108,16 +108,16 @@ const RecruitmentBanner = () => {
           ].map((item, index) => (
             <motion.div
               key={index}
-              initial={{ opacity: 0, scale: 0.5, y: 100 }}
-              whileInView={{ opacity: 1, scale: 1, y: 0 }}
-              viewport={{ once: false }}
+              // initial={{ opacity: 0, scale: 0.5, y: 0 }}
+              // whileInView={{ opacity: 1, scale: 1, y: 0 }}
+              viewport={{ once: true }}
               transition={{
                 duration: 0.9,
                 delay: index * 0.2,
                 type: "spring",
                 stiffness: 120,
               }}
-              whileHover={{ y: -7 }}
+              // whileHover={{ y: -7 }}
               className="flex flex-col shadow-[0px_20px_40px_rgba(0,0,0,0.25)] rounded-xl overflow-hidden w-[75px] md:w-[115px] cursor-default"
             >
               <div className="bg-[#5DB4D1] h-[65px] md:h-[100px] flex items-center justify-center border-b border-white/20">

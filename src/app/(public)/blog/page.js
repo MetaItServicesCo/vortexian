@@ -1,9 +1,7 @@
 import BlogHero from "@/components/blog/BlogHero";
-import BlogGrid from "@/components/blog/BlogGrid";
 import TrustedBy from "@/components/blog/TrustedBy";
 import HeroBanner from "@/components/blog/HeroBanner";
-
-import { blogs } from "@/data/blogs"; // ✅ IMPORT FROM CENTRAL FILE
+import BlogGrid from "@/components/blog/BlogGrid";
 
 export const metadata = {
     title: "Blog | Latest Insights & Articles — TIGI HR",
@@ -19,17 +17,51 @@ export const metadata = {
     },
 };
 
-const structuredData = {
-    "@context": "https://schema.org",
-    "@type": "Blog",
-    name: "TIGI HR Blog",
-    description: "Expert HR insights and hiring advice.",
-    url: "https://tigihr.com/blog",
-};
+// ✅ SERVER SIDE API FETCH
+async function getBlogs() {
+    try {
+        const res = await fetch("http://127.0.0.1:8000/api/blog/public", {
+            cache: "no-store",
+        });
 
-export default function BlogPage() {
+        if (!res.ok) {
+            throw new Error("API failed");
+        }
+
+        const data = await res.json();
+
+        // console.log("🔥 FULL RESPONSE:", data);
+
+        return data;
+    } catch (error) {
+        console.log("API ERROR:", error);
+        return [];
+    }
+}
+
+export default async function BlogPage() {
+    let blogs = [];
+
+    try {
+        blogs = await getBlogs();
+
+    } catch (error) {
+        console.log("Blog Fetch Error:", error);
+        blogs = [];
+    }
+
+    // ✅ STRUCTURED DATA (SEO)
+    const structuredData = {
+        "@context": "https://schema.org",
+        "@type": "Blog",
+        name: "TIGI HR Blog",
+        description: "Expert HR insights and hiring advice.",
+        url: "https://tigihr.com/blog",
+    };
+
     return (
         <>
+            {/* SEO JSON-LD */}
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{
@@ -37,18 +69,18 @@ export default function BlogPage() {
                 }}
             />
 
+            {/* HERO SECTION */}
             <BlogHero />
             <TrustedBy />
 
+            {/* BLOG GRID */}
             <section className="bg-[#F6F6F8] py-16">
                 <div className="max-w-7xl mx-auto px-5 lg:px-10">
-
-                    {/* ✅ NOW COMES FROM CENTRAL FILE */}
                     <BlogGrid blogs={blogs} />
-
                 </div>
             </section>
 
+            {/* FOOTER BANNER */}
             <HeroBanner />
         </>
     );
