@@ -6,6 +6,8 @@ from app import models
 from app.schema import CreateNewsletter, NewsletterResponse
 from app.routes.admin import get_current_admin_dependence
 
+from app.email_service import send_newsletter_email
+
 router = APIRouter()
 
 
@@ -77,3 +79,15 @@ def delete_subscriber(
     return {
         "message": "Subscriber removed"
     }
+
+
+@router.get("/test-email")
+async def test_email():
+
+    await send_newsletter_email(
+        email="your_email",  # your email
+        subject="Test Email",
+        body="<h1>Email Working Successfully 🚀</h1>"
+    )
+
+    return {"message": "Email sent successfully"}
