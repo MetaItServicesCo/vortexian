@@ -14,47 +14,117 @@ export default function EditPortfolioAssetForm() {
     const [preview, setPreview] = useState("");
 
     const [form, setForm] = useState({
-        title: "", category: "Web Development", year: "", challenge: "", solution: "", seoTitle: "", seoDescription: "", seoKeywords: ""
+        project_title: "",
+        category_node: "Web Development",
+        deployment_year: "",
+        business_challenge: "",
+        solution_node: "",
+        meta_title: "",
+        meta_description: "",
+        meta_keywords: ""
     });
 
     useEffect(() => {
         const fetchTargetData = async () => {
             try {
-                const res = await fetch("/api/portfolio");
-                const data = await res.json();
-                const targetedNode = data.find(item => item._id === id);
-                if (targetedNode) {
-                    setForm({
-                        title: targetedNode.title, category: targetedNode.category, year: targetedNode.year,
-                        challenge: targetedNode.challenge, solution: targetedNode.solution,
-                        seoTitle: targetedNode.seoTitle || "", seoDescription: targetedNode.seoDescription || "", seoKeywords: targetedNode.seoKeywords || ""
-                    });
-                    setPreview(targetedNode.mainImage);
+                const res = await fetch(
+                    `http://localhost:8000/api/portfolio/${id}`
+                );
+
+                if (!res.ok) {
+                    throw new Error("Failed to fetch data");
                 }
-            } catch {
-                toast.error("Failure tracking baseline node data references.");
+
+                const data = await res.json();
+
+                setForm({
+                    project_title: data.project_title || "",
+                    category_node: data.category_node || "Web Development",
+                    deployment_year: data.deployment_year || "",
+                    business_challenge: data.business_challenge || "",
+                    solution_node: data.solution_node || "",
+                    meta_title: data.meta_title || "",
+                    meta_description: data.meta_description || "",
+                    meta_keywords: data.meta_keywords || ""
+                });
+
+                setPreview(
+                    data.primary_image
+                        ? `http://localhost:8000${data.primary_image}`
+                        : ""
+                );
+            } catch (error) {
+                console.error(error);
+                toast.error("Failed to load portfolio data.");
             } finally {
                 setFetching(false);
             }
         };
-        fetchTargetData();
+
+        if (id) {
+            fetchTargetData();
+        }
     }, [id]);
+
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setFileObj(file);
+            setPreview(URL.createObjectURL(file));
+        }
+    };
 
     const dispatchUpdate = async (e) => {
         e.preventDefault();
         setLoading(true);
-        const bundle = new FormData();
-        Object.keys(form).forEach(key => bundle.append(key, form[key]));
-        if (fileObj) bundle.append("mainImage", fileObj);
 
         try {
-            const res = await fetch(`/api/portfolio/${id}`, { method: "PUT", body: bundle });
-            if (res.ok) {
-                toast.success("Identity profile updated gracefully inside system nodes!");
-                setTimeout(() => router.push("/dashboard/portfolio"), 1200);
+            const token = localStorage.getItem("token");
+
+            // FastAPI Form fields ke mutabiq FormData taiyar karna
+            const formData = new FormData();
+            formData.append("project_title", form.project_title);
+            formData.append("category_node", form.category_node);
+            formData.append("deployment_year", parseInt(form.deployment_year) || 0);
+            formData.append("business_challenge", form.business_challenge);
+            formData.append("solution_node", form.solution_node);
+            formData.append("meta_title", form.meta_title || "");
+            formData.append("meta_description", form.meta_description || "");
+            formData.append("meta_keywords", form.meta_keywords || "");
+
+            if (fileObj) {
+                formData.append("primary_image", fileObj);
             }
-        } catch {
-            toast.error("Execution pipeline failed mapping data entries.");
+
+            const res = await fetch(
+                `http://localhost:8000/api/portfolio/update/${id}`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                        // Content-Type khud browser handle karega, yahan mat likhein
+                    },
+                    body: formData
+                }
+            );
+
+            const data = await res.json();
+
+            if (res.ok) {
+                toast.success("Portfolio updated successfully!");
+                setTimeout(() => {
+                    router.push("/dashboard/portfolio");
+                }, 1000);
+            } else {
+                if (Array.isArray(data.detail)) {
+                    toast.error(data.detail[0]?.msg || "Validation error");
+                } else {
+                    toast.error(data.detail || "Update failed");
+                }
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error("Server connection failed.");
         } finally {
             setLoading(false);
         }
@@ -82,11 +152,11 @@ export default function EditPortfolioAssetForm() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="md:col-span-2">
                         <label className={labelStyles}>Project Title *</label>
-                        <input type="text" value={form.title} className={inputStyles} required onChange={e => setForm({ ...form, title: e.target.value })} />
+                        <input type="text" value={form.project_title} className={inputStyles} required onChange={e => setForm({ ...form, project_title: e.target.value })} />
                     </div>
                     <div>
                         <label className={labelStyles}>Category Node *</label>
-                        <select value={form.category} className={inputStyles} onChange={e => setForm({ ...form, category: e.target.value })}>
+                        <select value={form.category_node} className={inputStyles} onChange={e => setForm({ ...form, category_node: e.target.value })}>
                             <option value="Web Development">Web Development</option>
                             <option value="Graphic Design">Graphic Design</option>
                             <option value="UI/UX Design">UI/UX Design</option>
@@ -98,42 +168,46 @@ export default function EditPortfolioAssetForm() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
                         <label className={labelStyles}>Deployment Year *</label>
-                        <input type="number" value={form.year} className={inputStyles} required onChange={e => setForm({ ...form, year: e.target.value })} />
+                        <input type="number" value={form.deployment_year} className={inputStyles} required onChange={e => setForm({ ...form, deployment_year: e.target.value })} />
                     </div>
                     <div className="md:col-span-2">
                         <label className={labelStyles}>Asset Re-Allocation Framework</label>
                         <div className="border-2 border-dashed border-gray-200 hover:border-[#1D1D7E] rounded-xl p-3.5 transition-all bg-slate-50/50 flex items-center gap-4 relative">
-                            <FileImage className="text-gray-400" size={24} />
+                            {preview ? (
+                                <img src={preview} alt="Preview" className="w-8 h-8 rounded object-cover border border-gray-200" />
+                            ) : (
+                                <FileImage className="text-gray-400" size={24} />
+                            )}
                             <span className="text-xs font-bold uppercase text-gray-400 truncate">{fileObj ? fileObj.name : "Select to rewrite graphic data source"}</span>
-                            <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={e => setFileObj(e.target.files[0])} />
+                            <input type="file" accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer" onChange={handleFileChange} />
                         </div>
                     </div>
                 </div>
 
                 <div>
                     <label className={labelStyles}>The Business Challenge Statement *</label>
-                    <textarea rows="4" value={form.challenge} className={`${inputStyles} resize-none`} required onChange={e => setForm({ ...form, challenge: e.target.value })}></textarea>
+                    <textarea rows="4" value={form.business_challenge} className={`${inputStyles} resize-none`} required onChange={e => setForm({ ...form, business_challenge: e.target.value })}></textarea>
                 </div>
 
                 <div>
                     <label className={labelStyles}>Vortexian Strategic Solution Node *</label>
-                    <textarea rows="4" value={form.solution} className={`${inputStyles} resize-none`} required onChange={e => setForm({ ...form, solution: e.target.value })}></textarea>
+                    <textarea rows="4" value={form.solution_node} className={`${inputStyles} resize-none`} required onChange={e => setForm({ ...form, solution_node: e.target.value })}></textarea>
                 </div>
 
                 <div className="border-t border-gray-100 pt-6 space-y-6">
                     <div className="text-[#1D1D7E] font-black text-xs uppercase tracking-widest">Active Search Indexes Setup</div>
                     <div>
                         <label className={labelStyles}>Meta Target Title Mapping</label>
-                        <input type="text" value={form.seoTitle} className={inputStyles} onChange={e => setForm({ ...form, seoTitle: e.target.value })} />
+                        <input type="text" value={form.meta_title} className={inputStyles} onChange={e => setForm({ ...form, meta_title: e.target.value })} />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label className={labelStyles}>Meta Index Description String</label>
-                            <textarea rows="3" value={form.seoDescription} className={`${inputStyles} resize-none`} onChange={e => setForm({ ...form, seoDescription: e.target.value })}></textarea>
+                            <textarea rows="3" value={form.meta_description} className={`${inputStyles} resize-none`} onChange={e => setForm({ ...form, meta_description: e.target.value })}></textarea>
                         </div>
                         <div>
                             <label className={labelStyles}>Meta Priority Context Keywords</label>
-                            <textarea rows="3" value={form.seoKeywords} className={`${inputStyles} resize-none`} onChange={e => setForm({ ...form, seoKeywords: e.target.value })}></textarea>
+                            <textarea rows="3" value={form.meta_keywords} className={`${inputStyles} resize-none`} onChange={e => setForm({ ...form, meta_keywords: e.target.value })}></textarea>
                         </div>
                     </div>
                 </div>

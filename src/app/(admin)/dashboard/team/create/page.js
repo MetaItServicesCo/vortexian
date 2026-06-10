@@ -21,32 +21,56 @@ export default function CreateTeamProfilePanel() {
     const handleFormSubmission = async (e) => {
         e.preventDefault();
 
-        // Strict parameters validation checks
         if (!name || !role || !description || !fileObj) {
-            toast.error("Name, Role, Description, and Image are mandatory fields!");
+            toast.error("Name, Role, Description and Image are required!");
             return;
         }
 
-        setLoading(true);
-        const bundle = new FormData();
-        bundle.append("name", name);
-        bundle.append("role", role);
-        bundle.append("description", description); // Dynamic description channel appended
-        bundle.append("image", fileObj);
-        bundle.append("facebook", facebook || "");
-        bundle.append("instagram", instagram || "");
-        bundle.append("linkedin", linkedin || "");
-
         try {
-            const response = await fetch("/api/team", { method: "POST", body: bundle });
-            if (response.ok) {
-                toast.success("Identity vector instantiated inside system clusters!");
-                setTimeout(() => router.push("/dashboard/team"), 1200);
-            } else {
-                toast.error("Failed committing data records.");
+            setLoading(true);
+
+            const formData = new FormData();
+
+            formData.append("full_name", name);
+            formData.append("designation", role);
+            formData.append("bio_description", description);
+
+            formData.append("facebook_link", facebook);
+            formData.append("instagram_link", instagram);
+            formData.append("linkedin_link", linkedin);
+
+            formData.append("image", fileObj);
+
+            const token = localStorage.getItem("token");
+
+            const response = await fetch(
+                "http://localhost:8000/api/team/create-team",
+                {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: formData,
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    data.detail || "Failed to create team member"
+                );
             }
-        } catch (err) {
-            toast.error("Network pipe execution exception error.");
+
+            toast.success("Team member created successfully!");
+
+            setTimeout(() => {
+                router.push("/dashboard/team");
+            }, 1500);
+
+        } catch (error) {
+            console.error(error);
+            toast.error(error.message || "Something went wrong");
         } finally {
             setLoading(false);
         }

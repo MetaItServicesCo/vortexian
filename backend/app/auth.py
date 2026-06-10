@@ -22,7 +22,7 @@ def create_access_token(data:dict,expire_delta:timedelta | None)->str:
     if expire_delta:
         expire=datetime.now(UTC)+expire_delta
     else:
-        expire=datetime.now(UTC)+timedelta(minutes=settings.access_token_time_expire)
+        expire=datetime.now(UTC)+timedelta(days=settings.access_token_time_expire)
 
     to_encode.update({'exp':expire})
     encode_jwt=jwt.encode(to_encode,

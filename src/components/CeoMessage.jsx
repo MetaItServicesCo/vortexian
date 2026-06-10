@@ -17,9 +17,9 @@ const CeoMessage = () => {
           <div className="relative max-w-[400px]">
             {/* Grayscale image effect as seen in image_e6388b.png */}
             <img
-              src="/images/ceo-portrait.png"
+              src="/assets/images/ceo.jpeg"
               alt="CEO Farina Sadiq"
-              className="w-full h-auto grayscale hover:grayscale-0 transition-all duration-700 ease-in-out rounded-sm shadow-sm"
+              className="w-full h-auto transition-all duration-700 ease-in-out rounded-sm shadow-"
             />
           </div>
         </motion.div>
@@ -57,6 +57,9 @@ const CeoMessage = () => {
             <div className="mt-8">
               <h4 className="text-[#1D1D7E] text-[18px] font-bold tracking-wide">
                 CEO: Farina Sadiq
+              </h4>
+              <h4 className="text-[#1D1D7E] text-[18px] font-bold tracking-wide">
+                Email: farina@vortexiantech.com
               </h4>
             </div>
           </div>

@@ -10,7 +10,7 @@ const CareerForm = () => {
   return (
     <section className="bg-white py-20 px-6 md:px-20 lg:px-32 font-sans">
       <div className="max-w-6xl mx-auto">
-        {/* --- HEADER CONTENT --- */}
+        {/* HEADER */}
         <motion.div
           initial={{ opacity: 0, y: 80 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -20,17 +20,14 @@ const CareerForm = () => {
           <h2 className="text-[#1D1D7E] text-2xl md:text-3xl font-bold tracking-tight">
             Explore Exciting Career Opportunities at Vortexian Tech
           </h2>
+
           <p className="text-gray-800 text-[15px] leading-relaxed max-w-6xl">
             Join the dynamic team at Vortexian Tech and embark on a rewarding
-            career in the forefront of technology innovation. We&apos;re looking
-            for passionate individuals who thrive in a collaborative environment
-            and are eager to make an impact. Explore our current openings and
-            start your journey with us today. Visit our careers page to learn
-            more about opportunities that match your skills and aspirations.
+            career in the forefront of technology innovation.
           </p>
         </motion.div>
 
-        {/* --- FORM SECTION --- */}
+        {/* FORM */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -43,32 +40,21 @@ const CareerForm = () => {
 
           <form className="space-y-6">
             {/* Company Name */}
-            <motion.div
-              initial={{ opacity: 0, x: -80 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 }}
-            >
+            <motion.div>
               <label className={labelStyles}>Company Name</label>
               <input type="text" className={inputStyles} />
             </motion.div>
 
-            {/* First Name & Last Name */}
+            {/* First & Last Name */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <motion.div
-                initial={{ opacity: 0, x: -80 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.6 }}
-              >
+              <motion.div>
                 <label className={labelStyles}>
                   First Name <span className="text-red-500">*</span>
                 </label>
                 <input type="text" className={inputStyles} required />
               </motion.div>
-              <motion.div
-                initial={{ opacity: 0, x: 80 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.8 }}
-              >
+
+              <motion.div>
                 <label className={labelStyles}>
                   Last Name <span className="text-red-500">*</span>
                 </label>
@@ -76,54 +62,52 @@ const CareerForm = () => {
               </motion.div>
             </div>
 
-            {/* Email Address */}
-            <motion.div
-              initial={{ opacity: 0, x: -80 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ delay: 1 }}
-            >
+            {/* Email */}
+            <motion.div>
               <label className={labelStyles}>Email address</label>
               <input type="email" className={inputStyles} />
             </motion.div>
 
-            {/* Linkedin URL */}
-            <motion.div
-              initial={{ opacity: 0, x: -80 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ delay: 1.2 }}
-            >
+            {/* LinkedIn */}
+            <motion.div>
               <label className={labelStyles}>
                 Linkedin URL <span className="text-red-500">*</span>
               </label>
               <input type="url" className={inputStyles} required />
             </motion.div>
 
-            {/* Optional Checkbox */}
-            <motion.div
-              initial={{ opacity: 0, x: -80 }}
-              whileInView={{ opacity: 1 }}
-              transition={{ delay: 1.4 }}
-              className="flex items-center gap-3 pt-4"
-            >
+            {/* ✅ CV / FILE UPLOAD (NEW FIELD) */}
+            <motion.div>
+              <label className={labelStyles}>
+                Upload CV / Resume <span className="text-red-500">*</span>
+              </label>
+
+              <input
+                type="file"
+                accept=".pdf,.doc,.docx"
+                className="w-full bg-[#F3F4F6] p-3 rounded-sm outline-none file:mr-4 file:py-2 file:px-4 file:border-0 file:bg-[#5DB4D1] file:text-white file:font-semibold hover:file:bg-[#1D1D7E] transition-all duration-300"
+                required
+              />
+            </motion.div>
+
+            {/* Checkbox */}
+            <motion.div className="flex items-center gap-3 pt-4">
               <input
                 type="checkbox"
                 id="agree"
-                className="w-4 h-4 accent-[#5DB4D1] cursor-pointer"
+                className="w-4 h-4 accent-[#5DB4D1]"
               />
-              <label
-                htmlFor="agree"
-                className="text-[#5DB4D1] text-[14px] cursor-pointer"
-              >
+              <label htmlFor="agree" className="text-[#5DB4D1] text-[14px]">
                 Agree to show contact information in public posting (optional)
               </label>
             </motion.div>
 
-            {/* Submit Button (Next) */}
+            {/* Submit */}
             <div className="flex justify-end pt-10">
               <motion.button
                 whileHover={{ backgroundColor: "#1D1D7E" }}
                 whileTap={{ scale: 0.95 }}
-                className="bg-[#666666] text-white px-12 py-3 font-bold uppercase tracking-widest text-sm transition-colors duration-300"
+                className="bg-[#666666] text-white px-12 py-3 font-bold uppercase tracking-widest text-sm"
               >
                 Next
               </motion.button>

@@ -15,6 +15,7 @@ export default function RootLayout({ children }) {
       <body className="min-h-full flex flex-col bg-white text-slate-900" suppressHydrationWarning={true}>
         {/* Navbar aur Footer yahan se remove kar diye hain */}
         {children}
+        
       </body>
     </html>
   );

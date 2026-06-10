@@ -16,14 +16,14 @@ import {
 
 const menuItems = [
   { label: "Overview", icon: FiHome, href: "/dashboard" },
-  { label: "Manage Services", icon: FiLayers, href: "/dashboard/services" }, // Layers icon for services blocks
-  { label: "Contact Us", icon: FiMail, href: "/dashboard/quotes" }, // Mail icon for contact quotes/queries
-  { label: "Home Page Forum", icon: FiFileText, href: "/dashboard/contacts" }, // FileText icon for form entries
-  { label: "Newsletter", icon: FiSend, href: "/dashboard/newsletter" }, // Send/Paper-plane icon for newsletters
-  { label: "Team Management", icon: FiUsers, href: "/dashboard/team" }, // Users icon for core team profiles
-  { label: "Portfolio", icon: FiBriefcase, href: "/dashboard/portfolio" }, // Briefcase icon for dynamic case studies
-
-  { label: "Media Library", icon: FiImage, href: "/dashboard/media" }, // Image icon for asset file structures
+  { label: "Manage Services", icon: FiLayers, href: "/dashboard/services" }, 
+  { label: "Contact Us", icon: FiMail, href: "/dashboard/quotes" },
+  { label: "Home Page Forum", icon: FiFileText, href: "/dashboard/contacts" }, 
+  { label: "Newsletter", icon: FiSend, href: "/dashboard/newsletter" }, 
+  { label: "Team Management", icon: FiUsers, href: "/dashboard/team" }, 
+  { label: "Portfolio", icon: FiBriefcase, href: "/dashboard/portfolio" }, 
+  { label: "Blog", icon: FiBriefcase, href: "/dashboard/blog" }, 
+  { label: "Media Library", icon: FiImage, href: "/dashboard/media" }, 
 ];
 
 const Sidebar = () => {

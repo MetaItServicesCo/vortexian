@@ -1,4 +1,3 @@
-from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase , sessionmaker
 
 from sqlalchemy import create_engine
@@ -6,14 +5,11 @@ from app.config import settings
 
 SQLALCHEMY_DB_URL = settings.database_url
 
-engine = create_engine(SQLALCHEMY_DB_URL)
+engine_args = {}
+if SQLALCHEMY_DB_URL.startswith("sqlite"):
+    engine_args["connect_args"] = {"check_same_thread": False}
 
-# SQLALCHEMY_DB_URL="sqlite:///./vortex.db"
-
-# engine=create_engine(
-#     SQLALCHEMY_DB_URL,
-#     connect_args={"check_same_thread":False}
-# )
+engine = create_engine(SQLALCHEMY_DB_URL, **engine_args)
 
 sessionlocal=sessionmaker(
     autoflush=False,

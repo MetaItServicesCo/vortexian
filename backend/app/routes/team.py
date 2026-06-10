@@ -1,6 +1,6 @@
-from fastapi import APIRouter,status,Depends,HTTPException
+from fastapi import APIRouter,status,Depends,HTTPException,File, UploadFile, Form
 from sqlalchemy.orm import Session
-from typing import Annotated
+from typing import Annotated,Optional
 
 from app.database import get_db
 from app import models
@@ -17,25 +17,34 @@ router = APIRouter()
 
 
 # CREATE TEAM
-@router.post(
-    "/create-team",
-    response_model=TeamResponse,
-    status_code=status.HTTP_201_CREATED
-)
+
+from typing import Annotated
+
+@router.post("/create-team")
 def create_team(
-    data: CreateTeam,
     db: Annotated[Session, Depends(get_db)],
-    admin: models.Admin = Depends(get_current_admin_dependence)
+    admin: Annotated[models.Admin, Depends(get_current_admin_dependence)],
+    full_name: str = Form(...),
+    designation: str = Form(...),
+    bio_description: str = Form(...),
+    facebook_link: Optional[str] = Form(None),
+    instagram_link: Optional[str] = Form(None),
+    linkedin_link: Optional[str] = Form(None),
+    image: UploadFile = File(...)
 ):
+    file_location = f"uploads/{image.filename}"
+
+    with open(file_location, "wb+") as file_object:
+        file_object.write(image.file.read())
 
     new_team = models.Team(
-        full_name=data.full_name,
-        designation=data.designation,
-        bio_description=data.bio_description,
-        profile_image=data.profile_image,
-        facebook_link=data.facebook_link,
-        instagram_link=data.instagram_link,
-        linkedin_link=data.linkedin_link
+        full_name=full_name,
+        designation=designation,
+        bio_description=bio_description,
+        profile_image=file_location,
+        facebook_link=facebook_link,
+        instagram_link=instagram_link,
+        linkedin_link=linkedin_link
     )
 
     db.add(new_team)

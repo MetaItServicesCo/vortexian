@@ -39,7 +39,7 @@ const StatsSection = () => {
               viewport={{ once: false }}
               transition={{
                 delay: index * 0.2,
-                duration: 0.8,
+                duration: 0.9,
                 type: "spring",
                 stiffness: 120,
               }}
@@ -70,7 +70,7 @@ const StatsSection = () => {
           initial={{ opacity: 0, y: 150 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: false }}
-          transition={{ duration: 0.9 }}
+          transition={{ duration: 1 }}
           className="relative mt-12 bg-gradient-to-r from-[#1D1D7E] via-[#3B82F6] to-[#5DB4D1] rounded-[30px] p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl overflow-hidden"
         >
           {/* Abstract Light Bulb Decoration */}

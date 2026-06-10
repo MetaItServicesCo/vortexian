@@ -5,6 +5,7 @@ import CtaBanner from "@/components/CtaBanner";
 import EmployeePerks from "@/components/EmployeePerks";
 import Hero from "@/components/Hero";
 import ImageOnlySection from "@/components/ImageOnlySection";
+import NewsDrawerWrapper from "@/components/NewsDrawerWrapper";
 import RecruitmentBanner from "@/components/RecruitmentBanner";
 import ServicesSection from "@/components/ServicesSection";
 import StatsSection from "@/components/StatsSection";
@@ -24,6 +25,7 @@ export default function Home() {
             <BlogSlider />
             <ContactSection />
             <CtaBanner />
+            <NewsDrawerWrapper />
         </>
     );
 }
