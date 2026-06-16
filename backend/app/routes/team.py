@@ -92,35 +92,41 @@ def get_single_team(
 
 
 # UPDATE TEAM MEMBER
-@router.patch(
-    "/update-team/{team_id}",
-    response_model=TeamResponse
-)
+
+@router.patch("/update-team/{team_id}")
 def update_team(
     team_id: int,
-    data: UpdateTeam,
     db: Annotated[Session, Depends(get_db)],
-    admin: models.Admin = Depends(get_current_admin_dependence)
+    admin: models.Admin = Depends(get_current_admin_dependence),
+    full_name: str = Form(...),
+    designation: str = Form(...),
+    bio_description: str = Form(...),
+    facebook_link: Optional[str] = Form(None),
+    instagram_link: Optional[str] = Form(None),
+    linkedin_link: Optional[str] = Form(None),
+    profile_image: Optional[UploadFile] = File(None) # File optional rakhein
 ):
-
-    team = db.query(models.Team).filter(
-        models.Team.id == team_id
-    ).first()
-
+    team = db.query(models.Team).filter(models.Team.id == team_id).first()
     if not team:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Team member not found"
-        )
+        raise HTTPException(status_code=404, detail="Team member not found")
 
-    update_data = data.model_dump(exclude_unset=True)
+    # Fields update karein
+    team.full_name = full_name
+    team.designation = designation
+    team.bio_description = bio_description
+    team.facebook_link = facebook_link
+    team.instagram_link = instagram_link
+    team.linkedin_link = linkedin_link
 
-    for key, value in update_data.items():
-        setattr(team, key, value)
+    # Agar nayi image upload hui hai
+    if profile_image:
+        file_location = f"uploads/{profile_image.filename}"
+        with open(file_location, "wb+") as file_object:
+            file_object.write(profile_image.file.read())
+        team.profile_image = file_location
 
     db.commit()
     db.refresh(team)
-
     return team
 
 

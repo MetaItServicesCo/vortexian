@@ -57,7 +57,8 @@ const getImageUrl = (url) => {
 export default async function ServiceDetailPage({ params }) {
     const { slug } = await params;
     const service = await getLiveServiceData(slug);
-
+    console.log("Fetching Slug:", slug);
+    console.log("API Response:", service);
     if (!service) notFound();
 
     // ✅ Features array banana — feature_1/2/3/4 se

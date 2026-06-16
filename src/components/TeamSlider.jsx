@@ -130,6 +130,7 @@ const TeamSlider = () => {
               pauseOnMouseEnter: true,
             }}
             parallax={true}
+            spaceBetween={40}
             speed={1000}
             slidesPerView={1}
             loop={teamMembers.length > 1}

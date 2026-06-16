@@ -54,7 +54,7 @@ export default function AdminNewsletterDashboard() {
 
         try {
             const res = await fetch(
-                `http://127.0.0.1:8000/api/newsletter/subscribers/${id}`,
+                `http://127.0.0.1:8000/api/newsletter/${id}`,
                 {
                     method: "DELETE",
                     headers: {
