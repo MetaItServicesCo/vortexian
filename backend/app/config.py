@@ -13,10 +13,19 @@ class Settings(BaseSettings):
         env_file_encoding='utf8',
         extra="ignore"
     )
+    database_url: str
 
+    #jwt
     secret_key:SecretStr
     algorithm:str="HS256"
     access_token_time_expire:int=1440
+
+    # Email
+    mail_username: str
+    mail_password: str
+    mail_from: str
+    mail_server: str
+    mail_port: int
 
 settings=Settings()
 
