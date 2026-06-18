@@ -232,3 +232,21 @@ class BlogResponse(BlogBase):
 
     class Config:
         from_attributes = True
+
+
+# //////////news feed //////////////////
+class CreateNewsFeed(BaseModel):
+    title: str
+    feed_type: str
+    description: str
+    author: str
+    event_date: Optional[str] = None
+
+
+class NewsFeedResponse(CreateNewsFeed):
+    id: int
+    media_url: Optional[str] = None
+    is_published: bool
+
+    class Config:
+        from_attributes = True
