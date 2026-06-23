@@ -26,6 +26,7 @@ const menuItems = [
   { label: "News Feed", icon: FiBriefcase, href: "/dashboard/newsfeed" },
   // { label: "Media Library", icon: FiImage, href: "/dashboard/media" },
   { label: "Testimonials", icon: FiBriefcase, href: "/dashboard/testimonials" },
+  { label: "Career", icon: FiBriefcase, href: "/dashboard/career" },
 ];
 
 const Sidebar = () => {
@@ -36,7 +37,7 @@ const Sidebar = () => {
     router.push("/login");
   };
   return (
- <aside className="w-[280px] min-h-screen h-screen sticky top-0 flex flex-col bg-gradient-to-b from-[#0f0f2d] via-[#1a1a4e] to-[#0e1a3a] border-r border-[#5DB4D1]/10 overflow-hidden">
+    <aside className="w-[280px] min-h-screen h-screen sticky top-0 flex flex-col bg-gradient-to-b from-[#0f0f2d] via-[#1a1a4e] to-[#0e1a3a] border-r border-[#5DB4D1]/10 overflow-hidden">
       {/* Top glow */}
       <div className="absolute -top-14 -left-14 w-52 h-52 bg-[#5DB4D1]/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -64,12 +65,14 @@ const Sidebar = () => {
       </p>
 
       {/* Nav Items — SCROLLABLE */}
-      <nav className="flex-1 px-3 flex flex-col gap-1 overflow-y-auto min-h-0
+      <nav
+        className="flex-1 px-3 flex flex-col gap-1 overflow-y-auto min-h-0
         [&::-webkit-scrollbar]:w-[3px]
         [&::-webkit-scrollbar-track]:bg-transparent
         [&::-webkit-scrollbar-thumb]:bg-[#5DB4D1]/20
         [&::-webkit-scrollbar-thumb]:rounded-full
-        hover:[&::-webkit-scrollbar-thumb]:bg-[#5DB4D1]/40">
+        hover:[&::-webkit-scrollbar-thumb]:bg-[#5DB4D1]/40"
+      >
         {menuItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href;

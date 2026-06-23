@@ -2,46 +2,160 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
 export default function NewsList() {
     const [news, setNews] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+    const [deletingId, setDeletingId] = useState(null);
+
+    const fetchNews = async () => {
+        try {
+            setLoading(true);
+            setError("");
+            const res = await fetch(`${API_BASE_URL}/api/newsfeed/`);
+            if (!res.ok) throw new Error(`Error ${res.status}`);
+            const data = await res.json();
+            setNews(data);
+        } catch (err) {
+            setError("News feed load nahi ho saka. Dobara try karein.");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        // Fetch from local storage on component mount
-        const data = JSON.parse(localStorage.getItem("news_feed") || "[]");
-        setNews(data);
+        fetchNews();
     }, []);
 
+    const handleDelete = async (id) => {
+        if (!confirm("Kya aap yeh news feed delete karna chahte hain?")) return;
+
+        try {
+            setDeletingId(id);
+            const token = localStorage.getItem("token");
+
+            const res = await fetch(`${API_BASE_URL}/api/newsfeed/${id}`, {
+                method: "DELETE",
+                headers: {
+                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                },
+            });
+
+            if (!res.ok) throw new Error(`Error ${res.status}`);
+
+            setNews((prev) => prev.filter((item) => item.id !== id));
+        } catch (err) {
+            alert("Delete nahi ho saka. Dobara try karein.");
+        } finally {
+            setDeletingId(null);
+        }
+    };
+
     return (
-        <div className="max-w-5xl mx-auto p-8">
-            <div className="flex justify-between items-center mb-8">
-                <h1 className="text-3xl font-bold text-gray-800">News Feed</h1>
-                <Link 
-                    href="/dashboard/newsfeed/create" 
-                    className="bg-black text-white px-6 py-2 rounded-lg hover:bg-gray-800 transition"
+        <div className="max-w-7xl mx-auto p-8">
+
+            {/* Header */}
+            <div className="flex justify-between items-center mb-6">
+                <h1 className="text-3xl font-bold">News Feed Table</h1>
+
+                <Link
+                    href="/dashboard/newsfeed/create"
+                    className="bg-black text-white px-5 py-2 rounded-lg"
                 >
                     + Create New
                 </Link>
             </div>
 
-            <div className="space-y-6">
-                {news.length === 0 ? (
-                    <div className="text-center py-20 border-2 border-dashed rounded-xl text-gray-500">
-                        No news found. Create your first post!
-                    </div>
-                ) : (
-                    news.map((item) => (
-                        <div key={item.id} className="p-6 border border-gray-100 rounded-xl shadow-sm bg-white hover:shadow-md transition">
-                            <div className="text-xs font-semibold text-indigo-500 mb-2 uppercase tracking-wider">
-                                {item.date}
-                            </div>
-                            <div 
-                                className="text-gray-700 leading-relaxed"
-                                dangerouslySetInnerHTML={{ __html: item.content }} 
-                            />
-                        </div>
-                    ))
-                )}
-            </div>
+            {/* Error */}
+            {error && (
+                <div className="mb-4 p-3 bg-red-100 text-red-600 rounded">
+                    {error}
+                </div>
+            )}
+
+            {/* Loading */}
+            {loading ? (
+                <div className="text-center py-10">Loading...</div>
+            ) : news.length === 0 ? (
+                <div className="text-center py-10">No data found</div>
+            ) : (
+                <div className="overflow-x-auto bg-white shadow rounded-lg">
+                    <table className="w-full border-collapse">
+
+                        {/* Table Head */}
+                        <thead className="bg-gray-100 text-left text-sm">
+                            <tr>
+                                <th className="p-3">#</th>
+                                <th className="p-3">Title</th>
+                                <th className="p-3">Type</th>
+                                <th className="p-3">Author</th>
+                                <th className="p-3">Date</th>
+                                <th className="p-3">Image</th>
+                                <th className="p-3">Action</th>
+                            </tr>
+                        </thead>
+
+                        {/* Table Body */}
+                        <tbody>
+                            {news.map((item, index) => (
+                                <tr key={item.id} className="border-b hover:bg-gray-50">
+
+                                    {/* Index */}
+                                    <td className="p-3">{index + 1}</td>
+
+                                    {/* Title */}
+                                    <td className="p-3 font-medium">
+                                        {item.title}
+                                    </td>
+
+                                    {/* Type */}
+                                    <td className="p-3 text-indigo-600">
+                                        {item.feed_type}
+                                    </td>
+
+                                    {/* Author */}
+                                    <td className="p-3">
+                                        {item.author || "-"}
+                                    </td>
+
+                                    {/* Date */}
+                                    <td className="p-3">
+                                        {item.event_date || "-"}
+                                    </td>
+
+                                    {/* Image */}
+                                    <td className="p-3">
+                                        {item.media_url ? (
+                                            <img
+                                                src={`${API_BASE_URL}${item.media_url}`}
+                                                alt="img"
+                                                className="w-14 h-14 object-cover rounded"
+                                            />
+                                        ) : (
+                                            "-"
+                                        )}
+                                    </td>
+
+                                    {/* Action */}
+                                    <td className="p-3">
+                                        <button
+                                            onClick={() => handleDelete(item.id)}
+                                            disabled={deletingId === item.id}
+                                            className="px-3 py-1 text-sm bg-red-100 text-red-600 rounded hover:bg-red-200"
+                                        >
+                                            {deletingId === item.id ? "Deleting..." : "Delete"}
+                                        </button>
+                                    </td>
+
+                                </tr>
+                            ))}
+                        </tbody>
+
+                    </table>
+                </div>
+            )}
         </div>
     );
 }

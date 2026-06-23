@@ -1,4 +1,4 @@
-from sqlalchemy import Integer,String,Text
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, func
 from sqlalchemy.orm import mapped_column,Mapped
 from app.database import Base
 
@@ -142,3 +142,34 @@ class Blog(Base):
 
     meta_title: Mapped[str] = mapped_column(String(60), nullable=False)
     meta_description: Mapped[str] = mapped_column(String(160), nullable=False)
+
+
+# ///////// News Feed //////////
+
+class NewsFeed(Base):
+    __tablename__ = "NewsFeed"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    feed_type: Mapped[str] = mapped_column(String(100), nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
+    author: Mapped[str] = mapped_column(String(100), nullable=False)
+    event_date: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    media_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+    is_published: Mapped[bool] = mapped_column(default=True)
+
+# ///////// career form //////////
+
+class CareerApplication(Base):
+    __tablename__ = "career_applications"
+
+    id = Column(Integer, primary_key=True, index=True)
+    company_name = Column(String, nullable=True)
+    first_name = Column(String, nullable=False)
+    last_name = Column(String, nullable=False)
+    email = Column(String, nullable=True)
+    linkedin_url = Column(String, nullable=False)
+    cv_url = Column(String, nullable=False)
+    show_contact_public = Column(Boolean, default=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())

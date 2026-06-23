@@ -1,22 +1,11 @@
 "use client";
-import { useState } from "react";
+import { useState, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import "react-quill-new/dist/quill.snow.css";
 
 // Dynamic import for Quill editor
 const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
-
-// Quill modules to enable image & video buttons
-const modules = {
-    toolbar: [
-        [{ header: [1, 2, false] }],
-        ["bold", "italic", "underline", "strike", "blockquote"],
-        [{ list: "ordered" }, { list: "bullet" }],
-        ["link", "image", "video"], // <--- Image and Video controls added here
-        ["clean"],
-    ],
-};
 
 export default function CreateNewsFeed() {
     const [title, setTitle] = useState("");
@@ -25,6 +14,62 @@ export default function CreateNewsFeed() {
     const [author, setAuthor] = useState("");
     const [date, setDate] = useState("");
     const router = useRouter();
+
+    // Quill instance ka reference lena takay video insert ki ja sakay
+    const quillRef = useRef(null);
+
+    // Custom Video Upload Handler
+    const videoHandler = () => {
+        const input = document.createElement("input");
+        input.setAttribute("type", "file");
+        input.setAttribute("accept", "video/*");
+        input.click();
+
+        input.onchange = async () => {
+            const file = input.files[0];
+            if (file) {
+                // Video file size check (Optional: e.g., max 50MB)
+                if (file.size > 50 * 1024 * 1024) {
+                    alert("Video file size is too large! Max limit is 50MB.");
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => {
+                    const base64VideoUrl = reader.result;
+
+                    // Quill editor instance get karein
+                    const quill = quillRef.current.getEditor();
+                    const range = quill.getSelection();
+
+                    // HTML5 video tag insert karne ke liye raw HTML inject karna
+                    // Is se direct system ki video play ho sakegi bina kisi external URL ke
+                    const videoTag = `<video controls width="100%" src="${base64VideoUrl}"></video>`;
+                    quill.clipboard.dangerouslyPasteHTML(range.index, videoTag);
+                };
+            }
+        };
+    };
+
+    // Quill Modules setup (useMemo use kiya hai taake handler properly map ho sake)
+    const modules = useMemo(() => ({
+        toolbar: {
+            container: [
+                // H1 se H6 tak heading select options
+                [{ header: [1, 2, 3, 4, 5, 6, false] }],
+                ["bold", "italic", "underline", "strike", "blockquote"],
+                // Text Color aur Background Color options
+                [{ color: [] }, { background: [] }],
+                [{ list: "ordered" }, { list: "bullet" }],
+                ["link", "image", "video"],
+                ["clean"],
+            ],
+            handlers: {
+                video: videoHandler, // Custom video click event overlay
+            },
+        },
+    }), []);
 
     const handleSave = (e) => {
         e.preventDefault();
@@ -39,7 +84,7 @@ export default function CreateNewsFeed() {
             id: Date.now(),
             type,
             title,
-            description, // HTML string containing text, images, or videos
+            description, // Isme ab direct base64 video/image store hogi
             date: date || null,
             author: author || "Admin",
             createdAt: "Just now",
@@ -82,17 +127,18 @@ export default function CreateNewsFeed() {
                     />
                 </div>
 
-                {/* EDITOR (Description with Image/Video upload) */}
+                {/* EDITOR */}
                 <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Description (Supports Image/Video)</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Description (Supports Image/Video Upload)</label>
                     <div className="h-64 mb-12">
                         <ReactQuill
+                            ref={quillRef}
                             theme="snow"
                             value={description}
                             onChange={setDescription}
                             modules={modules}
                             className="h-full rounded-xl"
-                            placeholder="Write your description, insert images or embed videos..."
+                            placeholder="Write your description, insert images or upload videos directly from system..."
                         />
                     </div>
                 </div>
@@ -110,7 +156,7 @@ export default function CreateNewsFeed() {
                         />
                     </div>
 
-                    {/* DATE (Optional) */}
+                    {/* DATE */}
                     <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-2">Event/Display Date <span className="text-gray-400 text-xs">(Optional)</span></label>
                         <input
