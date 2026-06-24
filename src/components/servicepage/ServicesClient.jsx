@@ -10,26 +10,32 @@ const iconMap = {
   Share2: <Share2 className="w-5 h-5" />,
 };
 
+// ✅ Image URL helper
+const getImageUrl = (url) => {
+  if (!url) return "https://placehold.co/600x400?text=Vortexian";
+  if (url.startsWith("/uploads/")) return `http://127.0.0.1:8000${url}`;
+  return url;
+};
+
 export default function ServicesClient({ servicesData }) {
   const [activeTab, setActiveTab] = useState("ALL");
 
-  // Unique category extractions safely handling empty inputs
   const categories = [
     "ALL",
     ...new Set(
-      servicesData.map((s) => s.category?.toUpperCase() || "MARKETING"),
+      servicesData.map((s) => s.category_stack?.toUpperCase() || "MARKETING"),
     ),
   ];
 
-  // Filter systems array mapping
   const filteredServices =
     activeTab === "ALL"
       ? servicesData
-      : servicesData.filter((s) => s.category?.toUpperCase() === activeTab);
+      : servicesData.filter(
+          (s) => s.category_stack?.toUpperCase() === activeTab,
+        );
 
   return (
     <div className="space-y-16">
-      {/* --- INDUSTRY LEVEL PREMIUM TABBING SYSTEM --- */}
       <div className="flex flex-wrap items-center justify-start gap-2 bg-white/[0.08] border border-white/[0.09] p-2 rounded-2xl max-w-max backdrop-blur-md">
         {categories.map((category) => (
           <button
@@ -53,11 +59,7 @@ export default function ServicesClient({ servicesData }) {
         ))}
       </div>
 
-      {/* --- GRID SYSTEM WITH ANIMATED TRANSITIONS --- */}
-      <motion.div
-        layout
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-      >
+      <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         <AnimatePresence mode="popLayout">
           {filteredServices.map((service) => (
             <motion.div
@@ -66,36 +68,41 @@ export default function ServicesClient({ servicesData }) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9 }}
               transition={{ duration: 0.6, ease: "easeOut" }}
-              /* --- FIXED BUG: Changed fallback key routing path straight into MongoDB explicit IDs --- */
-              key={service._id || service.slug}
+              key={service.id}
               className="group relative bg-gradient-to-br from-[#1D1D7E]/40 to-[#5DB4D1]/60 p-8 rounded-[2.5rem] border border-white/[0.08] hover:border-[#5DB4D1]/90 flex flex-col justify-between min-h-[440px] transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(93,180,209,0.15)] overflow-hidden backdrop-blur-sm"
             >
-              {/* Card Hover Ambient Light Effect */}
               <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#5DB4D1]/10 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
               <div>
-                {/* Header elements setup */}
-                <div className="flex justify-between items-center mb-10">
-                  <div className="w-12 h-12 rounded-2xl bg-white/[0.05] border border-white/[0.1] flex items-center justify-center text-[#5DB4D1] group-hover:bg-white group-hover:text-[#1D1D7E] transition-all duration-500 group-hover:scale-110 group-hover:shadow-[0_0_25px_rgba(255,255,255,0.2)]">
-                    {iconMap[service.icon] || <Layers className="w-5 h-5" />}
+                {/* ✅ Image */}
+                <div className="relative w-full h-44 rounded-2xl overflow-hidden mb-6">
+                  <img
+                    src={getImageUrl(service.image_showcase_url)}
+                    alt={service.service_title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                </div>
+
+                <div className="flex justify-between items-center mb-6">
+                  <div className="w-12 h-12 rounded-2xl bg-white/[0.05] border border-white/[0.1] flex items-center justify-center text-[#5DB4D1] group-hover:bg-white group-hover:text-[#1D1D7E] transition-all duration-500 group-hover:scale-110">
+                    {iconMap[service.lucide_icon] || <Layers className="w-5 h-5" />}
                   </div>
                   <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/50 bg-white/[0.05] border border-white/[0.08] px-3 py-1.5 rounded-xl">
-                    {service.category}
+                    {service.category_stack}
                   </span>
                 </div>
 
-                {/* Info Typography Hierarchy */}
                 <h3 className="text-2xl font-black text-white tracking-tight mb-4 group-hover:text-[#5DB4D1] transition-colors duration-300">
-                  {service.title}
+                  {service.service_title}
                 </h3>
                 <p className="text-white/70 text-xs sm:text-sm leading-relaxed font-medium group-hover:text-white transition-colors duration-300">
-                  {service.shortDesc}
+                  {service.short_description}
                 </p>
 
-                {/* Micro Tech Feature Tags */}
-                <div className="flex flex-wrap gap-2 mt-8">
-                  {service.features &&
-                    service.features.slice(0, 3).map((feat, i) => (
+                <div className="flex flex-wrap gap-2 mt-6">
+                  {[service.feature_1, service.feature_2, service.feature_3]
+                    .filter(Boolean)
+                    .map((feat, i) => (
                       <span
                         key={i}
                         className="text-[10px] text-white/60 font-bold uppercase tracking-wider bg-white/[0.03] border border-white/[0.08] px-3 py-1.5 rounded-lg group-hover:bg-white/10 group-hover:text-white transition-all duration-300"
@@ -106,10 +113,9 @@ export default function ServicesClient({ servicesData }) {
                 </div>
               </div>
 
-              {/* Bottom Nav Action Trigger */}
               <div className="mt-10 pt-6 border-t border-white/[0.08] flex items-center justify-between">
                 <Link
-                  href={`/services/${service.slug}`}
+                  href={`/services/${service.url_slug}`}
                   prefetch={true}
                   className="text-xs font-black tracking-widest uppercase text-white/80 group-hover:text-[#5DB4D1] transition-all duration-300 border-b-2 border-transparent group-hover:border-[#5DB4D1]/30 pb-1"
                 >

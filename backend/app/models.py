@@ -1,4 +1,5 @@
-from sqlalchemy import Integer,String
+
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, func
 from sqlalchemy.orm import mapped_column,Mapped
 from app.database import Base
 
@@ -9,3 +10,175 @@ class Admin(Base):
     username:Mapped[str]=mapped_column(String(25),unique=True,nullable=False)
     email:Mapped[str]=mapped_column(String(70),unique=True,nullable=False)
     hash_password:Mapped[str]=mapped_column(String(250),nullable=False)
+
+
+class Service(Base):
+    __tablename__="Service"
+
+    id:Mapped[int]=mapped_column(Integer,primary_key=True,index=True)
+    service_title:Mapped[str]=mapped_column(String(100),nullable=False)
+    url_slug:Mapped[str]=mapped_column(String(150),unique=True,nullable=False)
+    category_stack:Mapped[str]=mapped_column(String(100),nullable=False)
+    lucide_icon:Mapped[str]=mapped_column(String(100),nullable=False)
+    image_source_type:Mapped[str]=mapped_column(String(50),nullable=False)
+    image_showcase_url:Mapped[str]=mapped_column(Text,nullable=False)
+    short_description:Mapped[str]=mapped_column(Text,nullable=False)
+    long_description:Mapped[str]=mapped_column(Text,nullable=False)
+    feature_1:Mapped[str | None]=mapped_column(Text,nullable=True)
+    feature_2:Mapped[str| None]=mapped_column(Text,nullable=True)
+    feature_3:Mapped[str| None]=mapped_column(Text,nullable=True)
+    feature_4:Mapped[str| None]=mapped_column(Text,nullable=True)
+    why_choose_1:Mapped[str| None]=mapped_column(Text,nullable=True)
+    why_choose_2:Mapped[str| None]=mapped_column(Text,nullable=True)
+    why_choose_3:Mapped[str| None]=mapped_column(Text,nullable=True)
+    meta_title:Mapped[str]=mapped_column(String(200),nullable=False)
+    keywords:Mapped[str]=mapped_column(Text,nullable=False)
+
+    meta_description:Mapped[str]=mapped_column(Text,nullable=False)
+
+
+
+class Team(Base):
+    __tablename__ = "Team"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    full_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    designation: Mapped[str] = mapped_column(String(150), nullable=False)
+    bio_description: Mapped[str] = mapped_column(Text, nullable=False)
+    profile_image: Mapped[str] = mapped_column(Text, nullable=False)
+    facebook_link: Mapped[str] = mapped_column(Text, nullable=True)
+    instagram_link: Mapped[str] = mapped_column(Text, nullable=True)
+    linkedin_link: Mapped[str] = mapped_column(Text, nullable=True)
+
+
+
+class Portfolio(Base):
+    __tablename__ = "Portfolio"
+
+    id = mapped_column(Integer, primary_key=True, index=True)
+    project_title = mapped_column(String(200), nullable=False)
+    category_node = mapped_column(String(100), nullable=False)
+    deployment_year = mapped_column(String(10), nullable=False)
+    primary_image = mapped_column(Text, nullable=False)
+    business_challenge = mapped_column(Text, nullable=False)
+    solution_node = mapped_column(Text, nullable=False)
+    meta_title = mapped_column(String(200), nullable=True)
+    meta_description = mapped_column(Text, nullable=True)
+    meta_keywords = mapped_column(Text, nullable=True)
+
+
+# //////////////contact //////////////
+class Contact(Base):
+    __tablename__ = "Contact"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+
+    first_name: Mapped[str] = mapped_column(String(50), nullable=False)
+    last_name: Mapped[str] = mapped_column(String(50), nullable=False)
+
+    phone: Mapped[str] = mapped_column(String(20), nullable=False)
+    email: Mapped[str] = mapped_column(String(100), nullable=False)
+
+    preferred_contact_method: Mapped[str] = mapped_column(String(20), nullable=False)
+
+    service: Mapped[str] = mapped_column(String(100), nullable=False)
+
+    website_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+    project_file: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    completion_date: Mapped[str] = mapped_column(String(50), nullable=True)
+
+    message: Mapped[str] = mapped_column(Text, nullable=False)
+
+# ///////////contact us static form ////////////
+
+
+class ContactUs(Base):
+    __tablename__ = "ContactUs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+
+    full_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    company_name: Mapped[str] = mapped_column(String(150), nullable=False)
+
+    website_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    email: Mapped[str] = mapped_column(String(100), nullable=False)
+    phone_number: Mapped[str] = mapped_column(String(30), nullable=False)
+
+    designation: Mapped[str | None] = mapped_column(String(100), nullable=True)
+
+    subject: Mapped[str] = mapped_column(String(200), nullable=False)
+
+    message: Mapped[str] = mapped_column(Text, nullable=False)
+
+#//////////////News letter//////////
+
+class Newsletter(Base):
+    __tablename__ = "Newsletter"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+
+    email: Mapped[str] = mapped_column(
+        String(255),
+        unique=True,
+        nullable=False
+    ) 
+
+# /////////blog//////////
+
+class Blog(Base):
+    __tablename__ = "Blog"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    excerpt: Mapped[str] = mapped_column(Text, nullable=False)
+
+    content: Mapped[str] = mapped_column(Text, nullable=False)  # HTML or Markdown
+
+    category: Mapped[str] = mapped_column(String(100), nullable=False)
+    author: Mapped[str] = mapped_column(String(100), nullable=False)
+
+    featured_image: Mapped[str] = mapped_column(Text, nullable=True)
+
+    meta_title: Mapped[str] = mapped_column(String(60), nullable=False)
+    meta_description: Mapped[str] = mapped_column(String(160), nullable=False)
+
+
+# /////////News feeds ///////////
+
+class NewsFeed(Base):
+    __tablename__ = "NewsFeed"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+
+    feed_type: Mapped[str] = mapped_column(String(50), nullable=False)  # announcement, event, etc.
+
+    description: Mapped[str] = mapped_column(Text, nullable=False)
+
+    author: Mapped[str] = mapped_column(String(100), nullable=False)
+
+    event_date: Mapped[str | None] = mapped_column(String(100), nullable=True)
+
+    media_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    is_published: Mapped[bool] = mapped_column(Boolean, default=True)
+    
+
+# ///////// career form //////////
+
+class CareerApplication(Base):
+    __tablename__ = "career_applications"
+
+    id = Column(Integer, primary_key=True, index=True)
+    company_name = Column(String, nullable=True)
+    first_name = Column(String, nullable=False)
+    last_name = Column(String, nullable=False)
+    email = Column(String, nullable=True)
+    linkedin_url = Column(String, nullable=False)
+    cv_url = Column(String, nullable=False)
+    show_contact_public = Column(Boolean, default=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())

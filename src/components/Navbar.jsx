@@ -16,7 +16,7 @@ const Navbar = () => {
       <div className="bg-[#5DB4D1] text-white py-2 px-4 md:px-12 flex justify-between items-center text-sm">
         <div className="flex items-center gap-2">
           <Mail size={16} />
-          <span className="hidden sm:inline">info@vortexiantech.com</span>
+          <span className="hidden sm:inline">farina@vortexiantech.com</span>
         </div>
         <div className="flex items-center gap-4">
           <Link href="#" className="hover:text-gray-200 transition">
@@ -76,7 +76,7 @@ const Navbar = () => {
                   <Link href="/portfolio">Portfolio</Link>
                 </li>
                 <li className="hover:text-[#5DB4D1]">
-                  <Link href="/gallery">Gallery</Link>
+                  <Link href="/blog">Blog</Link>
                 </li>
               </ul>
             </div>

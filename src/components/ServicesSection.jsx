@@ -43,32 +43,32 @@ const ServicesSection = () => {
   ];
 
   // Animation Variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.7, // Har card 0.2s ke gap se aayega
-      },
-    },
-  };
+  // const containerVariants = {
+  //   hidden: { opacity: 0 },
+  //   visible: {
+  //     opacity: 1,
+  //     transition: {
+  //       staggerChildren: 0.7, 
+  //     },
+  //   },
+  // };
 
-  const cardVariants = {
-    hidden: { opacity: 0, y: 150 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.9, ease: "easeOut" },
-    },
-  };
+  // const cardVariants = {
+  //   hidden: { opacity: 0, y: 150 },
+  //   visible: {
+  //     opacity: 1,
+  //     y: 0,
+  //     transition: { duration: 0.9, ease: "easeOut" },
+  //   },
+  // };
 
   return (
     <section className="bg-[#F2F2F2] py-20 px-6 md:px-20 lg:px-32 overflow-hidden">
       <div className="max-w-7xl mx-auto">
         {/* --- HEADER SECTION WITH ANIMATION --- */}
         <motion.div
-          initial={{ opacity: 0, x: -150 }}
-          whileInView={{ opacity: 1, x: 0 }}
+          // initial={{ opacity: 0, x: -150 }}
+          // whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: false }}
           transition={{ duration: 0.9 }}
           className="flex flex-col lg:flex-row justify-between items-start gap-8 mb-12"
@@ -100,16 +100,16 @@ const ServicesSection = () => {
 
         {/* --- SERVICES GRID WITH STAGGERED ANIMATION --- */}
         <motion.div
-          variants={containerVariants}
+          // variants={containerVariants}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: false, margin: "-180px" }}
+          // viewport={{ once: false, margin: "-180px" }}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4"
         >
           {services.map((service, index) => (
             <motion.div
               key={index}
-              variants={cardVariants}
+              // variants={cardVariants}
               whileHover={{ y: -7 }} // Hover par halka sa upar uthega
               className={`group relative bg-white h-[260px] p-6 flex flex-col justify-end transition-all duration-500 ease-in-out cursor-pointer overflow-hidden shadow-sm ${service.gridSpan} ${service.hoverBg}`}
             >

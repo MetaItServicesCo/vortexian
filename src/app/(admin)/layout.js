@@ -14,6 +14,7 @@ export default function AdminLayout({ children }) {
 
                 <main className="p-8">
                     {children}
+                    
                 </main>
             </div>
         </div>

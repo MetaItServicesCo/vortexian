@@ -75,7 +75,7 @@ const AboutSection = () => {
           className="flex-1 w-full"
         >
         
-          <div className="relative w-full h-[350px] md:h-[450px] lg:h-[350px] rounded-[40px] overflow-hidden shadow-2xl border-white border-[10px] bg-slate-50">
+          <div className="relative w-full h-[350px] md:h-[450px] lg:h-[450px] rounded-[40px] overflow-hidden shadow-2xl border-white border-[10px] bg-slate-50">
             <Image
               src={AboutImage}
               alt="Team Meeting at Vortexian Tech"

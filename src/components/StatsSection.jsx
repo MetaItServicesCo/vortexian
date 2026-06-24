@@ -39,7 +39,7 @@ const StatsSection = () => {
               viewport={{ once: false }}
               transition={{
                 delay: index * 0.2,
-                duration: 0.8,
+                duration: 0.9,
                 type: "spring",
                 stiffness: 120,
               }}
@@ -70,11 +70,11 @@ const StatsSection = () => {
           initial={{ opacity: 0, y: 150 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: false }}
-          transition={{ duration: 0.9 }}
+          transition={{ duration: 1 }}
           className="relative mt-12 bg-gradient-to-r from-[#1D1D7E] via-[#3B82F6] to-[#5DB4D1] rounded-[30px] p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl overflow-hidden"
         >
           {/* Abstract Light Bulb Decoration */}
-          <div className="absolute top-4 left-1/3 opacity-20 text-white animate-pulse">
+          <div className="absolute top-4 left-1/4 opacity-20 text-white animate-pulse">
             <svg width="40" height="40" fill="currentColor" viewBox="0 0 24 24">
               <path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7zm2.85 11.1l-.85.6V16h-4v-1.3l-.85-.6C7.8 13.15 7 11.18 7 9c0-2.76 2.24-5 5-5s5 2.24 5 5c0 2.18-.8 4.15-2.15 5.1z" />
             </svg>
@@ -82,11 +82,11 @@ const StatsSection = () => {
 
           <div className="flex flex-col md:flex-row items-center gap-8 text-center md:text-left">
           
-            <div className="hidden lg:block -mb-12 position-relative">
+            <div className="hidde lg:block -mb-5 lg:-mb-12 position-relative">
               <img
-                src="/assets/images/girl.png"
+                src="/assets/images/ceoo.png"
                 alt="Representative"
-                className="h-[300px] w-full object-contain position-absolute top-[-100px] left-0 transform hover:scale-105 transition-transform duration-700"
+                className="h-[220px] lg:h-[400px] w-full  object-contain position-absolute top-[-100px] left-0 transform hover:scale-105 transition-transform duration-700"
               />
             </div>
 
