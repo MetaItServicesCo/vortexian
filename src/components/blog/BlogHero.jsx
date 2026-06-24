@@ -99,7 +99,7 @@ export default function BlogHero() {
             className="relative w-[300px] h-[300px] md:w-[400px] md:h-[400px] rounded-full bg-[#6B21D4] overflow-hidden flex items-center justify-center"
           >
             {/* CENTER IMAGE */}
-           <img src="/assets/images/ceo.png" alt="CEO" className="w-full h-full object-cover opacity-90" />
+           <img src="/assets/images/ceo.jpeg" alt="CEO" className="w-full h-full object-cover opacity-90" />
           </motion.div>
 
           {/* Dashed Ring (Position absolute rakha hai taake image ke upar/peeche adjust ho) */}

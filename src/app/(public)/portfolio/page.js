@@ -2,13 +2,11 @@ import BreadcrumbHero from "@/components/BreadcrumbHero";
 import CtaBanner from "@/components/CtaBanner";
 import PortfolioGrid from "@/components/portfolio/PortfolioGrid";
 
-// Next.js ko force karne ke liye ke har request par naya data laye aur SEO tags live generate hon
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 async function getLivePortfolioData() {
     try {
-        // Localhost fallback: 127.0.0.1 use kiya hai kyonki Next.js server 'localhost' ko '::1' par resolve karta hai jo FastAPI block kar deta hai
         const res = await fetch("http://127.0.0.1:8000/api/portfolio", {
             method: "GET",
             headers: {

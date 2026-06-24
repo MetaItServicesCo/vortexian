@@ -1,5 +1,6 @@
 from pydantic import BaseModel,Field,EmailStr
 from typing import Optional
+from datetime import datetime
 
 class BaseAdmin(BaseModel):
     username:str=Field(min_length=1,max_length=15)
@@ -247,6 +248,23 @@ class NewsFeedResponse(CreateNewsFeed):
     id: int
     media_url: Optional[str] = None
     is_published: bool
+
+    class Config:
+        from_attributes = True
+
+
+# //////////career form //////////////////
+
+class CareerApplicationResponse(BaseModel):
+    id: int
+    company_name: Optional[str] = None
+    first_name: str
+    last_name: str
+    email: Optional[str] = None
+    linkedin_url: str
+    cv_url: str
+    show_contact_public: bool
+    created_at: datetime
 
     class Config:
         from_attributes = True

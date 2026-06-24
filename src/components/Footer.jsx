@@ -33,7 +33,7 @@ const Footer = () => {
             <div className="p-3 border-2 border-[#5DB4D1] rounded-full text-[#5DB4D1] group-hover:bg-[#5DB4D1] group-hover:text-white transition-all duration-300">
               <Mail size={24} />
             </div>
-            <span className="text-lg font-medium">info@vortexiantech.com</span>
+            <span className="text-lg font-medium">farina@vortexiantech.com</span>
           </div>
         </div>
       </div>
@@ -72,16 +72,16 @@ const Footer = () => {
               {/* Placeholder logos for FBR and SECP */}
               <div className="bg-white/10 p-2 rounded backdrop-blur-sm">
                 <img
-                  src="https://vortexiantech.com/wp-content/uploads/2023/05/fbr-logo.png"
+                  src="/assets/images/257769.svg"
                   alt="FBR"
-                  className="h-12 object-contain"
+                  className="h-14 object-contain"
                 />
               </div>
               <div className="bg-white/10 p-2 rounded backdrop-blur-sm">
                 <img
-                  src="https://vortexiantech.com/wp-content/uploads/2023/05/secp-logo.png"
+                  src="/assets/images/SECP-Logo.png"
                   alt="SECP"
-                  className="h-12 object-contain"
+                  className="h-14 object-contain"
                 />
               </div>
             </div>

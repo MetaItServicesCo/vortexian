@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import BreadcrumbHero from "@/components/BreadcrumbHero";
+import HeroBanner from "@/components/blog/HeroBanner";
 
 async function getBlog(id) {
     const res = await fetch(`http://127.0.0.1:8000/api/blog/${id}`, {
@@ -63,7 +64,7 @@ export default async function BlogDetailPage({ params }) {
                 <div className="flex flex-col md:flex-row gap-8 items-start">
 
                     {/* ── LEFT SIDEBAR (sticky top-24) ────────────────── */}
-                    <aside className="w-full md:w-[220px] flex-shrink-0 sticky top-42">
+                    <aside className="w-full md:w-[280px] flex-shrink-0 sticky top-46">
 
                         {/* Connect With Us card */}
                         <div className="bg-[#1D1D7E] rounded-xl p-5 text-center">
@@ -136,7 +137,10 @@ export default async function BlogDetailPage({ params }) {
                         />
                     </div>
                 </div>
+
             </main>
+            <HeroBanner />
+
         </>
     );
 }

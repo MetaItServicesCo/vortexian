@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 import uuid
 import shutil
 import os
-from typing import Optional  # 🔴 Fixed: Import Optional to prevent NameError
+from typing import Optional
 from app.schema import PortfolioResponse, UpdatePortfolio
 from app.database import get_db
 from app import models

@@ -10,16 +10,24 @@ export default function BlogGrid({ blogs }) {
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
-  const blogsPerPage = 6;
+  const blogsPerPage = 12;
 
   // ✅ SAFE ARRAY
   const safeBlogs = Array.isArray(blogs) ? blogs : [];
 
   // ✅ FILTER
-  const filteredBlogs = safeBlogs.filter((blog) =>
-    (blog?.title || "").toLowerCase().includes(search.toLowerCase()),
-  );
-
+  // const filteredBlogs = safeBlogs.filter((blog) =>
+  //   (blog?.title || "").toLowerCase().includes(search.toLowerCase()),
+  // );
+  // ✅ FILTER AND SORT
+  const filteredBlogs = safeBlogs
+    .filter((blog) =>
+      (blog?.title || "").toLowerCase().includes(search.toLowerCase()),
+    )
+    .sort((a, b) => {
+      // created_at ke base par sort karein
+      return new Date(b.created_at) - new Date(a.created_at);
+    });
   // ✅ TOTAL PAGES
   const totalPages = Math.max(
     1,
