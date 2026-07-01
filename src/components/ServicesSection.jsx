@@ -3,8 +3,8 @@ import React from "react";
 import { motion } from "framer-motion"; // Animation library
 import { Users, Megaphone, Paintbrush, Cpu, Headset } from "lucide-react";
 
-const ServicesSection = () => {
-  const services = [
+const ServicesSection = ({ services: apiServices = [] }) => {
+  const fallbackServices = [
     {
       id: "01",
       title: "Staffing Capabilities",
@@ -41,6 +41,16 @@ const ServicesSection = () => {
       gridSpan: "lg:col-span-3",
     },
   ];
+
+  const services = apiServices.length
+    ? apiServices.map((item, index) => ({
+        id: String(index + 1).padStart(2, "0"),
+        title: item.service_title,
+        icon: <Headset size={32} />,
+        hoverBg: index % 2 === 0 ? "hover:bg-[#17147B]" : "hover:bg-[#D47253]",
+        gridSpan: index < 3 ? "lg:col-span-2" : "lg:col-span-3",
+      }))
+    : fallbackServices;
 
   // Animation Variants
   // const containerVariants = {
