@@ -13,7 +13,7 @@ const iconMap = {
 // ✅ Image URL helper
 const getImageUrl = (url) => {
   if (!url) return "https://placehold.co/600x400?text=Vortexian";
-  if (url.startsWith("/uploads/")) return `http://127.0.0.1:8000${url}`;
+  if (url.startsWith("/uploads/")) return `${url}`;
   return url;
 };
 

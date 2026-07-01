@@ -40,7 +40,7 @@ export default function CreatePortfolioAssetForm() {
         try {
             // ✅ CHANGED: URL /api/portfolio/create
             const res = await fetch(
-                "http://localhost:8000/api/portfolio/create",
+                "/api/portfolio/create",
                 {
                     method: "POST",
                     headers: {

@@ -50,7 +50,7 @@ export default function BlogGrid({ blogs }) {
     if (img.startsWith("http")) return img;
 
     // backend relative path fix
-    return `http://127.0.0.1:8000${img}`;
+    return `${img}`;
   };
 
   return (

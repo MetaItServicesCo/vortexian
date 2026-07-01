@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import BreadcrumbHero from "@/components/BreadcrumbHero";
 
-const API_BASE = "http://127.0.0.1:8000";
+const API_BASE = "";
 
 async function getProject(id) {
     try {

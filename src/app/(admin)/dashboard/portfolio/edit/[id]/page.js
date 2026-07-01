@@ -28,7 +28,7 @@ export default function EditPortfolioAssetForm() {
         const fetchTargetData = async () => {
             try {
                 const res = await fetch(
-                    `http://localhost:8000/api/portfolio/${id}`
+                    `/api/portfolio/${id}`
                 );
 
                 if (!res.ok) {
@@ -50,7 +50,7 @@ export default function EditPortfolioAssetForm() {
 
                 setPreview(
                     data.primary_image
-                        ? `http://localhost:8000${data.primary_image}`
+                        ? `${data.primary_image}`
                         : ""
                 );
             } catch (error) {
@@ -97,7 +97,7 @@ export default function EditPortfolioAssetForm() {
             }
 
             const res = await fetch(
-                `http://localhost:8000/api/portfolio/update/${id}`,
+                `/api/portfolio/update/${id}`,
                 {
                     method: "PATCH",
                     headers: {

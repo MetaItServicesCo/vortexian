@@ -20,7 +20,7 @@ export const metadata = {
 // ✅ SERVER SIDE API FETCH
 async function getBlogs() {
     try {
-        const res = await fetch("http://127.0.0.1:8000/api/blog/public", {
+        const res = await fetch("/api/blog/public", {
             cache: "no-store",
         });
 

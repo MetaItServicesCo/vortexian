@@ -1,0 +1,80 @@
+
+services:
+
+  # ========================================================
+  # POSTGRESQL DATABASE
+  # ========================================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: vortex-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: bloguser
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: blogdb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - vortex-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bloguser -d blogdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ========================================================
+  # FASTAPI BACKEND
+  # ========================================================
+  backend:
+    build:
+      context: ./backend
+      dockerfile: ../Dockerfile.backend
+    container_name: vortex-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8001:8000"
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      SECRET_KEY: ${SECRET_KEY}
+      ADMIN_SECRET_KEY: ${ADMIN_SECRET_KEY}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      MAIL_FROM: ${MAIL_FROM}
+      MAIL_SERVER: ${MAIL_SERVER}
+      MAIL_PORT: ${MAIL_PORT}
+    volumes:
+      # Persist file uploads outside container
+      - ./uploads:/app/uploads
+    networks:
+      - vortex-net
+
+  # ========================================================
+  # NEXT.JS FRONTEND
+  # ========================================================
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: vortex-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "3001:3000"
+    environment:
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+    networks:
+      - vortex-net
+
+# ========================================================
+# ROOT DEFINITIONS (Consolidated)
+# ========================================================
+networks:
+  vortex-net:
+    driver: bridge
+
+volumes:
+  postgres_data:

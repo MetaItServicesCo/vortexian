@@ -7,7 +7,7 @@ export const revalidate = 0;
 
 async function getLivePortfolioData() {
     try {
-        const res = await fetch("http://127.0.0.1:8000/api/portfolio", {
+        const res = await fetch("/api/portfolio/", {
             method: "GET",
             headers: {
                 "Accept": "application/json",
@@ -61,7 +61,7 @@ export async function generateMetadata() {
             type: "website",
             images: [
                 {
-                    url: projects[0]?.primary_image ? `http://127.0.0.1:8000${projects[0].primary_image}` : "/og-image.jpg",
+                    url: projects[0]?.primary_image ? `${projects[0].primary_image}` : "/og-image.jpg",
                     width: 1200,
                     height: 630,
                     alt: "Vortexian Tech Portfolio Overlay",

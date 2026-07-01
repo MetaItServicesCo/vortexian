@@ -6,7 +6,7 @@ import { ArrowLeft, Star, Loader2, Upload } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import Link from "next/link";
 
-const API_BASE = "http://localhost:8000";
+const API_BASE = "";
 
 export default function CreateTestimonialPage() {
     const router = useRouter();

@@ -13,7 +13,7 @@ export default function AdminTeamDashboardManager() {
     useEffect(() => {
         async function loadTeamData() {
             try {
-                const response = await fetch("http://localhost:8000/api/team/teams", {
+                const response = await fetch("/api/team/teams", {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
@@ -40,7 +40,7 @@ export default function AdminTeamDashboardManager() {
         if (!confirm("Delete this team member permanently?")) return;
 
         try {
-            const res = await fetch(`http://localhost:8000/api/team/delete-team/${id}`, {
+            const res = await fetch(`/api/team/delete-team/${id}`, {
                 method: "DELETE",
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -113,7 +113,7 @@ export default function AdminTeamDashboardManager() {
                                     <tr key={member.id} className="border-t">
                                         <td className="p-4 flex items-center gap-3">
                                             <img
-                                                src={`http://localhost:8000/${member.profile_image}`}
+                                                src={`/${member.profile_image}`}
                                                 className="w-10 h-10 rounded-full object-cover"
                                             />
                                             <span className="font-bold uppercase">

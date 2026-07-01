@@ -17,7 +17,7 @@ export default function AdminServicesList() {
     const [loading, setLoading] = useState(true);
 
     // FastAPI Base URL
-    const API_URL = "http://127.0.0.1:8000/api/services"; // ✅ fix 1
+    const API_URL = "/api/services/"; // ✅ fix 1
 
     // GET ALL SERVICES
     useEffect(() => {

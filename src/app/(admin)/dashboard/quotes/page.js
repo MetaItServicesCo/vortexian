@@ -12,7 +12,7 @@ export default function AdminQuotesDashboard() {
     useEffect(() => {
         async function fetchQuotes() {
             try {
-                const res = await fetch("http://127.0.0.1:8000/api/contact-us/contact-us", {
+                const res = await fetch("/api/contact-us/contact-us", {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
@@ -45,7 +45,7 @@ export default function AdminQuotesDashboard() {
         if (!confirm("Delete this contact permanently?")) return;
 
         try {
-            const res = await fetch(`http://127.0.0.1:8000/api/contact-us/contact-us/${id}`, {
+            const res = await fetch(`/api/contact-us/contact-us/${id}`, {
                 method: "DELETE",
                 headers: {
                     Authorization: `Bearer ${token}`,

@@ -22,7 +22,7 @@ const getImageUrl = (path) => {
   if (path.startsWith("http")) return path;
 
   // clean duplicate slashes + build correct FastAPI URL
-  return `http://127.0.0.1:8000/${path.replace(/^\/+/, "")}`;
+  return `/${path.replace(/^\/+/, "")}`;
 };
 
 const TeamSlider = () => {
@@ -32,7 +32,7 @@ const TeamSlider = () => {
   useEffect(() => {
     async function getTeamRoster() {
       try {
-        const response = await fetch("http://127.0.0.1:8000/api/team/teams", {
+        const response = await fetch("/api/team/teams", {
           cache: "no-store",
         });
 

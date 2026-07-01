@@ -22,7 +22,7 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       const res = await fetch(
-        "http://127.0.0.1:8000/api/admins/register-admin",
+        "/api/admins/register-admin",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
