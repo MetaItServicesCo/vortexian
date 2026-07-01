@@ -8,7 +8,7 @@ const API_URL = "/api/services/";
 
 async function fetchServicesData() {
     try {
-        const res = await fetch("/api/services/", { cache: "no-store",
+        const res = await fetch("https://vortexiantech.com/api/services/", { cache: "no-store",
             cache: "no-store",
         });
         if (!res.ok) return [];

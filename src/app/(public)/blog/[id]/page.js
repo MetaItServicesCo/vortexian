@@ -7,7 +7,7 @@ import BreadcrumbHero from "@/components/BreadcrumbHero";
 import HeroBanner from "@/components/blog/HeroBanner";
 
 async function getBlog(id) {
-    const res = await fetch(`/api/blog/${id}`, {
+    const res = await fetch(`https://vortexiantech.com/api/blog/${id}`, {
         cache: "no-store",
     });
     if (res.status === 404) return null;

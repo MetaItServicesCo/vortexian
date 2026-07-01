@@ -23,7 +23,7 @@ export const metadata = {
 // ✅ SERVER SIDE API FETCH
 async function getBlogs() {
     try {
-        const res = await fetch("/api/blog/public", { cache: "no-store",
+        const res = await fetch("https://vortexiantech.com/api/blog/public", { cache: "no-store",
             cache: "no-store",
         });
 
