@@ -11,7 +11,7 @@ import BreadcrumbHero from "@/components/BreadcrumbHero";
 const getLiveServiceData = cache(async (slug) => {
     try {
         const res = await fetch(
-            `/api/services/${slug}`,
+            `https://vortexiantech.com/api/services/${slug}`,
             { cache: "no-store" }
         );
         if (!res.ok) return null;

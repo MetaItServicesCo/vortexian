@@ -9,7 +9,7 @@ const API_BASE = "";
 
 async function getProject(id) {
     try {
-        const res = await fetch(`${API_BASE}/api/portfolio/${id}`, {
+        const res = await fetch(`https://vortexiantech.com/api/portfolio/${id}`, {
             cache: "no-store",
             headers: { Accept: "application/json" },
         });
