@@ -14,7 +14,7 @@ export default function ContactsPage() {
             const token = localStorage.getItem("token");
 
             const response = await axios.get(
-                "/api/contact",
+                "/api/contact/",
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,

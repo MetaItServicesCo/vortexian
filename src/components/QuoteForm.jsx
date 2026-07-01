@@ -87,7 +87,7 @@ const QuoteForm = () => {
         formData.append("file", projectFile);
       }
 
-      const response = await fetch("/api/contact", {
+      const response = await fetch("/api/contact/", {
         method: "POST",
         body: formData,
       });
