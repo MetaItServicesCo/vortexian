@@ -7,7 +7,7 @@ export const revalidate = 0;
 
 async function getLivePortfolioData() {
     try {
-        const res = await fetch("/api/portfolio/", {
+        const res = await fetch("/api/portfolio/", { cache: "no-store",
             method: "GET",
             headers: {
                 "Accept": "application/json",

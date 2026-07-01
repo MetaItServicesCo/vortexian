@@ -1,3 +1,6 @@
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 import BreadcrumbHero from "@/components/BreadcrumbHero";
 import ServicesClient from "@/components/servicepage/ServicesClient";
 
@@ -5,7 +8,7 @@ const API_URL = "/api/services/";
 
 async function fetchServicesData() {
     try {
-        const res = await fetch("/api/services/", {
+        const res = await fetch("/api/services/", { cache: "no-store",
             cache: "no-store",
         });
         if (!res.ok) return [];

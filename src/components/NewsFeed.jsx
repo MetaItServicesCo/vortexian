@@ -77,7 +77,7 @@ export default function NewsFeed() {
       setLoading(true);
       setError("");
 
-      const res = await fetch(`${API_BASE_URL}/api/newsfeed/`);
+      const res = await fetch(`${API_BASE_URL}/api/newsfeed/`, { cache: "no-store" });
       if (!res.ok) throw new Error("API Error");
 
       const data = await res.json();
