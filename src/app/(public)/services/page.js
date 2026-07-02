@@ -1,5 +1,5 @@
 export const dynamic = "force-dynamic";
-export const revalidate = 0;
+
 
 import BreadcrumbHero from "@/components/BreadcrumbHero";
 import ServicesClient from "@/components/servicepage/ServicesClient";
@@ -8,7 +8,7 @@ const API_URL = "/api/services/";
 
 async function fetchServicesData() {
     try {
-        const res = await fetch("https://vortexiantech.com/api/services/", { cache: "no-store",
+        const res = await fetch("https://vortexiantech.com/api/services/", { 
             cache: "no-store",
         });
         if (!res.ok) return [];
