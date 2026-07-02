@@ -4,7 +4,7 @@ export const dynamic = "force-dynamic";
 import BreadcrumbHero from "@/components/BreadcrumbHero";
 import ServicesClient from "@/components/servicepage/ServicesClient";
 
-const API_URL = "/api/services/"; 
+const API_URL = "https://vortexiantech.com/api/services/"; 
 
 async function fetchServicesData() {
     try {
