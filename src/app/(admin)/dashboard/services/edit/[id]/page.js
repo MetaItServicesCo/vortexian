@@ -5,7 +5,7 @@ import { ArrowLeft, Loader2, Save, Image as ImageIcon, Upload, Link2 } from "luc
 import toast, { Toaster } from "react-hot-toast";
 import Link from "next/link";
 
-const BASE_URL = "http://127.0.0.1:8000/api/services";
+const BASE_URL = "/api/services/";
 
 export default function EditServicePage({ params }) {
     const { id } = use(params);

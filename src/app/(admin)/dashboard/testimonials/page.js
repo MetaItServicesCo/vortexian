@@ -6,7 +6,7 @@ import { Loader2, Plus, Edit, Trash2, Quote, Star } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import Link from "next/link";
 
-const API_BASE = "http://localhost:8000";
+const API_BASE = "";
 
 export default function TestimonialsListPage() {
     const router = useRouter();

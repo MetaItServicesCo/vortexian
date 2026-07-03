@@ -11,13 +11,27 @@ import ServicesSection from "@/components/ServicesSection";
 import StatsSection from "@/components/StatsSection";
 import TestimonialSlider from "@/components/TestimonialSlider";
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+async function getServices() {
+  try {
+    const res = await fetch("https://vortexiantech.com/api/services/", { cache: "no-store" });
+    if (!res.ok) return [];
+    return await res.json();
+  } catch {
+    return [];
+  }
+}
+
+export default async function Home() {
+    const services = await getServices();
     return (
         <>
             <Hero />
             <RecruitmentBanner />
             <ImageOnlySection />
-            <ServicesSection />
+            <ServicesSection services={services} />
             <AboutSection />
             <EmployeePerks />
             <StatsSection />

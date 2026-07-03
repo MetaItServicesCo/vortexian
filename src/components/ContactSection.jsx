@@ -26,7 +26,7 @@ const ContactSection = () => {
 
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/api/contact-us/contact-us",
+        "/api/contact-us/contact-us",
         {
           method: "POST",
           headers: {

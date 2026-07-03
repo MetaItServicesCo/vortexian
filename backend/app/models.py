@@ -1,3 +1,4 @@
+
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, func
 from sqlalchemy.orm import mapped_column,Mapped
 from app.database import Base
@@ -64,6 +65,7 @@ class Portfolio(Base):
     meta_title = mapped_column(String(200), nullable=True)
     meta_description = mapped_column(Text, nullable=True)
     meta_keywords = mapped_column(Text, nullable=True)
+
 
 # //////////////contact //////////////
 class Contact(Base):
@@ -144,7 +146,7 @@ class Blog(Base):
     meta_description: Mapped[str] = mapped_column(String(160), nullable=False)
 
 
-# ///////// News Feed //////////
+# /////////News feeds ///////////
 
 class NewsFeed(Base):
     __tablename__ = "NewsFeed"
@@ -152,12 +154,19 @@ class NewsFeed(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
 
     title: Mapped[str] = mapped_column(String(200), nullable=False)
-    feed_type: Mapped[str] = mapped_column(String(100), nullable=False)
+
+    feed_type: Mapped[str] = mapped_column(String(50), nullable=False)  # announcement, event, etc.
+
     description: Mapped[str] = mapped_column(Text, nullable=False)
+
     author: Mapped[str] = mapped_column(String(100), nullable=False)
+
     event_date: Mapped[str | None] = mapped_column(String(100), nullable=True)
+
     media_url: Mapped[str | None] = mapped_column(Text, nullable=True)
-    is_published: Mapped[bool] = mapped_column(default=True)
+
+    is_published: Mapped[bool] = mapped_column(Boolean, default=True)
+    
 
 # ///////// career form //////////
 

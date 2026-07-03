@@ -67,7 +67,7 @@ export default function AddBlog() {
             }
 
             const response = await axios.post(
-                "http://localhost:8000/api/blog/create",
+                "/api/blog/create",
                 data,
                 {
                     headers: {

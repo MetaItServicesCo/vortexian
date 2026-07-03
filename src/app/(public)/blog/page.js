@@ -1,3 +1,6 @@
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 import BlogHero from "@/components/blog/BlogHero";
 import TrustedBy from "@/components/blog/TrustedBy";
 import HeroBanner from "@/components/blog/HeroBanner";
@@ -20,7 +23,7 @@ export const metadata = {
 // ✅ SERVER SIDE API FETCH
 async function getBlogs() {
     try {
-        const res = await fetch("http://127.0.0.1:8000/api/blog/public", {
+        const res = await fetch("https://vortexiantech.com/api/blog/public", { cache: "no-store",
             cache: "no-store",
         });
 

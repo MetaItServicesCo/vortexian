@@ -27,7 +27,7 @@ const DashboardHome = () => {
                 <h1 className="text-3xl font-black text-[#1D1D7E] uppercase tracking-tighter">
                     Admin Overview
                 </h1>
-                <Link href="/dashboard/services/create" className="bg-[#1D1D7E] text-white px-6 py-3 rounded-lg flex items-center gap-2 hover:bg-[#5DB4D1] transition-all font-bold uppercase text-xs tracking-widest">
+                <Link href="/dashboard/services/new" className="bg-[#1D1D7E] text-white px-6 py-3 rounded-lg flex items-center gap-2 hover:bg-[#5DB4D1] transition-all font-bold uppercase text-xs tracking-widest">
                     <FiPlus /> Add New Service
                 </Link>
             </div>

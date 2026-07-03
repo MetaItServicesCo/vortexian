@@ -1,3 +1,6 @@
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 import { notFound } from "next/navigation";
 // import Image from "next/image";
 import { cache } from "react";
@@ -8,7 +11,7 @@ import BreadcrumbHero from "@/components/BreadcrumbHero";
 const getLiveServiceData = cache(async (slug) => {
     try {
         const res = await fetch(
-            `http://127.0.0.1:8000/api/services/${slug}`,
+            `https://vortexiantech.com/api/services/${slug}`,
             { cache: "no-store" }
         );
         if (!res.ok) return null;
@@ -37,7 +40,7 @@ export async function generateMetadata({ params }) {
         openGraph: {
             title: service.meta_title,
             description: service.meta_description,
-            url: `http://127.0.0.1:8000/services/${slug}`,
+            url: `/services/${slug}`,
             images: [{ url: service.image_showcase_url }],  // ✅
             type: "article"
         },
@@ -51,7 +54,7 @@ export async function generateMetadata({ params }) {
 }
 const getImageUrl = (url) => {
     if (!url) return "https://placehold.co/1200x800?text=Vortexian+Tech";
-    if (url.startsWith("/uploads/")) return `http://127.0.0.1:8000${url}`;
+    if (url.startsWith("/uploads/")) return `${url}`;
     return url;
 };
 export default async function ServiceDetailPage({ params }) {

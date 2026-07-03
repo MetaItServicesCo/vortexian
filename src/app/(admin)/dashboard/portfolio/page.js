@@ -10,7 +10,7 @@ export default function DashboardPortfolioList() {
 
     const fetchRecords = async () => {
         try {
-            const res = await fetch("http://localhost:8000/api/portfolio"); 
+            const res = await fetch("/api/portfolio/"); 
             const data = await res.json();
             setItems(Array.isArray(data) ? data : []);
         } catch {
@@ -31,7 +31,7 @@ export default function DashboardPortfolioList() {
 
         try {
             const res = await fetch(
-                `http://localhost:8000/api/portfolio/delete/${id}`,
+                `/api/portfolio/delete/${id}`,
                 {
                     method: "DELETE",
                     headers: {
@@ -97,7 +97,7 @@ export default function DashboardPortfolioList() {
                                         <td className="p-6">
                                             {item.primary_image ? (
                                                 <img
-                                                    src={`http://localhost:8000${item.primary_image}`}
+                                                    src={`${item.primary_image}`}
                                                     alt={item.project_title}
                                                     className="w-16 h-12 object-cover rounded-xl border border-gray-100 shadow-sm"
                                                 />

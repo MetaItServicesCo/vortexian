@@ -69,6 +69,16 @@ Thumbs.db
 *.tsbuildinfo
 next-env.d.ts
 
+<<<<<<< HEAD
+
+# python cache
+__pycache__/
+*.pyc
+*.pyo
+.venv
+.VENV
+.db
+=======
 # =====================
 # Logs
 # =====================
@@ -80,3 +90,5 @@ yarn-debug.log*
 # Vercel
 # =====================
 .vercel/
+
+vortexiantech-frontend.tar

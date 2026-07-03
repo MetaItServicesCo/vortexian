@@ -1,0 +1,16 @@
+node_modules
+.next
+.git
+.env
+.env.local
+__pycache__
+*.pyc
+venv
+.venv
+*.log
+.DS_Store
+.vscode
+.idea
+README.md
+docker-compose.yml
+Dockerfile.*

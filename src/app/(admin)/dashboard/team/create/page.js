@@ -44,7 +44,7 @@ export default function CreateTeamProfilePanel() {
             const token = localStorage.getItem("token");
 
             const response = await fetch(
-                "http://localhost:8000/api/team/create-team",
+                "/api/team/create-team",
                 {
                     method: "POST",
                     headers: {

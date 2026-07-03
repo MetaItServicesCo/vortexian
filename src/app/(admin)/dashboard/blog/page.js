@@ -19,7 +19,7 @@ export default function BlogList() {
                 const token = localStorage.getItem("token");
 
                 const res = await axios.get(
-                    "http://localhost:8000/api/blog/admin",
+                    "/api/blog/admin",
                     {
                         headers: {
                             Authorization: `Bearer ${token}`
@@ -47,7 +47,7 @@ export default function BlogList() {
             const token = localStorage.getItem("token");
 
             await axios.delete(
-                `http://localhost:8000/api/blog/delete/${id}`,
+                `/api/blog/delete/${id}`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`

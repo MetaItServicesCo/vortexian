@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 // ── Type config (same as yours) ─────────────────────────────
 const TYPE_CONFIG = {
@@ -77,7 +77,11 @@ export default function NewsFeed() {
       setLoading(true);
       setError("");
 
+<<<<<<< HEAD
       const res = await fetch(`${API_BASE_URL}/api/newsfeed`);
+=======
+      const res = await fetch(`${API_BASE_URL}/api/newsfeed/`, { cache: "no-store" });
+>>>>>>> d6c0543984ea331f3e89b18c9dff1b624ee62c9b
       if (!res.ok) throw new Error("API Error");
 
       const data = await res.json();

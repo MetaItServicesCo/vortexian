@@ -80,7 +80,7 @@ const PortfolioGrid = ({ initialProjects = [] }) => {
                     <img
                       src={
                         project.primary_image
-                          ? `http://localhost:8000${project.primary_image}`
+                          ? `${project.primary_image}`
                           : "https://placehold.co/600x400?text=No+Image+Found"
                       }
                       alt={project.project_title || "Portfolio Project"}

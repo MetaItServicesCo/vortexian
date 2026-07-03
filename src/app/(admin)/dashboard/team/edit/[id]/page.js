@@ -37,7 +37,7 @@ export default function EditTeamProfilePanel() {
         async function loadData() {
             try {
                 const res = await fetch(
-                    `http://localhost:8000/api/team/teams/${id}`,
+                    `/api/team/teams/${id}`,
                     {
                         headers: { Authorization: `Bearer ${token}` },
                     }
@@ -58,7 +58,7 @@ export default function EditTeamProfilePanel() {
 
                 // Existing image preview
                 if (data.profile_image) {
-                    setPreviewUrl(`http://localhost:8000${data.profile_image}`);
+                    setPreviewUrl(`${data.profile_image}`);
                 }
             } catch (err) {
                 toast.error(err.message);
@@ -106,7 +106,7 @@ export default function EditTeamProfilePanel() {
             }
 
             const res = await fetch(
-                `http://localhost:8000/api/team/update-team/${id}`,
+                `/api/team/update-team/${id}`,
                 {
                     method: "PATCH",
                     headers: {

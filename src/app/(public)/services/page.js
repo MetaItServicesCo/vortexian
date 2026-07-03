@@ -1,11 +1,14 @@
+export const dynamic = "force-dynamic";
+
+
 import BreadcrumbHero from "@/components/BreadcrumbHero";
 import ServicesClient from "@/components/servicepage/ServicesClient";
 
-const API_URL = "http://127.0.0.1:8000/api/services"; 
+const API_URL = "https://vortexiantech.com/api/services/"; 
 
 async function fetchServicesData() {
     try {
-        const res = await fetch("http://127.0.0.1:8000/api/services", {
+        const res = await fetch("https://vortexiantech.com/api/services/", { 
             cache: "no-store",
         });
         if (!res.ok) return [];

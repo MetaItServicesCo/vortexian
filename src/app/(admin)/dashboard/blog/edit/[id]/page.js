@@ -39,7 +39,7 @@ export default function EditBlogPage() {
                 const token = localStorage.getItem("token");
 
                 const res = await axios.get(
-                    `http://localhost:8000/api/blog/${blogId}`,
+                    `/api/blog/${blogId}`,
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,
@@ -112,7 +112,7 @@ export default function EditBlogPage() {
             }
 
             await axios.patch(
-                `http://localhost:8000/api/blog/update/${blogId}`,
+                `/api/blog/update/${blogId}`,
                 {
                     title: form.title,
                     excerpt: form.excerpt,

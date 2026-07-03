@@ -1,10 +1,13 @@
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import BreadcrumbHero from "@/components/BreadcrumbHero";
 import HeroBanner from "@/components/blog/HeroBanner";
 
 async function getBlog(id) {
-    const res = await fetch(`http://127.0.0.1:8000/api/blog/${id}`, {
+    const res = await fetch(`https://vortexiantech.com/api/blog/${id}`, {
         cache: "no-store",
     });
     if (res.status === 404) return null;
@@ -15,7 +18,7 @@ async function getBlog(id) {
 function getImageUrl(img) {
     if (!img) return "/placeholder.jpg";
     if (img.startsWith("http")) return img;
-    return `http://127.0.0.1:8000${img}`;
+    return `${img}`;
 }
 
 export async function generateMetadata({ params }) {

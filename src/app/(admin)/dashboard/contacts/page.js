@@ -14,7 +14,7 @@ export default function ContactsPage() {
             const token = localStorage.getItem("token");
 
             const response = await axios.get(
-                "http://127.0.0.1:8000/api/contact/",
+                "/api/contact/",
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -45,7 +45,7 @@ export default function ContactsPage() {
             const token = localStorage.getItem("token");
 
             await axios.delete(
-                `http://127.0.0.1:8000/api/contact/${id}`,
+                `/api/contact/${id}`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -125,7 +125,7 @@ export default function ContactsPage() {
                                     <td className="p-3">
                                         {contact.project_file ? (
                                             <a
-                                                href={`http://127.0.0.1:8000${contact.project_file}`}
+                                                href={`${contact.project_file}`}
                                                 target="_blank"
                                                 className="text-blue-600"
                                             >

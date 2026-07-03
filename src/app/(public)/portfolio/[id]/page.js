@@ -1,12 +1,15 @@
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import BreadcrumbHero from "@/components/BreadcrumbHero";
 
-const API_BASE = "http://127.0.0.1:8000";
+const API_BASE = "";
 
 async function getProject(id) {
     try {
-        const res = await fetch(`${API_BASE}/api/portfolio/${id}`, {
+        const res = await fetch(`https://vortexiantech.com/api/portfolio/${id}`, {
             cache: "no-store",
             headers: { Accept: "application/json" },
         });

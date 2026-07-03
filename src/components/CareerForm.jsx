@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 const CareerForm = () => {
   const inputStyles =
@@ -27,7 +27,7 @@ const CareerForm = () => {
     setSuccess(false);
 
     if (!cv) {
-      setError("CV/Resume upload karna zaroori hai.");
+      setError("CV/Resume required.");
       return;
     }
 
@@ -64,7 +64,7 @@ const CareerForm = () => {
       e.target.reset();
     } catch (err) {
       setError(
-        err.message || "Application submit nahi ho saka. Dobara try karein.",
+        err.message || "Your Application is not submitted try again later",
       );
     } finally {
       setSubmitting(false);
@@ -105,7 +105,8 @@ const CareerForm = () => {
           {/* Success Message */}
           {success && (
             <div className="p-4 bg-green-100 text-green-700 rounded-sm">
-              Application submit ho gayi! Hum aap se rabta karenge.
+              Your Application is submitted successfully, shortly we'll reach
+              you!
             </div>
           )}
 
