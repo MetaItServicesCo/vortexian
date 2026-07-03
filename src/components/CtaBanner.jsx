@@ -1,8 +1,13 @@
 "use client";
 import React from "react";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 
 const CtaBanner = () => {
+  const router = useRouter();
+  const handleButtonClick = () => {
+    router.push("/contact");
+  };
   return (
     <section className="py-12 px-6 md:px-20 lg:px-32 bg-white">
       <motion.div
@@ -28,6 +33,7 @@ const CtaBanner = () => {
             whileHover={{ scale: 1.05, backgroundColor: "#000000" }}
             whileTap={{ scale: 0.95 }}
             className="bg-[#111133] text-white px-10 py-4 font-bold text-sm uppercase tracking-widest transition-colors duration-300 shadow-lg rounded-sm"
+            onClick={handleButtonClick}
           >
             Get A Quote
           </motion.button>

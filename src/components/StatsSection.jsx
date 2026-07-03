@@ -3,7 +3,12 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Briefcase, Users, UserCheck, Star } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 const StatsSection = () => {
+  const router = useRouter();
+  const handleNavigate = () => {
+    router.push("/about");
+  };
   const stats = [
     {
       label: "Projects Completed",
@@ -81,7 +86,6 @@ const StatsSection = () => {
           </div>
 
           <div className="flex flex-col md:flex-row items-center gap-8 text-center md:text-left">
-          
             <div className="hidde lg:block -mb-5 lg:-mb-12 position-relative">
               <img
                 src="/assets/images/ceoo.png"
@@ -101,6 +105,7 @@ const StatsSection = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className="bg-[#111133] text-white px-8 py-4 font-bold text-xs uppercase tracking-widest hover:bg-white hover:text-[#111133] transition-all duration-300"
+            onClick={handleNavigate}
           >
             Discover More
           </motion.button>

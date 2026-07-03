@@ -85,7 +85,7 @@ export default function NewsFeed() {
       // optional: reverse for latest first
       setNews(data.reverse());
     } catch (err) {
-      setError("News load nahi ho saka");
+      setError("Failed to load news");
     } finally {
       setLoading(false);
     }

@@ -19,7 +19,7 @@ export default function NewsList() {
             const data = await res.json();
             setNews(data);
         } catch (err) {
-            setError("News feed load nahi ho saka. Dobara try karein.");
+            setError("Unable to load the news feed. Please try again.");
         } finally {
             setLoading(false);
         }
@@ -30,8 +30,7 @@ export default function NewsList() {
     }, []);
 
     const handleDelete = async (id) => {
-        if (!confirm("Kya aap yeh news feed delete karna chahte hain?")) return;
-
+        if (!confirm("Are you sure you want to delete this news feed?")) return;
         try {
             setDeletingId(id);
             const token = localStorage.getItem("token");
@@ -47,7 +46,7 @@ export default function NewsList() {
 
             setNews((prev) => prev.filter((item) => item.id !== id));
         } catch (err) {
-            alert("Delete nahi ho saka. Dobara try karein.");
+            alert("Unable to delete the item. Please try again.");
         } finally {
             setDeletingId(null);
         }
