@@ -21,14 +21,14 @@ const BreadcrumbHero = ({ title, currentPage }) => {
       {/* 2. Content Container (Full Width for Corner Positioning) */}
       <div className="relative z-10 w-full h-full max-w-7xl mx-auto px-6 md:px-20 flex flex-col justify-center items-center">
         {/* Page Title - Always Center */}
-        <motion.h1
+        <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           className="text-white text-4xl md:text-5xl font-bold uppercase tracking-[6px]"
         >
           {title}
-        </motion.h1>
+        </motion.div>
 
         {/* --- SEO FRIENDLY BREADCRUMB (Aligned to Bottom Left Corner) --- */}
         <nav

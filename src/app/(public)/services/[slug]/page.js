@@ -98,9 +98,10 @@ export default async function ServiceDetailPage({ params }) {
 
                     <article className="space-y-4">
                         <h2 className="text-[14px] font-black uppercase text-[#5DB4D1] tracking-[0.2em]">Core Overview</h2>
-                        <p className="text-white/80 text-base sm:text-lg leading-relaxed font-medium">
-                            {service.long_description} {/* ✅ */}
-                        </p>
+                        <div
+                            className="text-white/80 text-base sm:text-lg leading-relaxed font-medium service-content"
+                            dangerouslySetInnerHTML={{ __html: service.long_description }}
+                        />
                     </article>
 
                     {features.length > 0 && (
