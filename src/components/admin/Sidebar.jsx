@@ -17,8 +17,8 @@ import {
 const menuItems = [
   { label: "Overview", icon: FiHome, href: "/dashboard" },
   { label: "Manage Services", icon: FiLayers, href: "/dashboard/services" },
-  { label: "Contact Us", icon: FiMail, href: "/dashboard/quotes" },
-  { label: "Home Page Forum", icon: FiFileText, href: "/dashboard/contacts" },
+  { label: "Home Page Form", icon: FiMail, href: "/dashboard/quotes" },
+  { label: "Contact Us", icon: FiFileText, href: "/dashboard/contacts" },
   { label: "Newsletter", icon: FiSend, href: "/dashboard/newsletter" },
   { label: "Team Management", icon: FiUsers, href: "/dashboard/team" },
   { label: "Portfolio", icon: FiBriefcase, href: "/dashboard/portfolio" },

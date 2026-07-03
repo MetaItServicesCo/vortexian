@@ -82,7 +82,7 @@ const Navbar = () => {
             </div>
           </div>
 
-          <Link href="/contact" className="hover:text-[#5DB4D1] transition">
+          <Link href="/contact-us" className="hover:text-[#5DB4D1] transition">
             CONTACT US
           </Link>
         </div>
@@ -90,7 +90,7 @@ const Navbar = () => {
         {/* Get A Quote Button */}
         <div className="hidden lg:block">
           <Link
-            href="/contact"
+            href="/contact-us"
             className="bg-[#1D1D42] text-white px-8 py-3 font-bold hover:bg-[#5DB4D1] transition uppercase tracking-wider rounded-sm"
           >
             Get A Quote

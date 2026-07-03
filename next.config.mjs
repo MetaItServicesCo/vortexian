@@ -1,17 +1,21 @@
 /** @type {import('next').NextConfig} */
+
+const backendUrl = process.env.BACKEND_URL;
+
 const nextConfig = {
   async rewrites() {
     return [
       {
         source: "/api/:path*",
-        destination: "http://backend:8000/api/:path*",
+        destination: `${backendUrl}/api/:path*`,
       },
       {
         source: "/uploads/:path*",
-        destination: "http://backend:8000/uploads/:path*",
+        destination: `${backendUrl}/uploads/:path*`,
       },
     ];
   },
+
   images: {
     remotePatterns: [
       {

@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 const CtaBanner = () => {
   const router = useRouter();
   const handleButtonClick = () => {
-    router.push("/contact");
+    router.push("/contact-us");
   };
   return (
     <section className="py-12 px-6 md:px-20 lg:px-32 bg-white">

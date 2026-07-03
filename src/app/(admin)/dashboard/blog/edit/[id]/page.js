@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import axios from "axios";
 import { useRouter, useParams } from "next/navigation";
 import dynamic from "next/dynamic";
@@ -15,9 +15,11 @@ export default function EditBlogPage() {
     const router = useRouter();
     const params = useParams();
     const blogId = params.id;
+    const quillRef = useRef(null);
 
     const [form, setForm] = useState({
         title: "",
+        slug: "",
         excerpt: "",
         content: "",
         category: "",
@@ -49,6 +51,7 @@ export default function EditBlogPage() {
 
                 setForm({
                     title: res.data.title || "",
+                    slug: res.data.slug || "",
                     excerpt: res.data.excerpt || "",
                     content: res.data.content || "",
                     category: res.data.category || "",
@@ -88,6 +91,89 @@ export default function EditBlogPage() {
         }
     };
 
+    // ---------------- EDITOR: IMAGE INSERT PAR ALT TEXT ----------------
+    const imageHandler = useCallback(() => {
+        const editor = quillRef.current?.getEditor();
+        if (!editor) return;
+
+        const input = document.createElement("input");
+        input.setAttribute("type", "file");
+        input.setAttribute("accept", "image/*");
+        input.click();
+
+        input.onchange = () => {
+            const file = input.files?.[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = () => {
+                const range = editor.getSelection(true);
+                const altText =
+                    window.prompt("Image k liye ALT text likhein (SEO k liye zaroori hai):", "") || "";
+
+                editor.insertEmbed(range.index, "image", reader.result);
+
+                setTimeout(() => {
+                    const images = editor.root.querySelectorAll("img");
+                    const lastImage = images[images.length - 1];
+                    if (lastImage) {
+                        lastImage.setAttribute("alt", altText);
+                    }
+                }, 50);
+
+                editor.setSelection(range.index + 1);
+            };
+            reader.readAsDataURL(file);
+        };
+    }, []);
+
+    // ---------------- EDITOR: EXISTING IMAGE PAR CLICK KARKE ALT EDIT ----------------
+    useEffect(() => {
+        const editor = quillRef.current?.getEditor();
+        if (!editor) return;
+
+        const editorRoot = editor.root;
+
+        const handleImageClick = (e) => {
+            if (e.target.tagName === "IMG") {
+                const currentAlt = e.target.getAttribute("alt") || "";
+                const newAlt = window.prompt(
+                    "Is image ka ALT text update karein:",
+                    currentAlt
+                );
+                if (newAlt !== null) {
+                    e.target.setAttribute("alt", newAlt);
+                }
+            }
+        };
+
+        editorRoot.addEventListener("click", handleImageClick);
+
+        return () => {
+            editorRoot.removeEventListener("click", handleImageClick);
+        };
+    }, [form.content]);
+
+    const modules = {
+        toolbar: {
+            container: [
+                [{ header: [1, 2, 3, false] }],
+                [{ size: ["small", false, "large", "huge"] }],
+                ["bold", "italic", "underline", "strike"],
+                [{ color: [] }, { background: [] }],
+                [{ script: "sub" }, { script: "super" }],
+                ["blockquote", "code-block", "link", "image"],
+                [{ list: "ordered" }, { list: "bullet" }],
+                [{ indent: "-1" }, { indent: "+1" }],
+                [{ align: [] }],
+                ["clean"],
+            ],
+            handlers: {
+                image: imageHandler,
+            },
+        },
+    };
+
     // ---------------- UPDATE BLOG ----------------
     const handleUpdate = async (e) => {
         e.preventDefault();
@@ -100,6 +186,7 @@ export default function EditBlogPage() {
             const data = new FormData();
 
             data.append("title", form.title);
+            data.append("slug", form.slug);
             data.append("excerpt", form.excerpt);
             data.append("content", form.content);
             data.append("category", form.category);
@@ -113,19 +200,10 @@ export default function EditBlogPage() {
 
             await axios.patch(
                 `/api/blog/update/${blogId}`,
-                {
-                    title: form.title,
-                    excerpt: form.excerpt,
-                    content: form.content,
-                    category: form.category,
-                    author: form.author,
-                    meta_title: form.meta_title,
-                    meta_description: form.meta_description,
-                },
+                data,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
-                        "Content-Type": "application/json",
                     },
                 }
             );
@@ -171,6 +249,18 @@ export default function EditBlogPage() {
                     />
                 </div>
 
+                {/* SLUG */}
+                <div>
+                    <label className="font-semibold">Slug</label>
+                    <input
+                        type="text"
+                        name="slug"
+                        value={form.slug}
+                        onChange={handleChange}
+                        className="w-full p-3 border rounded"
+                    />
+                </div>
+
                 {/* EXCERPT */}
                 <div>
                     <label className="font-semibold">Excerpt</label>
@@ -189,11 +279,14 @@ export default function EditBlogPage() {
                     <label className="font-semibold">Content</label>
 
                     <ReactQuill
+                        ref={quillRef}
                         theme="snow"
+                        modules={modules}
                         value={form.content}
                         onChange={(value) =>
                             setForm({ ...form, content: value })
                         }
+                        className="blog-editor"
                     />
                 </div>
 
@@ -273,6 +366,40 @@ export default function EditBlogPage() {
                 </button>
 
             </form>
+
+            {/* Editor ki custom styling */}
+            <style jsx global>{`
+                .blog-editor .ql-toolbar {
+                    position: sticky;
+                    top: 0;
+                    z-index: 20;
+                    background: #ffffff;
+                    border-top-left-radius: 6px;
+                    border-top-right-radius: 6px;
+                }
+
+                .blog-editor .ql-container {
+                    min-height: 500px;
+                    max-height: 700px;
+                    overflow-y: auto;
+                    font-size: 16px;
+                }
+
+                .blog-editor .ql-editor {
+                    min-height: 500px;
+                }
+
+                .blog-editor .ql-editor a {
+                    color: #2563eb !important;
+                    font-weight: 700 !important;
+                    text-decoration: underline;
+                }
+
+                .blog-editor .ql-editor img {
+                    cursor: pointer;
+                    max-width: 100%;
+                }
+            `}</style>
         </div>
     );
 }

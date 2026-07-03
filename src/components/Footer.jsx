@@ -122,16 +122,11 @@ const Footer = () => {
 
       {/* --- COPYRIGHT BAR --- */}
       <div className="bg-black py-6 px-6">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-500">
-          <p>
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-center items-center gap-4 text-sm text-gray-500">
+          <p className="text-center text-white">
             © 2025 Vortexian Tech | Designed & Developed By Primemax Digital
           </p>
-          <div className="flex items-center gap-4">
-            {/* Floating Chat Icon placeholder (Bottom Left in image) */}
-            <div className="bg-white text-black p-2 rounded-full cursor-pointer hover:bg-[#5DB4D1] transition">
-              <Mail size={18} />
-            </div>
-          </div>
+       
         </div>
       </div>
     </footer>
