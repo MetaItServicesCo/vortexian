@@ -10,9 +10,9 @@ export default function CreatePortfolioAssetForm() {
     const [loading, setLoading] = useState(false);
     const [fileObj, setFileObj] = useState(null);
 
-    // ✅ CHANGED: field names API ke mutabiq
     const [form, setForm] = useState({
         project_title: "",
+        slug: "",
         category_node: "Web Development",
         deployment_year: new Date().getFullYear().toString(),
         business_challenge: "",
@@ -24,10 +24,9 @@ export default function CreatePortfolioAssetForm() {
 
     const dispatchSubmission = async (e) => {
         e.preventDefault();
-            const token = localStorage.getItem("token");
+        const token = localStorage.getItem("token");
 
-        // ✅ CHANGED: validation mein naye field names
-        if (!form.project_title || !form.business_challenge || !form.solution_node || !fileObj) {
+        if (!form.project_title || !form.slug || !form.business_challenge || !form.solution_node || !fileObj) {
             toast.error("Please deploy all baseline mandatory metrics!");
             return;
         }
@@ -35,10 +34,9 @@ export default function CreatePortfolioAssetForm() {
         setLoading(true);
         const bundle = new FormData();
         Object.keys(form).forEach(key => bundle.append(key, form[key]));
-        bundle.append("image_file", fileObj); // ✅ CHANGED: mainImage → image_file
+        bundle.append("image_file", fileObj);
 
         try {
-            // ✅ CHANGED: URL /api/portfolio/create
             const res = await fetch(
                 "/api/portfolio/create",
                 {
@@ -82,12 +80,10 @@ export default function CreatePortfolioAssetForm() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="md:col-span-2">
                         <label className={labelStyles}>Project Title *</label>
-                        {/* ✅ CHANGED */}
                         <input type="text" className={inputStyles} placeholder="e.g. Quantum Analytics Suite" required onChange={e => setForm({ ...form, project_title: e.target.value })} />
                     </div>
                     <div>
                         <label className={labelStyles}>Category Node *</label>
-                        {/* ✅ CHANGED */}
                         <select className={inputStyles} onChange={e => setForm({ ...form, category_node: e.target.value })}>
                             <option value="Web Development">Web Development</option>
                             <option value="Graphic Design">Graphic Design</option>
@@ -97,10 +93,21 @@ export default function CreatePortfolioAssetForm() {
                     </div>
                 </div>
 
+                <div>
+                    <label className={labelStyles}>URL Slug *</label>
+                    <input
+                        type="text"
+                        value={form.slug}
+                        className={inputStyles}
+                        placeholder="e.g. quantum-analytics-suite"
+                        required
+                        onChange={e => setForm({ ...form, slug: e.target.value })}
+                    />
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="md:col-span-1">
                         <label className={labelStyles}>Deployment Year *</label>
-                        {/* ✅ CHANGED */}
                         <input type="number" value={form.deployment_year} className={inputStyles} required onChange={e => setForm({ ...form, deployment_year: e.target.value })} />
                     </div>
                     <div className="md:col-span-2">
@@ -115,13 +122,11 @@ export default function CreatePortfolioAssetForm() {
 
                 <div>
                     <label className={labelStyles}>The Business Challenge Statement *</label>
-                    {/* ✅ CHANGED */}
                     <textarea rows="4" className={`${inputStyles} resize-none`} placeholder="What structural anomalies did the client face?" required onChange={e => setForm({ ...form, business_challenge: e.target.value })}></textarea>
                 </div>
 
                 <div>
                     <label className={labelStyles}>Vortexian Strategic Solution Node *</label>
-                    {/* ✅ CHANGED */}
                     <textarea rows="4" className={`${inputStyles} resize-none`} placeholder="Describe our technical architectural resolution approach..." required onChange={e => setForm({ ...form, solution_node: e.target.value })}></textarea>
                 </div>
 
@@ -131,20 +136,17 @@ export default function CreatePortfolioAssetForm() {
                     </div>
 
                     <div>
-                        <label className={labelStyles}>Meta Target Title Mapping</label>
-                        {/* ✅ CHANGED */}
+                        <label className={labelStyles}>Meta  Title </label>
                         <input type="text" className={inputStyles} placeholder="Optimized Search Layout Title Tag (Leave empty for default)" onChange={e => setForm({ ...form, meta_title: e.target.value })} />
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label className={labelStyles}>Meta Index Description String</label>
-                            {/* ✅ CHANGED */}
+                            <label className={labelStyles}>Meta  Description </label>
                             <textarea rows="3" className={`${inputStyles} resize-none`} placeholder="High CTR snippet description for search logs..." onChange={e => setForm({ ...form, meta_description: e.target.value })}></textarea>
                         </div>
                         <div>
-                            <label className={labelStyles}>Meta Priority Context Keywords</label>
-                            {/* ✅ CHANGED */}
+                            <label className={labelStyles}>Meta  Keywords</label>
                             <textarea rows="3" className={`${inputStyles} resize-none`} placeholder="e.g. nextjs app, enterprise logistics database, fintech api" onChange={e => setForm({ ...form, meta_keywords: e.target.value })}></textarea>
                         </div>
                     </div>

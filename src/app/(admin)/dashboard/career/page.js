@@ -27,7 +27,7 @@ export default function CareerApplicationsList() {
             const data = await res.json();
             setApplications(data);
         } catch (err) {
-            setError("Applications load nahi ho saki. Dobara try karein.");
+            setError("Applications can not be loaded.");
         } finally {
             setLoading(false);
         }

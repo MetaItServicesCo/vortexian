@@ -182,7 +182,7 @@ export default function AddBlog() {
             reader.onload = () => {
                 const range = editor.getSelection(true);
                 const altText =
-                    window.prompt("Image k liye ALT text likhein (SEO k liye zaroori hai):", "") || "";
+                    window.prompt("add ALT text:", "") || "";
 
                 editor.insertEmbed(range.index, "image", reader.result);
 
@@ -210,7 +210,7 @@ export default function AddBlog() {
             if (e.target.tagName === "IMG") {
                 const currentAlt = e.target.getAttribute("alt") || "";
                 const newAlt = window.prompt(
-                    "Is image ka ALT text update karein:",
+                    "add ALT text:",
                     currentAlt
                 );
                 if (newAlt !== null) {
@@ -499,8 +499,7 @@ export default function AddBlog() {
                                                 updateFaqItem(index, "question", e.target.value)
                                             }
                                             className="w-full border rounded p-2"
-                                            placeholder="e.g. Aapki service kya hai?"
-                                        />
+                                            placeholder="e.g. What service are you looking for?" />
                                     </div>
 
                                     <div>
