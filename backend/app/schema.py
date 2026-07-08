@@ -118,6 +118,7 @@ class BasePortfolio(BaseModel):
     project_title: str
     category_node: str
     deployment_year: str
+    url_slug: str
     business_challenge: str
     solution_node: str
     meta_title: Optional[str] = None
@@ -204,6 +205,7 @@ class NewsletterResponse(BaseModel):
 # /////////blog/////////
 class BlogBase(BaseModel):
     title: str
+    slug: str
     excerpt: str
     content: str
     category: str
@@ -214,22 +216,25 @@ class BlogBase(BaseModel):
 
 
 class CreateBlog(BlogBase):
-    pass
+    schema_markup: Optional[dict] = None
 
 
 class UpdateBlog(BaseModel):
     title: Optional[str] = None
+    slug: Optional[str] = None
     excerpt: Optional[str] = None
     content: Optional[str] = None
     category: Optional[str] = None
     author: Optional[str] = None
     meta_title: Optional[str] = None
     meta_description: Optional[str] = None
+    schema_markup: Optional[dict] = None
 
 
 class BlogResponse(BlogBase):
     id: int
     featured_image: Optional[str] = None
+    schema_markup: Optional[dict] = None
 
     class Config:
         from_attributes = True
@@ -263,8 +268,44 @@ class CareerApplicationResponse(BaseModel):
     email: Optional[str] = None
     linkedin_url: str
     cv_url: str
+    image_url: Optional[str] = None
     show_contact_public: bool
     created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+        # ///////// testimonial ///////
+
+        from pydantic import BaseModel
+from typing import Optional
+
+
+class CreateTestimonial(BaseModel):
+    full_name: str
+    designation: Optional[str] = None
+    company: Optional[str] = None
+    testimonial_text: str
+    rating: int
+
+
+class UpdateTestimonial(BaseModel):
+    full_name: Optional[str] = None
+    designation: Optional[str] = None
+    company: Optional[str] = None
+    testimonial_text: Optional[str] = None
+    rating: Optional[int] = None
+
+
+class TestimonialResponse(BaseModel):
+    id: int
+    full_name: str
+    designation: Optional[str]
+    company: Optional[str]
+    testimonial_text: str
+    rating: int
+    profile_image: Optional[str]
 
     class Config:
         from_attributes = True

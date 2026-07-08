@@ -14,25 +14,89 @@ UPLOAD_DIR = "uploads/blogs"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
+# @router.post("/create")
+# def create_blog(
+#     title: str = Form(...),
+#     excerpt: str = Form(...),
+#     content: str = Form(...),
+#     category: str = Form(...),
+#     author: str = Form(...),
+#     meta_title: str = Form(...),
+#     meta_description: str = Form(...),
+#     image: UploadFile = File(None),
+#     db: Session = Depends(get_db),
+#     admin: models.Admin = Depends(get_current_admin_dependence)
+# ):
+
+#     image_path = None
+
+#     if image:
+#         file_ext = image.filename.split(".")[-1]
+#         file_name = f"{uuid.uuid4()}.{file_ext}"
+#         file_location = f"{UPLOAD_DIR}/{file_name}"
+
+#         with open(file_location, "wb") as buffer:
+#             shutil.copyfileobj(image.file, buffer)
+
+#         image_path = f"/uploads/blogs/{file_name}"
+
+#     blog = models.Blog(
+#         title=title,
+#         excerpt=excerpt,
+#         content=content,
+#         category=category,
+#         author=author,
+#         featured_image=image_path,
+#         meta_title=meta_title,
+#         meta_description=meta_description
+#     )
+
+#     db.add(blog)
+#     db.commit()
+#     db.refresh(blog)
+
+#     return blog
+ALLOWED_IMAGE_TYPES = ["jpg", "jpeg", "png", "webp"]
+
+
 @router.post("/create")
 def create_blog(
     title: str = Form(...),
+    slug: str = Form(...),
     excerpt: str = Form(...),
     content: str = Form(...),
     category: str = Form(...),
     author: str = Form(...),
     meta_title: str = Form(...),
     meta_description: str = Form(...),
+    schema_markup: str = Form(None),
     image: UploadFile = File(None),
     db: Session = Depends(get_db),
     admin: models.Admin = Depends(get_current_admin_dependence)
 ):
 
-    image_path = None
+    # ✅ 1. CHECK DUPLICATE SLUG
+    existing = db.query(models.Blog).filter(models.Blog.slug == slug).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Slug already exists")
 
+    # ✅ 2. PARSE JSON
+    parsed_schema = None
+    if schema_markup:
+        try:
+            parsed_schema = json.loads(schema_markup)
+        except:
+            raise HTTPException(status_code=400, detail="Invalid schema JSON")
+
+    # ✅ 3. IMAGE VALIDATION + SAVE
+    image_path = None
     if image:
-        file_ext = image.filename.split(".")[-1]
-        file_name = f"{uuid.uuid4()}.{file_ext}"
+        ext = image.filename.split(".")[-1].lower()
+
+        if ext not in ALLOWED_IMAGE_TYPES:
+            raise HTTPException(status_code=400, detail="Invalid image type")
+
+        file_name = f"{uuid.uuid4()}.{ext}"
         file_location = f"{UPLOAD_DIR}/{file_name}"
 
         with open(file_location, "wb") as buffer:
@@ -40,15 +104,18 @@ def create_blog(
 
         image_path = f"/uploads/blogs/{file_name}"
 
+    # ✅ 4. CREATE BLOG
     blog = models.Blog(
         title=title,
+        slug=slug,
         excerpt=excerpt,
         content=content,
         category=category,
         author=author,
         featured_image=image_path,
         meta_title=meta_title,
-        meta_description=meta_description
+        meta_description=meta_description,
+        schema_markup=parsed_schema
     )
 
     db.add(blog)
@@ -112,6 +179,12 @@ def delete_blog(
 
     if not blog:
         raise HTTPException(status_code=404, detail="Blog not found")
+
+    # ✅ delete image file
+    if blog.featured_image:
+        file_path = blog.featured_image.lstrip("/")  # safer path
+        if os.path.exists(file_path):
+            os.remove(file_path)
 
     db.delete(blog)
     db.commit()

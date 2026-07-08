@@ -1,5 +1,5 @@
 
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, func
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, func ,JSON
 from sqlalchemy.orm import mapped_column,Mapped
 from app.database import Base
 
@@ -59,6 +59,7 @@ class Portfolio(Base):
     project_title = mapped_column(String(200), nullable=False)
     category_node = mapped_column(String(100), nullable=False)
     deployment_year = mapped_column(String(10), nullable=False)
+    url_slug = mapped_column(String(255), unique=True, index=True, nullable=False)
     primary_image = mapped_column(Text, nullable=False)
     business_challenge = mapped_column(Text, nullable=False)
     solution_node = mapped_column(Text, nullable=False)
@@ -133,6 +134,7 @@ class Blog(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
 
     title: Mapped[str] = mapped_column(String(200), nullable=False)
+    slug: Mapped[str] = mapped_column(String(220), unique=True, index=True, nullable=False)
     excerpt: Mapped[str] = mapped_column(Text, nullable=False)
 
     content: Mapped[str] = mapped_column(Text, nullable=False)  # HTML or Markdown
@@ -145,6 +147,19 @@ class Blog(Base):
     meta_title: Mapped[str] = mapped_column(String(60), nullable=False)
     meta_description: Mapped[str] = mapped_column(String(160), nullable=False)
 
+
+
+    schema_markup: Mapped[dict] = mapped_column(JSON, nullable=True)
+
+    created_at = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    updated_at = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now()
+    )
+
+    published = mapped_column(Boolean, default=True)
 
 # /////////News feeds ///////////
 
@@ -181,4 +196,17 @@ class CareerApplication(Base):
     linkedin_url = Column(String, nullable=False)
     cv_url = Column(String, nullable=False)
     show_contact_public = Column(Boolean, default=False)
+    image_url = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+# ////////// Testimonial /////////////////////////////
+class Testimonial(Base):
+    __tablename__ = "testimonials"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    full_name: Mapped[str] = mapped_column(String(150), nullable=False)
+    designation: Mapped[str] = mapped_column(String(150), nullable=True)
+    company: Mapped[str] = mapped_column(String(150), nullable=True)
+    testimonial_text: Mapped[str] = mapped_column(Text, nullable=False)
+    rating: Mapped[int] = mapped_column(Integer, nullable=False)  # 1–5
+    profile_image: Mapped[str] = mapped_column(Text, nullable=True)

@@ -9,6 +9,7 @@ from app.routes.contactUs import router as contactUs_router
 from app.routes.news_feed import router as newsfeed_router
 from app.routes.newsletter import router as newsletter_router
 from app.routes.blog import router as blog_router
+from app.routes.testimonial import router as testimonial_router
 from fastapi.middleware.cors import CORSMiddleware
 from app.scheduler import start_scheduler
 from app.routes.career import router as career_router
@@ -47,4 +48,5 @@ app.include_router(contactUs_router, prefix="/api/contact-us", tags=["ContactUs"
 app.include_router(newsletter_router, prefix="/api/newsletter", tags=["Newsletter"])
 app.include_router(blog_router, prefix="/api/blog", tags=["Blog"])
 app.include_router(newsfeed_router,prefix='/api/newsfeed',tags=['Newsfeed'])
+app.include_router(testimonial_router,prefix='/api/testimonial',tags=['Testimonial'])
 app.include_router(career_router, prefix="/api/career", tags=["Career"])

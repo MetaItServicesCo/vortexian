@@ -23,6 +23,8 @@ def create_portfolio(
     business_challenge: str = Form(...),
     solution_node: str = Form(...),
 
+    url_slug: str = Form(...),
+
     meta_title: Optional[str] = Form(None),
     meta_description: Optional[str] = Form(None),
     meta_keywords: Optional[str] = Form(None),
@@ -47,6 +49,7 @@ def create_portfolio(
         project_title=project_title,
         category_node=category_node,
         deployment_year=deployment_year,
+        url_slug=url_slug,
         primary_image=image_url,
         business_challenge=business_challenge,
         solution_node=solution_node,
@@ -89,6 +92,7 @@ def update_portfolio(
     deployment_year: int = Form(...),
     business_challenge: str = Form(...),
     solution_node: str = Form(...),
+    url_slug: str = Form(...),
     meta_title: Optional[str] = Form(""),
     meta_description: Optional[str] = Form(""),
     meta_keywords: Optional[str] = Form(""),
@@ -104,6 +108,7 @@ def update_portfolio(
     item.project_title = project_title
     item.category_node = category_node
     item.deployment_year = deployment_year
+    item.url_slug = url_slug
     item.business_challenge = business_challenge
     item.solution_node = solution_node
     item.meta_title = meta_title
