@@ -26,6 +26,12 @@ const menuItems = [
   { label: "News Feed", icon: FiBriefcase, href: "/dashboard/newsfeed" },
   // { label: "Media Library", icon: FiImage, href: "/dashboard/media" },
   { label: "Testimonials", icon: FiBriefcase, href: "/dashboard/testimonials" },
+  {
+    label: "News letter Dashboard",
+    icon: FiBriefcase,
+    href: "/dashboard/newsLetterdashboard",
+  },
+
   { label: "Career", icon: FiBriefcase, href: "/dashboard/career" },
 ];
 
