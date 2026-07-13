@@ -113,18 +113,6 @@ class ContactUs(Base):
 
     message: Mapped[str] = mapped_column(Text, nullable=False)
 
-#//////////////News letter//////////
-
-class Newsletter(Base):
-    __tablename__ = "Newsletter"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-
-    email: Mapped[str] = mapped_column(
-        String(255),
-        unique=True,
-        nullable=False
-    ) 
 
 # /////////blog//////////
 
@@ -210,3 +198,180 @@ class Testimonial(Base):
     testimonial_text: Mapped[str] = mapped_column(Text, nullable=False)
     rating: Mapped[int] = mapped_column(Integer, nullable=False)  # 1–5
     profile_image: Mapped[str] = mapped_column(Text, nullable=True)
+
+# ////////////////////////// News Letter Module ///////////////////////////////////
+class Newsletter(Base):
+    __tablename__ = "Newsletter"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+
+    name: Mapped[str | None] = mapped_column(String(150), nullable=True)
+
+    email: Mapped[str] = mapped_column(
+        String(255),
+        unique=True,
+        nullable=False
+    )
+
+    status: Mapped[str] = mapped_column(
+        String(30),
+        default="ACTIVE"
+    )
+
+    subscribed_at = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now()
+    )
+
+    updated_at = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now()
+    )
+
+class NewsletterCampaign(Base):
+    __tablename__ = "NewsletterCampaign"
+
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True
+    )
+
+    subject: Mapped[str] = mapped_column(
+        String(255)
+    )
+
+    body: Mapped[str] = mapped_column(
+        Text
+    )
+
+    audience_type: Mapped[str] = mapped_column(
+        String(20),
+        default="ALL"
+    )
+    subscriber_ids = mapped_column(
+        JSON,
+        nullable=True
+    )
+    template_id = mapped_column(
+        Integer,
+        nullable=True
+    )
+    status: Mapped[str] = mapped_column(
+        String(30),
+        default="DRAFT"
+    )
+
+    scheduled_for = mapped_column(
+        DateTime(timezone=True),
+        nullable=True
+    )
+
+    recipient_count: Mapped[int] = mapped_column(
+        Integer,
+        default=0
+    )
+
+    created_at = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now()
+    )
+
+    sent_at = mapped_column(
+        DateTime(timezone=True),
+        nullable=True
+    )
+
+    blog_url = mapped_column(
+        Text,
+        nullable=True
+    )
+
+
+    auto_send = mapped_column(
+        Boolean,
+        default=False
+    )
+
+
+
+
+class NewsletterRecipient(Base):
+    __tablename__ = "NewsletterRecipient"
+
+    id = mapped_column(Integer, primary_key=True)
+
+    campaign_id = mapped_column(Integer)
+
+    subscriber_id = mapped_column(Integer)
+
+    status = mapped_column(
+        String(20),
+        default="PENDING"
+    )
+
+    opened = mapped_column(
+        Boolean,
+        default=False
+    )
+
+    opened_at = mapped_column(
+        DateTime(timezone=True),
+        nullable=True
+    )
+
+class NewsletterTemplate(Base):
+    __tablename__ = "NewsletterTemplate"
+
+    id = mapped_column(Integer, primary_key=True)
+
+    title = mapped_column(String(100))
+
+    subject = mapped_column(String(255))
+
+    body = mapped_column(Text)
+
+    category = mapped_column(String(50))
+
+    created_at = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now()
+    )
+
+class NewsletterSignupSettings(Base):
+    __tablename__ = "NewsletterSignupSettings"
+
+    id = mapped_column(Integer, primary_key=True)
+
+    heading = mapped_column(String(255))
+
+    intro = mapped_column(Text)
+
+    bullets = mapped_column(JSON)
+
+    button_text = mapped_column(
+        String(50),
+        default="Subscribe"
+    )
+
+class NewsletterBlogSetting(Base):
+
+    __tablename__="NewsletterBlogSetting"
+
+
+    id=mapped_column(
+        Integer,
+        primary_key=True
+    )
+
+
+    enabled=mapped_column(
+        Boolean,
+        default=False
+    )
+
+
+    template_id=mapped_column(
+        Integer,
+        nullable=True
+    )

@@ -191,17 +191,106 @@ class ContactUsResponse(CreateContactUs):
 #///////////////news letter ///////////
 
 class CreateNewsletter(BaseModel):
+    name: str | None = None
     email: EmailStr
-
 
 class NewsletterResponse(BaseModel):
-    id: int
-    email: EmailStr
+
+    id:int
+
+    name:str | None
+
+    email:EmailStr
+
+    status:str
+
+    subscribed_at:datetime
 
     class Config:
-        from_attributes = True 
+        from_attributes=True
+
+class CreateCampaign(BaseModel):
+
+    subject:str
+
+    body:str
 
 
+    audience_type:str = "ALL"
+
+
+    template_id:int | None = None
+
+
+    blog_url:str | None = None
+
+
+    auto_send:bool = False
+
+
+    subscriber_ids:list[int] = []
+
+
+    scheduled_for:datetime | None = None
+
+class CampaignResponse(BaseModel):
+
+    id:int
+
+    subject:str
+
+    status:str
+
+    recipient_count:int
+
+    sent_at:datetime | None
+
+    scheduled_for:datetime | None
+
+    class Config:
+        from_attributes=True
+
+class CreateTemplate(BaseModel):
+
+    title:str
+
+    subject:str
+
+    body:str
+
+    category:str
+
+class SignupSettingsResponse(BaseModel):
+
+    heading:str
+
+    intro:str
+
+    bullets:list[str]
+
+    button_text:str
+
+    class Config:
+        from_attributes=True
+
+
+class TestEmailRequest(BaseModel):
+
+    email:EmailStr
+
+    subject:str
+
+    body:str
+
+class BlogSettingResponse(BaseModel):
+
+    enabled:bool
+
+    template_id:int | None=None
+
+
+    class Config:
+        from_attributes=True
 # /////////blog/////////
 class BlogBase(BaseModel):
     title: str
@@ -278,8 +367,6 @@ class CareerApplicationResponse(BaseModel):
 
         # ///////// testimonial ///////
 
-        from pydantic import BaseModel
-from typing import Optional
 
 
 class CreateTestimonial(BaseModel):

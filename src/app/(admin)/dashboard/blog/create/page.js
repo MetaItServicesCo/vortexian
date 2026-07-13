@@ -176,11 +176,7 @@ export default function AddBlog() {
       const reader = new FileReader();
       reader.onload = () => {
         const range = editor.getSelection(true);
-        const altText =
-          window.prompt(
-            "Image k liye ALT text likhein (SEO k liye zaroori hai):",
-            "",
-          ) || "";
+        const altText = window.prompt("add ALT text:", "") || "";
 
         editor.insertEmbed(range.index, "image", reader.result);
 
@@ -207,10 +203,7 @@ export default function AddBlog() {
     const handleImageClick = (e) => {
       if (e.target.tagName === "IMG") {
         const currentAlt = e.target.getAttribute("alt") || "";
-        const newAlt = window.prompt(
-          "Is image ka ALT text update karein:",
-          currentAlt,
-        );
+        const newAlt = window.prompt("add ALT text:", currentAlt);
         if (newAlt !== null) {
           e.target.setAttribute("alt", newAlt);
         }
@@ -484,7 +477,7 @@ export default function AddBlog() {
                         updateFaqItem(index, "question", e.target.value)
                       }
                       className="w-full border rounded p-2"
-                      placeholder="e.g. Aapki service kya hai?"
+                      placeholder="e.g. What service are you looking for?"
                     />
                   </div>
 
@@ -714,7 +707,7 @@ export default function AddBlog() {
                   }
                 />
                 <label htmlFor="isOnline" className="text-sm font-medium">
-                  This is online event
+                  Ye online event hai
                 </label>
               </div>
 

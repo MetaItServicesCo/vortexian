@@ -16,7 +16,7 @@ from app.routes.career import router as career_router
 from fastapi.staticfiles import StaticFiles
 
 
-Base.metadata.create_all(bind=engine)
+# Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
