@@ -33,7 +33,8 @@ const QuoteForm = () => {
     "Cloud Solutions",
     "Lead Generation",
   ];
-
+  const API_URL =
+    process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:8000";
   const toggleService = (service) => {
     if (selectedServices.includes(service)) {
       setSelectedServices(selectedServices.filter((s) => s !== service));
@@ -87,7 +88,7 @@ const QuoteForm = () => {
         formData.append("file", projectFile);
       }
 
-      const response = await fetch("/api/contact/", {
+      const response = await fetch(`${API_URL}/api/contact/`, {
         method: "POST",
         body: formData,
       });
@@ -117,6 +118,7 @@ const QuoteForm = () => {
     } finally {
       setLoading(false);
     }
+    console.log("Backend URL:", process.env.NEXT_PUBLIC_BACKEND_URL);
   };
   const labelStyles =
     "block text-[#5DB4D1] text-[13px] font-bold uppercase tracking-wider mb-2";

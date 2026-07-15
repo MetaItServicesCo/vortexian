@@ -6,15 +6,27 @@ import { notFound } from "next/navigation";
 import BreadcrumbHero from "@/components/BreadcrumbHero";
 import HeroBanner from "@/components/blog/HeroBanner";
 
-async function getBlog(id) {
-    const res = await fetch(`https://vortexiantech.com/api/blog/${id}`, {
-        cache: "no-store",
-    });
-    if (res.status === 404) return null;
-    if (!res.ok) throw new Error("Failed to fetch blog");
-    return res.json();
-}
+const BACKEND_URL = process.env.BACKEND_URL || "https://vortexiantech.com";
 
+async function getBlog(slug) {
+    const url = `${BACKEND_URL}/api/blog/public`;
+    console.log("🔍 BACKEND_URL used:", BACKEND_URL);
+    console.log("🔍 Fetching:", url);
+
+    const res = await fetch(url, { cache: "no-store" });
+
+    if (!res.ok) throw new Error("Failed to fetch blogs");
+
+    const blogs = await res.json();
+    const list = Array.isArray(blogs) ? blogs : blogs?.data || [];
+
+    console.log("🔍 Total blogs received:", list.length);
+
+    const blog = list.find((b) => b.slug === slug);
+    console.log("🔍 Match found?", !!blog);
+
+    return blog || null;
+}
 function getImageUrl(img) {
     if (!img) return "/placeholder.jpg";
     if (img.startsWith("http")) return img;
@@ -22,8 +34,8 @@ function getImageUrl(img) {
 }
 
 export async function generateMetadata({ params }) {
-    const { id } = await params;
-    const blog = await getBlog(id);
+    const { slug } = await params;
+    const blog = await getBlog(slug);
     if (!blog) return { title: "Blog Not Found" };
     return {
         title: blog.meta_title || blog.title,
@@ -37,18 +49,35 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function BlogDetailPage({ params }) {
-    const { id } = await params;
-    const blog = await getBlog(id);
+    const { slug } = await params;
+    const blog = await getBlog(slug);
     if (!blog) notFound();
+
+    let schemaMarkup = null;
+    if (blog.schema_markup) {
+        try {
+            schemaMarkup =
+                typeof blog.schema_markup === "string"
+                    ? JSON.parse(blog.schema_markup)
+                    : blog.schema_markup;
+        } catch (e) {
+            schemaMarkup = null;
+        }
+    }
 
     return (
         <>
+            {schemaMarkup && (
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaMarkup) }}
+                />
+            )}
+
             <BreadcrumbHero title="Blog" currentPage={blog.title} />
 
             <main className="max-w-5xl mx-auto px-5 py-10">
-
-                {/* ── FEATURED IMAGE ─────────────────────────────────── */}
-                <div className="w-full h-[300px] md:h-[400px] rounded-xl overflow-hidden mb-7">
+                <div className="w-full h-[300px] md:h-full rounded-xl overflow-hidden mb-7">
                     <img
                         src={getImageUrl(blog.featured_image)}
                         alt={blog.title}
@@ -56,20 +85,14 @@ export default async function BlogDetailPage({ params }) {
                     />
                 </div>
 
-                {/* ── TITLE ──────────────────────────────────────────── */}
                 <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4 leading-snug">
                     {blog.title}
                 </h1>
 
                 <hr className="border-gray-200 mb-7" />
 
-                {/* ── TWO COLUMN LAYOUT (items-start is important here) ── */}
                 <div className="flex flex-col md:flex-row gap-8 items-start">
-
-                    {/* ── LEFT SIDEBAR (sticky top-24) ────────────────── */}
                     <aside className="w-full md:w-[280px] flex-shrink-0 sticky top-46">
-
-                        {/* Connect With Us card */}
                         <div className="bg-[#1D1D7E] rounded-xl p-5 text-center">
                             <h3 className="text-white font-bold text-base mb-4">
                                 Connect With Us
@@ -96,7 +119,6 @@ export default async function BlogDetailPage({ params }) {
                             </Link>
                         </div>
 
-                        {/* Author + Category info */}
                         {(blog.author || blog.category) && (
                             <div className="mt-5 bg-gray-50 rounded-xl p-4 space-y-3">
                                 {blog.author && (
@@ -126,24 +148,18 @@ export default async function BlogDetailPage({ params }) {
                         </div>
                     </aside>
 
-                    {/* ── RIGHT CONTENT (Scrollable) ──────────────────── */}
-
-                    {/* Right side container se fixed height aur max-w hata dein */}
-                    {/* ── RIGHT CONTENT ─────────────────────────────────── */}
                     <div className="flex-1 min-w-0 w-full overflow-hidden">
                         <article
                             className="prose prose-base max-w-none 
                    prose-headings:font-bold prose-headings:text-gray-900 
                    prose-p:text-gray-700 prose-a:text-[#1D1D7E] 
-                   break-words" // Yeh class text ko wrap hone par majboor karti hai
+                   break-words"
                             dangerouslySetInnerHTML={{ __html: blog.content }}
                         />
                     </div>
                 </div>
-
             </main>
             <HeroBanner />
-
         </>
     );
 }

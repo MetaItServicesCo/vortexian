@@ -13,7 +13,8 @@ from app.routes.admin import get_current_admin_dependence
 
 router = APIRouter()
 
-UPLOAD_DIR = "uploads/testimonials"
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) 
+UPLOAD_DIR = os.path.join(BASE_DIR, "uploads", "testimonials")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
@@ -36,7 +37,6 @@ def create_testimonial(
         file_ext = image.filename.split(".")[-1]
         file_name = f"{uuid.uuid4()}.{file_ext}"
         file_location = f"{UPLOAD_DIR}/{file_name}"
-
         with open(file_location, "wb") as buffer:
             shutil.copyfileobj(image.file, buffer)
 

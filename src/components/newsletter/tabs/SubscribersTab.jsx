@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
-import { FiSearch, FiDownload } from "react-icons/fi";
+import { useMemo, useState } from "react";
+import { FiSearch, FiDownload, FiTrash2 } from "react-icons/fi";
 import useNewsletterStore from "@/store/newsletterStore";
 
 export default function SubscribersTab() {
@@ -15,20 +15,33 @@ export default function SubscribersTab() {
     (s) => s.toggleAllSubscribers,
   );
   const exportCsv = useNewsletterStore((s) => s.exportCsv);
+  const removeSubscriber = useNewsletterStore((s) => s.removeSubscriber);
 
-  const filtered = useMemo(() => {
-    const q = subscriberSearch.trim().toLowerCase();
-    if (!q) return subscribers;
-    return subscribers.filter(
-      (s) =>
-        s.name.toLowerCase().includes(q) || s.email.toLowerCase().includes(q),
-    );
-  }, [subscribers, subscriberSearch]);
+  const [deletingId, setDeletingId] = useState(null);
+
+  const filtered = useMemo(() => subscribers, [subscribers]);
 
   const visibleIds = filtered.map((s) => s.id);
   const allVisibleSelected =
     visibleIds.length > 0 &&
     visibleIds.every((id) => selectedSubscribers.includes(id));
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Remove this subscriber? This cannot be undone."))
+      return;
+    setDeletingId(id);
+    await removeSubscriber(id);
+    setDeletingId(null);
+  };
+
+  const formatDate = (isoString) => {
+    if (!isoString) return "—";
+    return new Date(isoString).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-5 sm:p-6">
@@ -36,7 +49,7 @@ export default function SubscribersTab() {
         <div>
           <h3 className="font-semibold text-gray-900">Subscriber List</h3>
           <p className="text-sm text-gray-500 mt-0.5">
-            {filtered.length} of {subscribers.length} subscribers
+            {filtered.length} subscribers
           </p>
         </div>
         <div className="flex gap-3 w-full sm:w-auto">
@@ -65,7 +78,7 @@ export default function SubscribersTab() {
       </div>
 
       <div className="mt-5 overflow-x-auto">
-        <table className="w-full text-sm min-w-[600px]">
+        <table className="w-full text-sm min-w-[650px]">
           <thead>
             <tr className="text-left text-gray-500 border-b border-gray-100">
               <th className="py-2 pr-3 w-8">
@@ -78,22 +91,23 @@ export default function SubscribersTab() {
               </th>
               <th className="py-2 pr-3 font-medium">Name</th>
               <th className="py-2 pr-3 font-medium">Email</th>
-              <th className="py-2 pr-3 font-medium">Subscription Date</th>
-              <th className="py-2 pr-3 font-medium text-right">Status</th>
+              <th className="py-2 pr-3 font-medium">Subscribed</th>
+              <th className="py-2 pr-3 font-medium">Status</th>
+              <th className="py-2 pr-3 font-medium text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
             {subscribersLoading ? (
               Array.from({ length: 4 }).map((_, i) => (
                 <tr key={i} className="border-b border-gray-50">
-                  <td className="py-3" colSpan={5}>
+                  <td className="py-3" colSpan={6}>
                     <div className="h-4 bg-gray-100 rounded animate-pulse" />
                   </td>
                 </tr>
               ))
             ) : filtered.length === 0 ? (
               <tr>
-                <td colSpan={5} className="py-8 text-center text-gray-400">
+                <td colSpan={6} className="py-8 text-center text-gray-400">
                   No subscribers found.
                 </td>
               </tr>
@@ -111,28 +125,39 @@ export default function SubscribersTab() {
                       className="rounded border-gray-300"
                     />
                   </td>
-                  <td className="py-3 pr-3 text-gray-900">{sub.name}</td>
+                  <td className="py-3 pr-3 text-gray-900">{sub.name || "—"}</td>
                   <td className="py-3 pr-3 text-blue-600">{sub.email}</td>
                   <td className="py-3 pr-3 text-gray-500">
-                    {sub.subscriptionDate}
+                    {formatDate(sub.subscribed_at)}
                   </td>
-                  <td className="py-3 pr-3 text-right">
+                  <td className="py-3 pr-3">
                     <span
                       className={`inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full ${
-                        sub.status === "Active"
+                        sub.status === "ACTIVE"
                           ? "bg-gray-100 text-gray-700"
                           : "bg-red-50 text-red-600"
                       }`}
                     >
                       <span
                         className={`w-1.5 h-1.5 rounded-full ${
-                          sub.status === "Active"
+                          sub.status === "ACTIVE"
                             ? "bg-green-500"
                             : "bg-red-400"
                         }`}
                       />
-                      {sub.status}
+                      {sub.status === "ACTIVE" ? "Active" : sub.status}
                     </span>
+                  </td>
+                  <td className="py-3 pr-3 text-right">
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(sub.id)}
+                      disabled={deletingId === sub.id}
+                      className="text-gray-400 hover:text-red-500 disabled:opacity-50"
+                      aria-label={`Remove ${sub.name || sub.email}`}
+                    >
+                      <FiTrash2 size={15} />
+                    </button>
                   </td>
                 </tr>
               ))
