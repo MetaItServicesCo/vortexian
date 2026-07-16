@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session
 import shutil, uuid, os
-
+import json
 from app.database import get_db
 from app import models
 from app.schema import CreateBlog, UpdateBlog, BlogResponse
@@ -81,6 +81,8 @@ def create_blog(
         raise HTTPException(status_code=400, detail="Slug already exists")
 
     # ✅ 2. PARSE JSON
+    
+
     parsed_schema = None
     if schema_markup:
         try:
