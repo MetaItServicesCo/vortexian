@@ -8,19 +8,19 @@ import toast, { Toaster } from "react-hot-toast";
 export default function ContactsPage() {
     const [contacts, setContacts] = useState([]);
     const [loading, setLoading] = useState(true);
-
+const API_URL = process.env.BACKEND_URL || "http://127.0.0.1:8000"
     const fetchContacts = async () => {
         try {
             const token = localStorage.getItem("token");
 
-            const response = await axios.get(
-                "/api/contact/",
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
+           const response = await axios.get(
+    `${API_URL}/api/contact/`,
+    {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    }
+);
 
             setContacts(response.data);
         } catch (error) {

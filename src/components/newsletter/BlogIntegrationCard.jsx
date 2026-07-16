@@ -139,7 +139,6 @@ export default function BlogIntegrationCard() {
         </div>
       </div>
 
-      {/* ... (Auto-send Settings UI code same as before) ... */}
     </div>
   );
 }
