@@ -118,6 +118,7 @@ class BasePortfolio(BaseModel):
     project_title: str
     category_node: str
     deployment_year: str
+    url_slug: str
     business_challenge: str
     solution_node: str
     meta_title: Optional[str] = None
@@ -190,20 +191,111 @@ class ContactUsResponse(CreateContactUs):
 #///////////////news letter ///////////
 
 class CreateNewsletter(BaseModel):
+    name: str | None = None
     email: EmailStr
-
 
 class NewsletterResponse(BaseModel):
-    id: int
-    email: EmailStr
+
+    id:int
+
+    name:str | None
+
+    email:EmailStr
+
+    status:str
+
+    subscribed_at:datetime
 
     class Config:
-        from_attributes = True 
+        from_attributes=True
+
+class CreateCampaign(BaseModel):
+
+    subject:str
+
+    body:str
 
 
+    audience_type:str = "ALL"
+
+
+    template_id:int | None = None
+
+
+    blog_url:str | None = None
+
+
+    auto_send:bool = False
+
+
+    # subscriber_ids:list[int] = []
+    subscriber_ids: list[int] | None = None
+
+
+    scheduled_for:datetime | None = None
+
+class CampaignResponse(BaseModel):
+
+    id:int
+
+    subject:str
+
+    status:str
+
+    recipient_count:int
+
+    sent_at:datetime | None
+
+    scheduled_for:datetime | None
+
+    class Config:
+        from_attributes=True
+
+class CreateTemplate(BaseModel):
+
+    title:str
+
+    subject:str
+
+    body:str
+
+    category:str
+
+class SignupSettingsResponse(BaseModel):
+
+    heading:str
+
+    intro:str
+
+    bullets:list[str]
+
+    button_text:str
+
+    class Config:
+        from_attributes=True
+
+
+class TestEmailRequest(BaseModel):
+
+    email:EmailStr
+
+    subject:str
+
+    body:str
+
+class BlogSettingResponse(BaseModel):
+
+    enabled:bool
+
+    template_id:int | None=None
+
+
+    class Config:
+        from_attributes=True
 # /////////blog/////////
 class BlogBase(BaseModel):
     title: str
+    slug: str
     excerpt: str
     content: str
     category: str
@@ -214,22 +306,25 @@ class BlogBase(BaseModel):
 
 
 class CreateBlog(BlogBase):
-    pass
+    schema_markup: Optional[dict] = None
 
 
 class UpdateBlog(BaseModel):
     title: Optional[str] = None
+    slug: Optional[str] = None
     excerpt: Optional[str] = None
     content: Optional[str] = None
     category: Optional[str] = None
     author: Optional[str] = None
     meta_title: Optional[str] = None
     meta_description: Optional[str] = None
+    schema_markup: Optional[dict] = None
 
 
 class BlogResponse(BlogBase):
     id: int
     featured_image: Optional[str] = None
+    schema_markup: Optional[dict] = None
 
     class Config:
         from_attributes = True
@@ -263,8 +358,42 @@ class CareerApplicationResponse(BaseModel):
     email: Optional[str] = None
     linkedin_url: str
     cv_url: str
+    image_url: Optional[str] = None
     show_contact_public: bool
     created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+        # ///////// testimonial ///////
+
+
+
+class CreateTestimonial(BaseModel):
+    full_name: str
+    designation: Optional[str] = None
+    company: Optional[str] = None
+    testimonial_text: str
+    rating: int
+
+
+class UpdateTestimonial(BaseModel):
+    full_name: Optional[str] = None
+    designation: Optional[str] = None
+    company: Optional[str] = None
+    testimonial_text: Optional[str] = None
+    rating: Optional[int] = None
+
+
+class TestimonialResponse(BaseModel):
+    id: int
+    full_name: str
+    designation: Optional[str]
+    company: Optional[str]
+    testimonial_text: str
+    rating: int
+    profile_image: Optional[str]
 
     class Config:
         from_attributes = True

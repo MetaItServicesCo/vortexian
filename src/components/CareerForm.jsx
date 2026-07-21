@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 
 const CareerForm = () => {
   const inputStyles =
@@ -15,6 +15,7 @@ const CareerForm = () => {
   const [email, setEmail] = useState("");
   const [linkedinUrl, setLinkedinUrl] = useState("");
   const [cv, setCv] = useState(null);
+  const [image, setImage] = useState(null);
   const [agree, setAgree] = useState(false);
 
   const [submitting, setSubmitting] = useState(false);
@@ -43,6 +44,10 @@ const CareerForm = () => {
       formData.append("show_contact_public", agree);
       formData.append("cv", cv);
 
+      if (image) {
+        formData.append("image", image);
+      }
+
       const res = await fetch(`${API_BASE_URL}/api/career/`, {
         method: "POST",
         body: formData,
@@ -60,6 +65,7 @@ const CareerForm = () => {
       setEmail("");
       setLinkedinUrl("");
       setCv(null);
+      setImage(null);
       setAgree(false);
       e.target.reset();
     } catch (err) {
@@ -183,20 +189,32 @@ const CareerForm = () => {
               />
             </motion.div>
 
-            {/* CV / FILE UPLOAD */}
-            <motion.div>
-              <label className={labelStyles}>
-                Upload CV / Resume <span className="text-red-500">*</span>
-              </label>
+            {/* CV / FILE UPLOAD & IMAGE UPLOAD */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <motion.div>
+                <label className={labelStyles}>
+                  Upload CV / Resume <span className="text-red-500">*</span>
+                </label>
 
-              <input
-                type="file"
-                accept=".pdf,.doc,.docx"
-                className="w-full bg-[#F3F4F6] p-3 rounded-sm outline-none file:mr-4 file:py-2 file:px-4 file:border-0 file:bg-[#5DB4D1] file:text-white file:font-semibold hover:file:bg-[#1D1D7E] transition-all duration-300"
-                onChange={(e) => setCv(e.target.files[0])}
-                // required
-              />
-            </motion.div>
+                <input
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  className="w-full bg-[#F3F4F6] p-3 rounded-sm outline-none file:mr-4 file:py-2 file:px-4 file:border-0 file:bg-[#5DB4D1] file:text-white file:font-semibold hover:file:bg-[#1D1D7E] transition-all duration-300"
+                  onChange={(e) => setCv(e.target.files[0])}
+                />
+              </motion.div>
+
+              <motion.div>
+                <label className={labelStyles}>Upload Image (optional)</label>
+
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="w-full bg-[#F3F4F6] p-3 rounded-sm outline-none file:mr-4 file:py-2 file:px-4 file:border-0 file:bg-[#5DB4D1] file:text-white file:font-semibold hover:file:bg-[#1D1D7E] transition-all duration-300"
+                  onChange={(e) => setImage(e.target.files[0])}
+                />
+              </motion.div>
+            </div>
 
             {/* Checkbox */}
             <motion.div className="flex items-center gap-3 pt-4">

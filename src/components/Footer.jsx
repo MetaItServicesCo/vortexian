@@ -19,21 +19,26 @@ const Footer = () => {
 
       {/* --- TOP CONTACT BAR --- */}
       <div className="border-b border-gray-800">
-        <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col md:flex-row justify-around items-center gap-6">
+        <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col md:flex-row justify-around items-center md:items-center gap-6">
           {/* WhatsApp */}
-          <div className="flex items-center gap-4 group cursor-pointer">
-            <div className="p-3 border-2 border-[#5DB4D1] rounded-full text-[#5DB4D1] group-hover:bg-[#5DB4D1] group-hover:text-white transition-all duration-300">
-              <FaWhatsapp size={24} />
+          <div className="flex items-center w-full md:w-auto max-w-xs md:max-w-none mx-auto md:mx-0 gap-4 group cursor-pointer">
+            <div className="w-14 h-14 flex items-center justify-center border-2 border-[#5DB4D1] rounded-full text-[#5DB4D1] shrink-0 group-hover:bg-[#5DB4D1] group-hover:text-white transition-all duration-300">
+              <FaWhatsapp size={26} />
             </div>
-            <span className="text-lg font-medium">+92-(3354)-018789</span>
+            <span className="text-base sm:text-lg font-medium break-all text-left">
+              {/* +92-(3354)-018789 */}
+              +1 (214) 217-6302
+            </span>
           </div>
 
           {/* Email */}
-          <div className="flex items-center gap-4 group cursor-pointer">
-            <div className="p-3 border-2 border-[#5DB4D1] rounded-full text-[#5DB4D1] group-hover:bg-[#5DB4D1] group-hover:text-white transition-all duration-300">
-              <Mail size={24} />
+          <div className="flex items-center w-full md:w-auto max-w-xs md:max-w-none mx-auto md:mx-0 gap-4 group cursor-pointer">
+            <div className="w-14 h-14 flex items-center justify-center border-2 border-[#5DB4D1] rounded-full text-[#5DB4D1] shrink-0 group-hover:bg-[#5DB4D1] group-hover:text-white transition-all duration-300">
+              <Mail size={26} />
             </div>
-            <span className="text-lg font-medium">farina@vortexiantech.com</span>
+            <span className="text-base sm:text-lg font-medium break-all text-left">
+              info@vortexiantech.com
+            </span>
           </div>
         </div>
       </div>
@@ -118,16 +123,11 @@ const Footer = () => {
 
       {/* --- COPYRIGHT BAR --- */}
       <div className="bg-black py-6 px-6">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-500">
-          <p>
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-center items-center gap-4 text-sm text-gray-500">
+          <p className="text-center text-white">
             © 2025 Vortexian Tech | Designed & Developed By Primemax Digital
           </p>
-          <div className="flex items-center gap-4">
-            {/* Floating Chat Icon placeholder (Bottom Left in image) */}
-            <div className="bg-white text-black p-2 rounded-full cursor-pointer hover:bg-[#5DB4D1] transition">
-              <Mail size={18} />
-            </div>
-          </div>
+       
         </div>
       </div>
     </footer>

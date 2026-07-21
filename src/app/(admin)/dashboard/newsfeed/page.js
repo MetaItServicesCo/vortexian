@@ -19,7 +19,7 @@ export default function NewsList() {
             const data = await res.json();
             setNews(data);
         } catch (err) {
-            setError("News feed load nahi ho saka. Dobara try karein.");
+            setError("Unable to load the news feed. Please try again.");
         } finally {
             setLoading(false);
         }
@@ -30,8 +30,7 @@ export default function NewsList() {
     }, []);
 
     const handleDelete = async (id) => {
-        if (!confirm("Kya aap yeh news feed delete karna chahte hain?")) return;
-
+        if (!confirm("Are you sure you want to delete this news feed?")) return;
         try {
             setDeletingId(id);
             const token = localStorage.getItem("token");
@@ -47,7 +46,7 @@ export default function NewsList() {
 
             setNews((prev) => prev.filter((item) => item.id !== id));
         } catch (err) {
-            alert("Delete nahi ho saka. Dobara try karein.");
+            alert("Unable to delete the item. Please try again.");
         } finally {
             setDeletingId(null);
         }
@@ -140,13 +139,22 @@ export default function NewsList() {
 
                                     {/* Action */}
                                     <td className="p-3">
-                                        <button
-                                            onClick={() => handleDelete(item.id)}
-                                            disabled={deletingId === item.id}
-                                            className="px-3 py-1 text-sm bg-red-100 text-red-600 rounded hover:bg-red-200"
-                                        >
-                                            {deletingId === item.id ? "Deleting..." : "Delete"}
-                                        </button>
+                                        <div className="flex items-center gap-2">
+                                            <Link
+                                                href={`/dashboard/newsfeed/edit/${item.id}`}
+                                                className="px-3 py-1 text-sm bg-blue-100 text-blue-600 rounded hover:bg-blue-200"
+                                            >
+                                                Edit
+                                            </Link>
+
+                                            <button
+                                                onClick={() => handleDelete(item.id)}
+                                                disabled={deletingId === item.id}
+                                                className="px-3 py-1 text-sm bg-red-100 text-red-600 rounded hover:bg-red-200"
+                                            >
+                                                {deletingId === item.id ? "Deleting..." : "Delete"}
+                                            </button>
+                                        </div>
                                     </td>
 
                                 </tr>

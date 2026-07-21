@@ -1,6 +1,19 @@
+"use client";
+
 import Sidebar from "@/components/admin/Sidebar";
+import useAuthGuard from "@/hooks/useAuthGuard";
 
 export default function AdminLayout({ children }) {
+    const { checking } = useAuthGuard();
+
+    if (checking) {
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-gray-50">
+                <p className="text-sm font-medium text-gray-400">Checking session...</p>
+            </div>
+        );
+    }
+
     return (
         <div className="flex min-h-screen bg-gray-50">
             {/* Sirf Dashboard ka Sidebar */}
@@ -14,7 +27,6 @@ export default function AdminLayout({ children }) {
 
                 <main className="p-8">
                     {children}
-                    
                 </main>
             </div>
         </div>

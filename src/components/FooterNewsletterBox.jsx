@@ -4,13 +4,22 @@ import { FiLoader } from "react-icons/fi";
 import toast, { Toaster } from "react-hot-toast";
 
 const FooterNewsletterBox = () => {
-  const [email, setEmail] = useState("");
+  const [formData, setFormData] = useState({
+    email: "",
+    companyName: "",
+    designation: "",
+  });
   const [submitting, setSubmitting] = useState(false);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleSubscribe = async (e) => {
     e.preventDefault();
 
-    if (!email.trim()) {
+    if (!formData.email.trim()) {
       toast.error("Email is required");
       return;
     }
@@ -18,24 +27,20 @@ const FooterNewsletterBox = () => {
     setSubmitting(true);
 
     try {
-      const response = await fetch(
-        "/api/newsletter/subscribe",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email }),
+      const response = await fetch("/api/newsletter/subscribe", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify(formData),
+      });
 
       const data = await response.json();
 
       if (response.ok) {
         toast.success(data.message || "Successfully subscribed!");
-        setEmail("");
+        setFormData({ email: "", companyName: "", designation: "" }); // Reset form
       } else {
-        // backend error (like already subscribed)
         toast.error(data.detail || data.message || "Subscription failed");
       }
     } catch (error) {
@@ -60,17 +65,36 @@ const FooterNewsletterBox = () => {
       <form onSubmit={handleSubscribe} className="space-y-3">
         <input
           type="email"
+          name="email"
           required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Email"
-          className="w-full px-4 py-4 bg-white text-black outline-none focus:ring-2 focus:ring-[#5DB4D1]"
+          value={formData.email}
+          onChange={handleInputChange}
+          placeholder="Email Address"
+          className="w-full px-4 py-2 bg-white text-black outline-none focus:ring-3 focus:ring-[#5DB4D1]"
+        />
+        
+        <input
+          type="text"
+          name="companyName"
+          value={formData.companyName}
+          onChange={handleInputChange}
+          placeholder="Company Name"
+          className="w-full px-4 py-2 bg-white text-black outline-none focus:ring-3 focus:ring-[#5DB4D1]"
+        />
+
+        <input
+          type="text"
+          name="designation"
+          value={formData.designation}
+          onChange={handleInputChange}
+          placeholder="who are you? (e.g. CEO, Founder, etc.)"
+          className="w-full px-4 py-2 bg-white text-black outline-none focus:ring-3 focus:ring-[#5DB4D1]"
         />
 
         <button
           type="submit"
           disabled={submitting}
-          className="w-full bg-[#6C757D] hover:bg-[#5DB4D1] hover:text-black text-white font-bold py-4 uppercase tracking-widest flex items-center justify-center gap-2 disabled:opacity-50"
+          className="w-full bg-[#6C757D] hover:bg-[#5DB4D1] hover:text-black text-white font-bold py-2 uppercase tracking-widest flex items-center justify-center gap-2 disabled:opacity-50"
         >
           {submitting ? (
             <>

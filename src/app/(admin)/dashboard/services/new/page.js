@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import dynamic from "next/dynamic";
+import "react-quill-new/dist/quill.snow.css";
 import {
     ArrowLeft,
     Loader2,
@@ -15,11 +17,14 @@ import {
 import toast, { Toaster } from "react-hot-toast";
 import Link from "next/link";
 
+const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
+
 export default function CreateNewService() {
 
     const router = useRouter();
 
     const fileInputRef = useRef(null);
+    const quillRef = useRef(null);
 
     const [loading, setLoading] = useState(false);
 
@@ -94,6 +99,89 @@ export default function CreateNewService() {
         toast.success("Image selected successfully!");
     };
 
+    // ---------------- EDITOR: IMAGE INSERT PAR ALT TEXT ----------------
+    const imageHandler = useCallback(() => {
+        const editor = quillRef.current?.getEditor();
+        if (!editor) return;
+
+        const input = document.createElement("input");
+        input.setAttribute("type", "file");
+        input.setAttribute("accept", "image/*");
+        input.click();
+
+        input.onchange = () => {
+            const file = input.files?.[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = () => {
+                const range = editor.getSelection(true);
+                const altText =
+                    window.prompt("Image k liye ALT text likhein (SEO k liye zaroori hai):", "") || "";
+
+                editor.insertEmbed(range.index, "image", reader.result);
+
+                setTimeout(() => {
+                    const images = editor.root.querySelectorAll("img");
+                    const lastImage = images[images.length - 1];
+                    if (lastImage) {
+                        lastImage.setAttribute("alt", altText);
+                    }
+                }, 50);
+
+                editor.setSelection(range.index + 1);
+            };
+            reader.readAsDataURL(file);
+        };
+    }, []);
+
+    // ---------------- EDITOR: EXISTING IMAGE PAR CLICK KARKE ALT EDIT ----------------
+    useEffect(() => {
+        const editor = quillRef.current?.getEditor();
+        if (!editor) return;
+
+        const editorRoot = editor.root;
+
+        const handleImageClick = (e) => {
+            if (e.target.tagName === "IMG") {
+                const currentAlt = e.target.getAttribute("alt") || "";
+                const newAlt = window.prompt(
+                    "Is image ka ALT text update karein:",
+                    currentAlt
+                );
+                if (newAlt !== null) {
+                    e.target.setAttribute("alt", newAlt);
+                }
+            }
+        };
+
+        editorRoot.addEventListener("click", handleImageClick);
+
+        return () => {
+            editorRoot.removeEventListener("click", handleImageClick);
+        };
+    }, [formData.longDesc]);
+
+    const modules = {
+        toolbar: {
+            container: [
+                [{ header: [1, 2, 3, false] }],
+                [{ size: ["small", false, "large", "huge"] }],
+                ["bold", "italic", "underline", "strike"],
+                [{ color: [] }, { background: [] }],
+                [{ script: "sub" }, { script: "super" }],
+                ["blockquote", "code-block", "link", "image"],
+                [{ list: "ordered" }, { list: "bullet" }],
+                [{ indent: "-1" }, { indent: "+1" }],
+                [{ align: [] }],
+                ["clean"],
+            ],
+            handlers: {
+                image: imageHandler,
+            },
+        },
+    };
+
     // SUBMIT
     const handleFormSubmit = async (e) => {
 
@@ -107,6 +195,11 @@ export default function CreateNewService() {
 
         if (uploadType === "file" && !selectedFile) {
             toast.error("Please upload image");
+            return;
+        }
+
+        if (!formData.longDesc || formData.longDesc === "<p><br></p>") {
+            toast.error("Please write the long description");
             return;
         }
 
@@ -535,23 +628,24 @@ export default function CreateNewService() {
                         />
                     </div>
 
-                    {/* LONG DESC */}
+                    {/* LONG DESC (RICH TEXT EDITOR) */}
                     <div>
-                        <label className="text-xs font-black uppercase text-gray-400 block mb-1.5">
+                        <label className="text-xs font-black uppercase text-black block mb-1.5">
                             Deep Long Content Description
                         </label>
 
-                        <textarea
-                            rows="4"
-                            required
-                            className="w-full p-3.5 bg-gray-50 border border-gray-200 rounded-xl"
+                        <ReactQuill
+                            ref={quillRef}
+                            theme="snow"
+                            modules={modules}
                             value={formData.longDesc}
-                            onChange={(e) =>
+                            onChange={(value) =>
                                 setFormData({
                                     ...formData,
-                                    longDesc: e.target.value
+                                    longDesc: value
                                 })
                             }
+                            className="service-editor"
                         />
                     </div>
                 </div>
@@ -718,6 +812,42 @@ export default function CreateNewService() {
                     )}
                 </button>
             </form>
+
+            {/* Editor ki custom styling */}
+            <style jsx global>{`
+                .service-editor .ql-toolbar {
+                    position: sticky;
+                    top: 0;
+                    z-index: 20;
+                    background: #ffffff;
+                    border-top-left-radius: 12px;
+                    border-top-right-radius: 12px;
+                }
+
+                .service-editor .ql-container {
+                    min-height: 300px;
+                    max-height: 500px;
+                    overflow-y: auto;
+                    font-size: 15px;
+                    border-bottom-left-radius: 12px;
+                    border-bottom-right-radius: 12px;
+                }
+
+                .service-editor .ql-editor {
+                    min-height: 300px;
+                }
+
+                .service-editor .ql-editor a {
+                    color: #2563eb !important;
+                    font-weight: 700 !important;
+                    text-decoration: underline;
+                }
+
+                .service-editor .ql-editor img {
+                    cursor: pointer;
+                    max-width: 100%;
+                }
+            `}</style>
         </div>
     );
 }

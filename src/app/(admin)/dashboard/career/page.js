@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
+const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:8000";
 
 export default function CareerApplicationsList() {
     const [applications, setApplications] = useState([]);
@@ -27,7 +27,7 @@ export default function CareerApplicationsList() {
             const data = await res.json();
             setApplications(data);
         } catch (err) {
-            setError("Applications load nahi ho saki. Dobara try karein.");
+            setError("Applications can not be loaded.");
         } finally {
             setLoading(false);
         }

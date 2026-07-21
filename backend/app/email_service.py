@@ -13,7 +13,9 @@ conf = ConnectionConfig(
     MAIL_SERVER=settings.mail_server,
     MAIL_STARTTLS=True,
     MAIL_SSL_TLS=False,
-    USE_CREDENTIALS=True
+    USE_CREDENTIALS=True,
+    VALIDATE_CERTS=True,
+    TIMEOUT=30,
 )
 
 mail = FastMail(conf)

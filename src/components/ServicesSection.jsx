@@ -3,13 +3,14 @@ import React from "react";
 import { motion } from "framer-motion"; // Animation library
 import { Users, Megaphone, Paintbrush, Cpu, Headset } from "lucide-react";
 
-const ServicesSection = ({ services: apiServices = [] }) => {
-  const fallbackServices = [
+const ServicesSection = () => {
+  const services = [
     {
       id: "01",
       title: "Staffing Capabilities",
       icon: <Users size={32} />,
       hoverBg: "hover:bg-[#17147B]",
+      lineColor: "#D47253", // Yellow strip on blue card
       gridSpan: "lg:col-span-2",
     },
     {
@@ -17,6 +18,7 @@ const ServicesSection = ({ services: apiServices = [] }) => {
       title: "Marketing and Advertising Capabilities",
       icon: <Megaphone size={32} />,
       hoverBg: "hover:bg-[#D47253]",
+      lineColor: "#17147B", // Blue strip on orange card
       gridSpan: "lg:col-span-2",
     },
     {
@@ -24,6 +26,7 @@ const ServicesSection = ({ services: apiServices = [] }) => {
       title: "Creative Capabilities",
       icon: <Paintbrush size={32} />,
       hoverBg: "hover:bg-[#17147B]",
+      lineColor: "#D47253",
       gridSpan: "lg:col-span-2",
     },
     {
@@ -31,6 +34,7 @@ const ServicesSection = ({ services: apiServices = [] }) => {
       title: "Technology Capabilities",
       icon: <Cpu size={32} />,
       hoverBg: "hover:bg-[#D47253]",
+      lineColor: "#17147B",
       gridSpan: "lg:col-span-3",
     },
     {
@@ -38,47 +42,16 @@ const ServicesSection = ({ services: apiServices = [] }) => {
       title: "Consultancy",
       icon: <Headset size={32} />,
       hoverBg: "hover:bg-[#17147B]",
+      lineColor: "#D47253",
       gridSpan: "lg:col-span-3",
     },
   ];
-
-  const services = apiServices.length
-    ? apiServices.map((item, index) => ({
-        id: String(index + 1).padStart(2, "0"),
-        title: item.service_title,
-        icon: <Headset size={32} />,
-        hoverBg: index % 2 === 0 ? "hover:bg-[#17147B]" : "hover:bg-[#D47253]",
-        gridSpan: index < 3 ? "lg:col-span-2" : "lg:col-span-3",
-      }))
-    : fallbackServices;
-
-  // Animation Variants
-  // const containerVariants = {
-  //   hidden: { opacity: 0 },
-  //   visible: {
-  //     opacity: 1,
-  //     transition: {
-  //       staggerChildren: 0.7, 
-  //     },
-  //   },
-  // };
-
-  // const cardVariants = {
-  //   hidden: { opacity: 0, y: 150 },
-  //   visible: {
-  //     opacity: 1,
-  //     y: 0,
-  //     transition: { duration: 0.9, ease: "easeOut" },
-  //   },
-  // };
 
   return (
     <section className="bg-[#F2F2F2] py-20 px-6 md:px-20 lg:px-32 overflow-hidden">
       <div className="max-w-7xl mx-auto">
         {/* --- HEADER SECTION WITH ANIMATION --- */}
         <motion.div
-          // initial={{ opacity: 0, x: -150 }}
-          // whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: false }}
           transition={{ duration: 0.9 }}
           className="flex flex-col lg:flex-row justify-between items-start gap-8 mb-12"
@@ -110,26 +83,29 @@ const ServicesSection = ({ services: apiServices = [] }) => {
 
         {/* --- SERVICES GRID WITH STAGGERED ANIMATION --- */}
         <motion.div
-          // variants={containerVariants}
           initial="hidden"
           whileInView="visible"
-          // viewport={{ once: false, margin: "-180px" }}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4"
         >
           {services.map((service, index) => (
             <motion.div
               key={index}
-              // variants={cardVariants}
               whileHover={{ y: -7 }} // Hover par halka sa upar uthega
               className={`group relative bg-white h-[260px] p-6 flex flex-col justify-end transition-all duration-500 ease-in-out cursor-pointer overflow-hidden shadow-sm ${service.gridSpan} ${service.hoverBg}`}
             >
               {/* Background Number */}
-              <span className="absolute top-8 right-8 text-[100px] font-bold text-gray-100 opacity-20 group-hover:opacity-10 group-hover:text-white transition-all duration-700 pointer-events-none group-hover:scale-110">
+              <span className="absolute z-50  top-8 right-8 text-[100px] font-bold text-gray-100 opacity-20 group-hover:opacity-10 group-hover:text-white transition-all duration-700 pointer-events-none group-hover:scale-110">
                 {service.id}
               </span>
 
-              {/* Horizontal Strip */}
-              <div className="absolute top-24 left-0 w-full h-8 bg-[#F8F9FA] group-hover:bg-white/10 transition-colors duration-500"></div>
+              {/* Horizontal Strip - Base (default color) */}
+              <div className="absolute top-24 left-0 w-full h-8 bg-[#F8F9FA]"></div>
+
+              {/* Horizontal Strip - Animated Fill (left to right on hover, accent color) */}
+              <div
+                className="absolute top-24 left-0 w-full h-8 origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500 ease-in-out"
+                style={{ backgroundColor: service.lineColor }}
+              ></div>
 
               {/* Floating Icon Container */}
               <div className="absolute top-14 left-10 w-20 h-20 bg-white rounded-full shadow-md flex items-center justify-center text-black z-20 group-hover:rotate-[360deg] transition-all duration-700">
