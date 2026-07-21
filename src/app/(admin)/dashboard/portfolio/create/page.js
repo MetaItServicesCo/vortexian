@@ -6,7 +6,6 @@ import toast, { Toaster } from "react-hot-toast";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 
-// Quill styles import
 import "react-quill-new/dist/quill.snow.css";
 
 const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });

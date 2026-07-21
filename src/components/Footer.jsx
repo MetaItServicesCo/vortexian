@@ -26,7 +26,8 @@ const Footer = () => {
               <FaWhatsapp size={26} />
             </div>
             <span className="text-base sm:text-lg font-medium break-all text-left">
-              +92-(3354)-018789
+              {/* +92-(3354)-018789 */}
+              +1 (214) 217-6302
             </span>
           </div>
 

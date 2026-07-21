@@ -18,6 +18,21 @@ router = APIRouter()
 
 
 # =====================================================
+# HELPERS
+# =====================================================
+
+# Matches {{name}} and {{ name }} — the placeholder authors type in the editor.
+_NAME_PLACEHOLDER = re.compile(r"\{\{\s*name\s*\}\}", re.IGNORECASE)
+
+
+def personalize(body: str, user) -> str:
+    """Fill {{name}} with this subscriber's name for their copy of the email."""
+    if not body:
+        return ""
+    return _NAME_PLACEHOLDER.sub(getattr(user, "name", None) or "there", body)
+
+
+# =====================================================
 # PUBLIC SUBSCRIBE
 # =====================================================
 
@@ -152,11 +167,15 @@ async def send_test_email(
     data: schema.TestEmailRequest,
     admin=Depends(get_current_admin_dependence),
 ):
+    # No subscriber record exists for a test send, so {{name}} becomes a
+    # neutral greeting rather than being left visible in the email.
+    body = _NAME_PLACEHOLDER.sub("there", data.body or "")
+
     try:
         await send_newsletter_email(
             email=data.email,
             subject=data.subject,
-            body=data.body,
+            body=body,
         )
     except Exception as e:
         raise HTTPException(
@@ -217,7 +236,8 @@ async def send_campaign_now(
             await send_newsletter_email(
                 email=user.email,
                 subject=campaign.subject,
-                body=campaign.body,
+                # Each recipient gets their own name filled into {{name}}.
+                body=personalize(campaign.body, user),
             )
             db.add(
                 models.NewsletterRecipient(
