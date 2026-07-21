@@ -32,7 +32,7 @@ export default function SignupFormTab() {
             {signupForm.heading || "Stay Updated"}
           </p>
           <p className="text-sm text-gray-500 mt-1">
-            {signupForm.introLine || "Subscribe to receive:"}
+            {signupForm.intro || "Subscribe to receive:"}
           </p>
 
           <ul className="mt-3 space-y-2">
@@ -59,7 +59,7 @@ export default function SignupFormTab() {
               disabled
               className="bg-gray-900 text-white text-sm font-medium px-4 py-2 rounded-lg whitespace-nowrap"
             >
-              Subscribe
+              {signupForm.button_text || "Subscribe"}
             </button>
           </div>
         </div>
@@ -93,8 +93,8 @@ export default function SignupFormTab() {
           </label>
           <input
             type="text"
-            value={signupForm.introLine || ""}
-            onChange={(e) => setSignupField("introLine", e.target.value)}
+            value={signupForm.intro || ""}
+            onChange={(e) => setSignupField("intro", e.target.value)}
             className="mt-1.5 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10"
           />
         </div>
@@ -108,6 +108,19 @@ export default function SignupFormTab() {
             value={(signupForm.bullets || []).join("\n")}
             onChange={(e) => setSignupBullets(e.target.value)}
             className="mt-1.5 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-gray-900/10"
+          />
+        </div>
+
+        <div className="mt-4">
+          <label className="text-sm font-medium text-gray-700">
+            Button text
+          </label>
+          <input
+            type="text"
+            value={signupForm.button_text || ""}
+            onChange={(e) => setSignupField("button_text", e.target.value)}
+            placeholder="Subscribe"
+            className="mt-1.5 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10"
           />
         </div>
 

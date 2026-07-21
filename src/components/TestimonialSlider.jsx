@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -9,31 +9,55 @@ import { Navigation, Autoplay } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 
-const testimonials = [
-  {
-    id: 1,
-    text: "Partnering with Vortexian Tech has been a game-changer for our business. Their tailored payroll management system not only streamlined our processes but also significantly reduced errors and compliance issues. The team's dedication and expertise are truly unmatched.",
-    name: "David Coper",
-    role: "HAPPY CUSTOMER",
-    image: "https://randomuser.me/api/portraits/men/32.jpg",
-  },
-  {
-    id: 2,
-    text: "Vortexian Tech's creative design team transformed our brand identity, giving us a fresh and modern look that resonates with our target audience. Their attention to detail and innovative approach exceeded our expectations. We've seen a noticeable increase in engagement.",
-    name: "Aleesha Rose",
-    role: "HAPPY CUSTOMER",
-    image: "https://randomuser.me/api/portraits/women/44.jpg",
-  },
-  {
-    id: 3,
-    text: "The technology solutions provided by Vortexian Tech helped us scale our operations globally. Their support is 24/7, and their technical proficiency in modern stacks like MERN is evident in every deliverable.",
-    name: "John Smith",
-    role: "HAPPY CUSTOMER",
-    image: "https://randomuser.me/api/portraits/men/45.jpg",
-  },
-];
+const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || "";
+
+function getImageUrl(img) {
+  if (!img) return "/placeholder-avatar.jpg";
+  if (img.startsWith("http")) return img;
+  return `${API_BASE}${img}`;
+}
 
 export default function TestimonialSlider() {
+  const [testimonials, setTestimonials] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchTestimonials() {
+      try {
+        const res = await fetch(`${API_BASE}/api/testimonial/public`, {
+          cache: "no-store",
+        });
+
+        if (!res.ok) throw new Error("Failed to fetch testimonials");
+
+        const data = await res.json();
+        setTestimonials(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.log("Testimonial fetch error:", err);
+        setTestimonials([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchTestimonials();
+  }, []);
+
+  // ---------------- LOADING / EMPTY STATE ----------------
+  if (loading) {
+    return (
+      <section className="bg-[#F8F9FA] py-24 px-6 md:px-20 lg:px-32">
+        <div className="max-w-7xl mx-auto text-center text-gray-400 text-sm">
+          Loading testimonials...
+        </div>
+      </section>
+    );
+  }
+
+  if (testimonials.length === 0) {
+    return null; // koi testimonial nahi hai to section hi hide kar dein
+  }
+
   return (
     <section className="bg-[#F8F9FA] py-24 px-6 md:px-20 lg:px-32 overflow-hidden font-sans">
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
@@ -79,7 +103,7 @@ export default function TestimonialSlider() {
               delay: 4000,
               disableOnInteraction: false,
             }}
-            loop={true}
+            loop={testimonials.length > 1}
             speed={800}
             spaceBetween={24}
             breakpoints={{
@@ -99,8 +123,8 @@ export default function TestimonialSlider() {
                     &rdquo;&rdquo;
                   </div>
 
-                  <p className="text-gray-600 text-sm md:text-[15px] leading-relaxed relative z-10 italic">
-                    {item.text}
+                  <p className="text-gray-600 text-sm md:text-[15px] leading-relaxed relative z-10 italic line-clamp-6">
+                    {item.testimonial_text}
                   </p>
 
                   <div className="flex items-center gap-4 mt-8 pt-6 border-t border-gray-100">
@@ -109,17 +133,20 @@ export default function TestimonialSlider() {
                       <div className="absolute inset-0 bg-[#E87B35] rotate-45 rounded-xl"></div>
 
                       <img
-                        src={item.image}
-                        alt={item.name}
+                        src={getImageUrl(item.profile_image)}
+                        alt={item.full_name}
                         className="absolute inset-0 w-full h-full object-cover p-1 rotate-0 rounded-lg"
                       />
                     </div>
 
                     <div>
-                      <h4 className="font-bold text-[#111]">{item.name}</h4>
+                      <h4 className="font-bold text-[#111]">
+                        {item.full_name}
+                      </h4>
 
                       <p className="text-[10px] text-[#5DB4D1] font-bold tracking-widest">
-                        {item.role}
+                        {(item.designation || "HAPPY CUSTOMER").toUpperCase()}
+                        {item.company ? ` · ${item.company.toUpperCase()}` : ""}
                       </p>
                     </div>
                   </div>

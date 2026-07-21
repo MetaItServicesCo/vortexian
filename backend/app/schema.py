@@ -228,7 +228,8 @@ class CreateCampaign(BaseModel):
     auto_send:bool = False
 
 
-    subscriber_ids:list[int] = []
+    # subscriber_ids:list[int] = []
+    subscriber_ids: list[int] | None = None
 
 
     scheduled_for:datetime | None = None

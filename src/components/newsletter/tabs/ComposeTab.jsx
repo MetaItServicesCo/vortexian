@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { FiSend, FiX } from "react-icons/fi";
 import useNewsletterStore from "@/store/newsletterStore";
 import dynamic from "next/dynamic";
@@ -8,6 +8,8 @@ import "react-quill-new/dist/quill.snow.css";
 
 // Next.js (Turbopack) ke liye Dynamic import
 const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function ComposeTab() {
   const composeForm = useNewsletterStore((s) => s.composeForm);
@@ -18,10 +20,11 @@ export default function ComposeTab() {
   const sendingTest = useNewsletterStore((s) => s.sendingTest);
   const selectedSubscribers = useNewsletterStore((s) => s.selectedSubscribers);
   const subscribers = useNewsletterStore((s) => s.subscribers);
+  const testEmail = useNewsletterStore((s) => s.testEmail);
+  const setTestEmail = useNewsletterStore((s) => s.setTestEmail);
 
   const [toast, setToast] = useState(null);
 
-  // Quill Modules (Formats handle karne ke liye alag se array ki zaroorat nahi)
   const modules = useMemo(
     () => ({
       toolbar: [
@@ -45,29 +48,21 @@ export default function ComposeTab() {
   };
 
   const handleSendNow = async () => {
-    if (!composeForm.subject.trim() || !composeForm.content.trim()) {
-      showToast("Subject and content are both required.", "error");
-      return;
+    const res = await sendNewsletterNow();
+    if (res.ok) {
+      showToast(res.scheduled ? "Newsletter scheduled!" : "Newsletter sent!", "success");
+    } else {
+      showToast(res.error || "Failed to send, please try again.", "error");
     }
-    const ok = await sendNewsletterNow();
-    showToast(
-      ok
-        ? "Newsletter sent successfully!"
-        : "Failed to send, please try again.",
-      ok ? "success" : "error",
-    );
   };
 
   const handleSendTest = async () => {
-    if (!composeForm.subject.trim() || !composeForm.content.trim()) {
-      showToast("Subject and content are both required.", "error");
+    if (testEmail && !EMAIL_RE.test(testEmail.trim())) {
+      showToast("That doesn't look like a valid email.", "error");
       return;
     }
-    const ok = await sendTest();
-    showToast(
-      ok ? "Test email sent!" : "Failed to send test email.",
-      ok ? "success" : "error",
-    );
+    const res = await sendTest(); // store reads testEmail
+    showToast(res.ok ? "Test email sent!" : res.error || "Failed to send test email.", res.ok ? "success" : "error");
   };
 
   return (
@@ -83,23 +78,18 @@ export default function ComposeTab() {
       <h3 className="font-semibold text-gray-900">Send Newsletter</h3>
 
       <div className="mt-5">
-        <label className="text-sm font-medium text-gray-700">
-          Subject Line
-        </label>
+        <label className="text-sm font-medium text-gray-700">Subject Line</label>
         <input
           type="text"
           value={composeForm.subject}
           onChange={(e) => setComposeField("subject", e.target.value)}
           placeholder="e.g. New Blog: 7 Retention Strategies That Work"
           className="mt-1.5 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10"
-          required
         />
       </div>
 
       <div className="mt-4">
-        <label className="text-sm font-medium text-gray-700">
-          Email Content
-        </label>
+        <label className="text-sm font-medium text-gray-700">Email Content</label>
         <div className="mt-1.5 h-64 mb-12">
           <ReactQuill
             theme="snow"
@@ -121,9 +111,7 @@ export default function ComposeTab() {
             onClick={() => setComposeField("audience", "all")}
             className={`text-left border rounded-lg px-4 py-3 transition-colors ${composeForm.audience === "all" ? "border-gray-900" : "border-gray-200"}`}
           >
-            <span className="text-sm font-medium text-gray-900">
-              All Subscribers
-            </span>
+            <span className="text-sm font-medium text-gray-900">All Subscribers</span>
             <p className="text-xs text-gray-500 mt-1">
               Send to all {subscribers.length} people
             </p>
@@ -133,28 +121,25 @@ export default function ComposeTab() {
             onClick={() => setComposeField("audience", "selected")}
             className={`text-left border rounded-lg px-4 py-3 transition-colors ${composeForm.audience === "selected" ? "border-gray-900" : "border-gray-200"}`}
           >
-            <span className="text-sm font-medium text-gray-900">
-              Selected Subscribers
-            </span>
+            <span className="text-sm font-medium text-gray-900">Selected Subscribers</span>
             <p className="text-xs text-gray-500 mt-1">
               {selectedSubscribers.length} selected
             </p>
           </button>
         </div>
+        {composeForm.audience === "selected" && selectedSubscribers.length === 0 && (
+          <p className="mt-2 text-xs text-amber-600">
+            No subscribers selected yet — pick some in the Subscribers tab, or this send will be blocked.
+          </p>
+        )}
       </div>
 
       {/* Schedule Section */}
       <div className="mt-5 pt-4 border-t border-gray-100 flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-gray-700">
-            Schedule for later
-          </p>
-        </div>
+        <p className="text-sm font-medium text-gray-700">Schedule for later</p>
         <button
           type="button"
-          onClick={() =>
-            setComposeField("scheduleEnabled", !composeForm.scheduleEnabled)
-          }
+          onClick={() => setComposeField("scheduleEnabled", !composeForm.scheduleEnabled)}
           className={`w-10 h-5 rounded-full relative transition-colors ${composeForm.scheduleEnabled ? "bg-gray-900" : "bg-gray-200"}`}
         >
           <span
@@ -172,6 +157,7 @@ export default function ComposeTab() {
             className="border border-gray-300 rounded-lg px-3 py-2 text-sm flex-grow"
           />
           <button
+            type="button"
             onClick={() => setComposeField("scheduleEnabled", false)}
             className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg"
           >
@@ -180,35 +166,47 @@ export default function ComposeTab() {
         </div>
       )}
 
-      {/* Footer Buttons */}
+      {/* Test email row */}
+      <div className="mt-5 pt-4 border-t border-gray-100">
+        <label className="text-sm font-medium text-gray-700">Send a test to</label>
+        <div className="mt-1.5 flex flex-col sm:flex-row gap-2">
+          <input
+            type="email"
+            value={testEmail}
+            onChange={(e) => setTestEmail(e.target.value)}
+            placeholder="you@company.com"
+            className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10"
+          />
+          <button
+            type="button"
+            onClick={handleSendTest}
+            disabled={sendingTest}
+            className="border border-gray-300 text-gray-700 text-sm font-medium px-4 py-2 rounded-lg hover:bg-gray-50 disabled:opacity-50 whitespace-nowrap"
+          >
+            {sendingTest ? "Sending..." : "Send Test"}
+          </button>
+        </div>
+      </div>
+
+      {/* Footer */}
       <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
         <p className="text-sm text-gray-500">
           Recipients:{" "}
           <span className="font-medium text-gray-900">{recipientsCount}</span>
         </p>
-        <div className="flex gap-3 w-full sm:w-auto">
-          <button
-            type="button"
-            onClick={handleSendTest}
-            disabled={sendingTest}
-            className="border border-gray-300 p-2 rounded-lg text-sm hover:bg-gray-50"
-          >
-            Send Test
-          </button>
-          <button
-            type="button"
-            onClick={handleSendNow}
-            disabled={sending}
-            className="bg-gray-900 text-white p-2 rounded-lg text-sm flex items-center justify-center gap-2 hover:bg-gray-800"
-          >
-            <FiSend size={14} />{" "}
-            {sending
-              ? "Sending..."
-              : composeForm.scheduleEnabled
-                ? "Schedule"
-                : "Send Now"}
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={handleSendNow}
+          disabled={sending}
+          className="w-full sm:w-auto bg-gray-900 text-white px-5 py-2 rounded-lg text-sm flex items-center justify-center gap-2 hover:bg-gray-800 disabled:opacity-50"
+        >
+          <FiSend size={14} />
+          {sending
+            ? "Sending..."
+            : composeForm.scheduleEnabled
+              ? "Schedule"
+              : "Send Now"}
+        </button>
       </div>
     </div>
   );

@@ -40,7 +40,7 @@ export default function CreateTestimonialPage() {
   async function handleSubmit(e) {
     e.preventDefault();
 
-    if (!fields.client_name.trim() || !fields.testimonial_text.trim()) {
+    if (!fields.full_name.trim() || !fields.testimonial_text.trim()) {
       toast.error("Name and testimonial text are required");
       return;
     }
@@ -49,16 +49,15 @@ export default function CreateTestimonialPage() {
 
     try {
       const formData = new FormData();
-      formData.append("client_name", fields.client_name);
-      formData.append("client_designation", fields.client_designation);
+      formData.append("full_name", fields.full_name);
+      formData.append("designation", fields.designation);
       formData.append("testimonial_text", fields.testimonial_text);
       formData.append("company", fields.company || "");
       formData.append("rating", String(rating));
 
       if (fileObj) {
-        formData.append("profile_image", fileObj);
+        formData.append("image", fileObj);
       }
-
       const res = await fetch(`${API_BASE}/api/testimonial/create`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
@@ -72,8 +71,8 @@ export default function CreateTestimonialPage() {
         throw new Error(
           Array.isArray(data.detail)
             ? data.detail
-                .map((e) => `${e.loc?.join(".")} — ${e.msg}`)
-                .join(", ")
+              .map((e) => `${e.loc?.join(".")} — ${e.msg}`)
+              .join(", ")
             : data.detail || "Create failed",
         );
       }
@@ -163,8 +162,8 @@ export default function CreateTestimonialPage() {
               Full Name <span className="text-red-400">*</span>
             </label>
             <input
-              name="client_name"
-              value={fields.client_name}
+              name="full_name"
+              value={fields.full_name}
               onChange={handleChange}
               placeholder="e.g. David Coper"
               className={inputStyles}
@@ -174,8 +173,8 @@ export default function CreateTestimonialPage() {
           <div>
             <label className={labelStyles}>Designation</label>
             <input
-              name="client_designation"
-              value={fields.client_designation}
+              name="designation"
+              value={fields.designation}
               onChange={handleChange}
               placeholder="e.g. Happy Customer"
               className={inputStyles}
