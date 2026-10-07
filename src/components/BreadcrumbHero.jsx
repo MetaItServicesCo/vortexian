@@ -5,7 +5,9 @@ import { motion } from "framer-motion";
 import { useContent } from "@/components/content/SiteContentProvider";
 import { mediaUrl } from "@/lib/api";
 
-const BreadcrumbHero = ({ title, currentPage }) => {
+// headingAs="p" on pages that render their own <h1> (one H1 per page for SEO)
+const BreadcrumbHero = ({ title, currentPage, headingAs = "h1" }) => {
+  const Heading = headingAs === "h1" ? motion.h1 : motion.p;
   const banner = useContent("page_banner");
   return (
     <section className="relative h-[300px] md:h-[400px] w-full flex items-center justify-center overflow-hidden font-sans">
@@ -23,14 +25,14 @@ const BreadcrumbHero = ({ title, currentPage }) => {
       {/* 2. Content Container (Full Width for Corner Positioning) */}
       <div className="relative z-10 w-full h-full max-w-7xl mx-auto px-6 md:px-20 flex flex-col justify-center items-center">
         {/* Page Title - Always Center */}
-        <motion.h1
+        <Heading
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           className="text-white text-4xl md:text-5xl font-bold uppercase tracking-[6px]"
         >
           {title}
-        </motion.h1>
+        </Heading>
 
         {/* --- SEO FRIENDLY BREADCRUMB (Aligned to Bottom Left Corner) --- */}
         <nav

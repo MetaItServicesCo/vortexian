@@ -13,6 +13,10 @@ import TestimonialSlider from "@/components/TestimonialSlider";
 import { serverApiUrl } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
+
+export const metadata = {
+  alternates: { canonical: "/" },
+};
 export const revalidate = 0;
 
 async function getList(path) {

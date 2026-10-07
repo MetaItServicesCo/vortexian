@@ -41,6 +41,7 @@ export async function generateMetadata({ params }) {
         keywords:
             project.meta_keywords ||
             `${project.category_node}, Web Development, Vortexian Tech`,
+        alternates: { canonical: `/portfolio/${project.id}` },
         openGraph: {
             title: project.meta_title || project.project_title,
             description: project.meta_description || "",
@@ -74,6 +75,7 @@ export default async function PortfolioDetailPage({ params }) {
 
             {/* Breadcrumb */}
             <BreadcrumbHero
+                headingAs="p"
                 title="Case Study"
                 currentPage={
                     project.project_title

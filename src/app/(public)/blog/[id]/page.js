@@ -30,7 +30,10 @@ export async function generateMetadata({ params }) {
     return {
         title: blog.meta_title || blog.title,
         description: blog.meta_description || blog.excerpt,
+        alternates: { canonical: `/blog/${blog.id}` },
         openGraph: {
+            type: "article",
+            url: `/blog/${blog.id}`,
             title: blog.meta_title || blog.title,
             description: blog.meta_description || blog.excerpt,
             images: blog.featured_image ? [getImageUrl(blog.featured_image)] : [],
@@ -45,7 +48,7 @@ export default async function BlogDetailPage({ params }) {
 
     return (
         <>
-            <BreadcrumbHero title="Blog" currentPage={blog.title} />
+            <BreadcrumbHero title="Blog" currentPage={blog.title} headingAs="p" />
 
             <main className="max-w-5xl mx-auto px-5 py-10">
 

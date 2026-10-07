@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { uploadMedia } from "@/lib/adminApi";
+import { linkAttributes } from "@/lib/links";
 
 // <video> blocks (used by the news feed). Sanitised server-side.
 const Video = Node.create({
@@ -98,7 +99,13 @@ export default function RichTextEditor({
         extensions: [
             StarterKit.configure({
                 heading: { levels: [2, 3, 4] },
-                link: { openOnClick: false, autolink: true, defaultProtocol: "https" },
+                link: {
+                    openOnClick: false,
+                    autolink: true,
+                    defaultProtocol: "https",
+                    // No blanket target/nofollow: set per link (see setLink)
+                    HTMLAttributes: { target: null, rel: null },
+                },
             }),
             TableKit.configure({ table: { resizable: true } }),
             Image.configure({ allowBase64: false }),
@@ -152,13 +159,16 @@ export default function RichTextEditor({
 
     const setLink = () => {
         const previous = editor.getAttributes("link").href || "";
-        const url = window.prompt("Link URL (leave empty to remove)", previous);
+        const url = window.prompt(
+            "Link URL — use /path for pages on this site (e.g. /services), or a full https:// address. Leave empty to remove.",
+            previous
+        );
         if (url === null) return;
         if (url.trim() === "") {
             chain().extendMarkRange("link").unsetLink().run();
             return;
         }
-        chain().extendMarkRange("link").setLink({ href: url.trim() }).run();
+        chain().extendMarkRange("link").setLink(linkAttributes(url.trim())).run();
     };
 
     const handleUpload = async (file, kind) => {

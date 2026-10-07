@@ -1,3 +1,5 @@
+import { normalizeLinks } from "@/lib/links";
+
 // Renders rich text from the editor. HTML is sanitised by the API on save.
 // Older records may hold plain text, which is shown as paragraphs.
 export default function RichText({ html, className = "" }) {
@@ -14,5 +16,5 @@ export default function RichText({ html, className = "" }) {
         );
     }
 
-    return <div className={`rich-content ${className}`} dangerouslySetInnerHTML={{ __html: html }} />;
+    return <div className={`rich-content ${className}`} dangerouslySetInnerHTML={{ __html: normalizeLinks(html) }} />;
 }
