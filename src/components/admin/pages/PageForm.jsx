@@ -16,6 +16,7 @@ const TEMPLATES = {
     "Terms & Conditions": `<h2>1. Acceptance of Terms</h2><p></p><h2>2. Services</h2><p></p><h2>3. Payments</h2><p></p><h2>4. Intellectual Property</h2><p></p><h2>5. Limitation of Liability</h2><p></p><h2>6. Governing Law</h2><p></p><h2>7. Changes to These Terms</h2><p></p>`,
     "Cookie Policy": `<h2>What Are Cookies</h2><p></p><h2>Cookies We Use</h2><table><tbody><tr><th><p>Cookie</p></th><th><p>Purpose</p></th><th><p>Duration</p></th></tr><tr><td><p></p></td><td><p></p></td><td><p></p></td></tr></tbody></table><h2>Managing Cookies</h2><p></p>`,
     "Refund Policy": `<h2>Eligibility</h2><p></p><h2>How to Request a Refund</h2><p></p><h2>Processing Time</h2><p></p>`,
+    "Disclaimer": `<h2>General Information</h2><p></p><h2>No Professional Advice</h2><p></p><h2>External Links</h2><p></p><h2>Limitation of Liability</h2><p></p><h2>Contact Us</h2><p></p>`,
 };
 
 export function slugify(text) {
