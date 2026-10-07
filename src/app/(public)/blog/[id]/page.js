@@ -5,9 +5,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import BreadcrumbHero from "@/components/BreadcrumbHero";
 import HeroBanner from "@/components/blog/HeroBanner";
+import { serverApiUrl } from "@/lib/api";
+import RichText from "@/components/content/RichText";
 
 async function getBlog(id) {
-    const res = await fetch(`https://vortexiantech.com/api/blog/${id}`, {
+    const res = await fetch(serverApiUrl(`/api/blog/${encodeURIComponent(id)}`), {
         cache: "no-store",
     });
     if (res.status === 404) return null;
@@ -76,7 +78,7 @@ export default async function BlogDetailPage({ params }) {
                             </h3>
 
                             <Link
-                                href="/hire-talent"
+                                href="/contact"
                                 className="flex items-center justify-center gap-2 bg-white text-[#1D1D7E] font-semibold text-sm px-4 py-2.5 rounded-lg mb-3 hover:bg-gray-100 transition-colors w-full"
                             >
                                 Hire Talent Now
@@ -86,7 +88,7 @@ export default async function BlogDetailPage({ params }) {
                             </Link>
 
                             <Link
-                                href="/find-job"
+                                href="/career"
                                 className="flex items-center justify-center gap-2 bg-[#22c55e] text-white font-semibold text-sm px-4 py-2.5 rounded-lg hover:bg-[#16a34a] transition-colors w-full"
                             >
                                 Find Job Now
@@ -131,13 +133,9 @@ export default async function BlogDetailPage({ params }) {
                     {/* Right side container se fixed height aur max-w hata dein */}
                     {/* ── RIGHT CONTENT ─────────────────────────────────── */}
                     <div className="flex-1 min-w-0 w-full overflow-hidden">
-                        <article
-                            className="prose prose-base max-w-none 
-                   prose-headings:font-bold prose-headings:text-gray-900 
-                   prose-p:text-gray-700 prose-a:text-[#1D1D7E] 
-                   break-words" // Yeh class text ko wrap hone par majboor karti hai
-                            dangerouslySetInnerHTML={{ __html: blog.content }}
-                        />
+                        <article>
+                            <RichText html={blog.content} className="text-[17px]" />
+                        </article>
                     </div>
                 </div>
 

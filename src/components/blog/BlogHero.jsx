@@ -2,9 +2,13 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import Image from "next/image";
+import { useContent } from "@/components/content/SiteContentProvider";
+import { mediaUrl } from "@/lib/api";
 
 export default function BlogHero() {
+  const hero = useContent("blog.hero");
+  const badges = (hero.badges || []).map((b) => b.text).filter(Boolean);
+
   return (
     <section className="relative bg-[#f4f4f8] overflow-hidden min-h-[520px] flex items-center py-14 mt-4">
       {/* Decorative Background Circles */}
@@ -20,7 +24,7 @@ export default function BlogHero() {
         >
           <div className="relative inline-block mb-4">
             <h1 className="text-4xl md:text-5xl font-extrabold text-[#1a1a2e] leading-tight">
-              Read our latest blogs
+              {hero.heading}
             </h1>
             <svg
               className="absolute -bottom-2 left-0 w-full"
@@ -40,7 +44,7 @@ export default function BlogHero() {
           </div>
 
           <p className="text-lg md:text-xl font-bold text-[#1a1a2e] mt-6 mb-8">
-            At TIGI HR we value your trust
+            {hero.subheading}
           </p>
 
           <div className="flex flex-wrap gap-4">
@@ -56,10 +60,10 @@ export default function BlogHero() {
                 transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
               />
               <Link
-                href="/hire-talent"
+                href={hero.primary_link || "/contact"}
                 className="relative flex items-center gap-2 text-white font-semibold px-7 py-3"
               >
-                Hire Talent Now →
+                {hero.primary_label}
               </Link>
             </motion.div>
 
@@ -80,10 +84,10 @@ export default function BlogHero() {
                 }}
               />
               <Link
-                href="/find-job"
+                href={hero.secondary_link || "/career"}
                 className="relative flex items-center gap-2 text-white font-semibold px-7 py-3"
               >
-                Find Job Now →
+                {hero.secondary_label}
               </Link>
             </motion.div>
           </div>
@@ -99,13 +103,15 @@ export default function BlogHero() {
             className="relative w-[300px] h-[300px] md:w-[400px] md:h-[400px] rounded-full bg-[#6B21D4] overflow-hidden flex items-center justify-center"
           >
             {/* CENTER IMAGE */}
-           <img src="/assets/images/ceo.jpeg" alt="CEO" className="w-full h-full object-cover opacity-90" />
+           {/* eslint-disable-next-line @next/next/no-img-element -- admin-uploaded image */}
+           {hero.image && <img src={mediaUrl(hero.image)} alt="" className="w-full h-full object-cover opacity-90" />}
           </motion.div>
 
           {/* Dashed Ring (Position absolute rakha hai taake image ke upar/peeche adjust ho) */}
           <div className="absolute w-[350px] h-[350px] md:w-[450px] md:h-[450px] rounded-full border-2 border-dashed border-[#22c55e]/50 pointer-events-none" />
 
           {/* Floating Badges */}
+          {badges[0] && (
           <motion.div
             animate={{ y: [0, -10, 0] }}
             transition={{ repeat: Infinity, duration: 4 }}
@@ -114,26 +120,31 @@ export default function BlogHero() {
             <div className="w-8 h-8 bg-gray-900 rounded-full flex items-center justify-center text-white text-xs">
               Q
             </div>
-            <span className="font-bold text-sm">Hire Faster</span>
+            <span className="font-bold text-sm">{badges[0]}</span>
           </motion.div>
+          )}
 
+          {badges[1] && (
           <motion.div
             animate={{ y: [0, -15, 0] }}
             transition={{ repeat: Infinity, duration: 5 }}
             className="absolute right-0 top-10 bg-white p-4 rounded-xl shadow-lg flex items-center gap-3 z-20"
           >
             <div className="w-8 h-8 bg-green-500 rounded-full" />
-            <span className="font-bold text-sm">Pay-Per-Hire</span>
+            <span className="font-bold text-sm">{badges[1]}</span>
           </motion.div>
+          )}
 
+          {badges[2] && (
           <motion.div
             animate={{ y: [0, -12, 0] }}
             transition={{ repeat: Infinity, duration: 4.5 }}
             className="absolute right-0 bottom-10 bg-[#f0ebfc] p-4 rounded-xl shadow-lg flex items-center gap-3 z-20"
           >
             <div className="w-8 h-8 bg-[#6B21D4]/20 rounded-full" />
-            <span className="font-bold text-sm">Hire Through Expert</span>
+            <span className="font-bold text-sm">{badges[2]}</span>
           </motion.div>
+          )}
         </div>
       </div>
     </section>

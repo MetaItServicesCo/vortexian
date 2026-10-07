@@ -1,7 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import { mediaUrl } from "@/lib/api";
+import { useContent } from "@/components/content/SiteContentProvider";
 
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay } from "swiper/modules";
@@ -9,7 +11,8 @@ import { Navigation, Autoplay } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 
-const testimonials = [
+// Shown until testimonials are added from the admin dashboard
+const fallbackTestimonials = [
   {
     id: 1,
     text: "Partnering with Vortexian Tech has been a game-changer for our business. Their tailored payroll management system not only streamlined our processes but also significantly reduced errors and compliance issues. The team's dedication and expertise are truly unmatched.",
@@ -33,7 +36,43 @@ const testimonials = [
   },
 ];
 
+function toSlide(t) {
+  const role = [t.client_designation, t.company].filter(Boolean).join(", ");
+  return {
+    id: t.id,
+    text: t.testimonial_text,
+    name: t.client_name,
+    role: role ? role.toUpperCase() : "HAPPY CUSTOMER",
+    image: mediaUrl(
+      t.profile_image,
+      `https://ui-avatars.com/api/?name=${encodeURIComponent(t.client_name)}&background=1D1D7E&color=fff`
+    ),
+  };
+}
+
 export default function TestimonialSlider() {
+  const [testimonials, setTestimonials] = useState(fallbackTestimonials);
+  const section = useContent("home.testimonials");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetch("/api/testimonials/", { cache: "no-store" })
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => {
+        if (!cancelled && Array.isArray(data) && data.length > 0) {
+          setTestimonials(data.map(toSlide));
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (!section.visible) return null;
+
   return (
     <section className="bg-[#F8F9FA] py-24 px-6 md:px-20 lg:px-32 overflow-hidden font-sans">
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
@@ -44,14 +83,12 @@ export default function TestimonialSlider() {
               <div className="w-8 h-[2px] bg-[#1D1D7E]"></div>
 
               <span className="text-[#5DB4D1] font-bold text-sm uppercase tracking-widest">
-                Our Testimonials
+                {section.eyebrow}
               </span>
             </div>
 
-            <h2 className="text-4xl md:text-5xl font-bold text-[#111] leading-tight">
-              What They&apos;re
-              <br />
-              Talking About us.
+            <h2 className="text-4xl md:text-5xl font-bold text-[#111] leading-tight whitespace-pre-line">
+              {section.heading}
             </h2>
           </div>
 
@@ -70,6 +107,7 @@ export default function TestimonialSlider() {
         {/* RIGHT SIDE */}
         <div className="lg:col-span-8 relative h-[450px] md:h-[350px]">
           <Swiper
+            key={testimonials.map((t) => t.id).join("-")}
             modules={[Navigation, Autoplay]}
             navigation={{
               prevEl: ".testimonial-prev",

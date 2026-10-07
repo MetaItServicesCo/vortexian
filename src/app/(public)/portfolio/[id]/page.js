@@ -4,12 +4,13 @@ export const revalidate = 0;
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import BreadcrumbHero from "@/components/BreadcrumbHero";
+import { serverApiUrl } from "@/lib/api";
 
 const API_BASE = "";
 
 async function getProject(id) {
     try {
-        const res = await fetch(`https://vortexiantech.com/api/portfolio/${id}`, {
+        const res = await fetch(serverApiUrl(`/api/portfolio/${encodeURIComponent(id)}`), {
             cache: "no-store",
             headers: { Accept: "application/json" },
         });
@@ -105,7 +106,7 @@ export default async function PortfolioDetailPage({ params }) {
                 <header className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-20 items-end mb-20">
                     <div className="lg:col-span-7 space-y-3">
                         <span className="text-[#5DB4D1] text-xs font-black uppercase tracking-[0.3em] block">
-                            // Project overview case
+                            {"// Project overview case"}
                         </span>
                         <h1 className="text-4xl md:text-6xl lg:text-7xl font-black uppercase tracking-tighter text-white leading-[0.95]">
                             {project.project_title}

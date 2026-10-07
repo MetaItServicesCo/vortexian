@@ -7,7 +7,7 @@ class BaseAdmin(BaseModel):
     
 class CreateAdmin(BaseAdmin):
     email:EmailStr
-    password:str=Field(max_length=8)
+    password:str=Field(min_length=8,max_length=128)
     admin_secret_key:str
 
 class Token(BaseModel):
@@ -265,6 +265,68 @@ class CareerApplicationResponse(BaseModel):
     cv_url: str
     show_contact_public: bool
     created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+# //////////testimonials //////////////////
+
+class TestimonialResponse(BaseModel):
+    id: int
+    client_name: str
+    client_designation: Optional[str] = None
+    company: Optional[str] = None
+    testimonial_text: str
+    rating: int
+    profile_image: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
+# //////////CMS pages //////////////////
+
+SLUG_PATTERN = r"^[a-z0-9]+(?:-[a-z0-9]+)*$"
+
+
+class PageBase(BaseModel):
+    title: str = Field(min_length=1, max_length=200)
+    slug: str = Field(min_length=1, max_length=150, pattern=SLUG_PATTERN)
+    content: str = ""
+    meta_title: Optional[str] = Field(default=None, max_length=200)
+    meta_description: Optional[str] = None
+    is_published: bool = True
+    show_in_footer: bool = True
+    footer_order: int = 0
+
+
+class CreatePage(PageBase):
+    pass
+
+
+class UpdatePage(BaseModel):
+    title: Optional[str] = Field(default=None, min_length=1, max_length=200)
+    slug: Optional[str] = Field(default=None, min_length=1, max_length=150, pattern=SLUG_PATTERN)
+    content: Optional[str] = None
+    meta_title: Optional[str] = Field(default=None, max_length=200)
+    meta_description: Optional[str] = None
+    is_published: Optional[bool] = None
+    show_in_footer: Optional[bool] = None
+    footer_order: Optional[int] = None
+
+
+class PageResponse(PageBase):
+    id: int
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+
+class PageLink(BaseModel):
+    title: str
+    slug: str
+    footer_order: int
 
     class Config:
         from_attributes = True

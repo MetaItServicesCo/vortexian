@@ -5,25 +5,28 @@ import BlogHero from "@/components/blog/BlogHero";
 import TrustedBy from "@/components/blog/TrustedBy";
 import HeroBanner from "@/components/blog/HeroBanner";
 import BlogGrid from "@/components/blog/BlogGrid";
+import { serverApiUrl, SITE_URL } from "@/lib/api";
+import { getSection } from "@/lib/content";
 
-export const metadata = {
-    title: "Blog | Latest Insights & Articles — TIGI HR",
-    description:
-        "Read the latest blogs from TIGI HR. Expert insights on hiring, talent acquisition, HR strategies, and career growth.",
-    keywords:
-        "HR blog, hiring tips, talent acquisition, recruitment, career advice, TIGI HR",
-    openGraph: {
-        title: "Blog | TIGI HR",
-        description:
-            "Expert HR insights, hiring tips, and career advice from TIGI HR.",
-        type: "website",
-    },
-};
+export async function generateMetadata() {
+    const page = await getSection("page.blog");
+    return {
+        title: page.meta_title,
+        description: page.meta_description,
+        alternates: { canonical: "/blog" },
+        openGraph: {
+            title: page.meta_title,
+            description: page.meta_description,
+            url: "/blog",
+            type: "website",
+        },
+    };
+}
 
 // ✅ SERVER SIDE API FETCH
 async function getBlogs() {
     try {
-        const res = await fetch("https://vortexiantech.com/api/blog/public", { cache: "no-store",
+        const res = await fetch(serverApiUrl("/api/blog/public"), {
             cache: "no-store",
         });
 
@@ -57,9 +60,9 @@ export default async function BlogPage() {
     const structuredData = {
         "@context": "https://schema.org",
         "@type": "Blog",
-        name: "TIGI HR Blog",
+        name: "Vortexian Tech Blog",
         description: "Expert HR insights and hiring advice.",
-        url: "https://tigihr.com/blog",
+        url: `${SITE_URL}/blog`,
     };
 
     return (

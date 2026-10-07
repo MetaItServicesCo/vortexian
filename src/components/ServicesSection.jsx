@@ -2,8 +2,11 @@
 import React from "react";
 import { motion } from "framer-motion"; // Animation library
 import { Users, Megaphone, Paintbrush, Cpu, Headset } from "lucide-react";
+import { useContent } from "@/components/content/SiteContentProvider";
+import DynamicIcon, { ICONS } from "@/components/content/DynamicIcon";
 
 const ServicesSection = ({ services: apiServices = [] }) => {
+  const section = useContent("home.services");
   const fallbackServices = [
     {
       id: "01",
@@ -46,7 +49,7 @@ const ServicesSection = ({ services: apiServices = [] }) => {
     ? apiServices.map((item, index) => ({
         id: String(index + 1).padStart(2, "0"),
         title: item.service_title,
-        icon: <Headset size={32} />,
+        icon: <DynamicIcon name={ICONS[item.lucide_icon] ? item.lucide_icon : "Headset"} size={32} />,
         hoverBg: index % 2 === 0 ? "hover:bg-[#17147B]" : "hover:bg-[#D47253]",
         gridSpan: index < 3 ? "lg:col-span-2" : "lg:col-span-3",
       }))
@@ -72,6 +75,8 @@ const ServicesSection = ({ services: apiServices = [] }) => {
   //   },
   // };
 
+  if (!section.visible) return null;
+
   return (
     <section className="bg-[#F2F2F2] py-20 px-6 md:px-20 lg:px-32 overflow-hidden">
       <div className="max-w-7xl mx-auto">
@@ -93,17 +98,16 @@ const ServicesSection = ({ services: apiServices = [] }) => {
                 className="h-[2px] bg-[#5DB4D1]"
               ></motion.div>
               <span className="text-[#5DB4D1] font-bold text-sm uppercase tracking-widest">
-                Our Services
+                {section.eyebrow}
               </span>
             </div>
             <h2 className="text-[32px] md:text-5xl font-[600] text-black tracking-tight leading-tight">
-              We Shape the Perfect Solution.
+              {section.heading}
             </h2>
           </div>
           <div className="lg:max-w-xs pt-4">
             <p className="text-gray-600 text-sm font-medium leading-relaxed">
-              Empowering your business with innovative strategies and tailored
-              solutions for sustainable growth.
+              {section.text}
             </p>
           </div>
         </motion.div>

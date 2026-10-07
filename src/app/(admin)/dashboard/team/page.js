@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { UserPlus, Edit3, Trash2, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { mediaUrl } from "@/lib/api";
 import toast, { Toaster } from "react-hot-toast";
 
 export default function AdminTeamDashboardManager() {
@@ -113,7 +114,7 @@ export default function AdminTeamDashboardManager() {
                                     <tr key={member.id} className="border-t">
                                         <td className="p-4 flex items-center gap-3">
                                             <img
-                                                src={`/${member.profile_image}`}
+                                                src={mediaUrl(member.profile_image)}
                                                 className="w-10 h-10 rounded-full object-cover"
                                             />
                                             <span className="font-bold uppercase">

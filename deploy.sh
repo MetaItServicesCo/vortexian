@@ -22,11 +22,10 @@ if [ ! -f /swapfile ]; then
     echo '/swapfile none swap sw 0 0' >> /etc/fstab
 fi
 
-# 3. Generate NEXTAUTH_SECRET if still placeholder
-if grep -q "REPLACE_WITH_GENERATED_SECRET" .env; then
-    SECRET=$(openssl rand -base64 32)
-    sed -i "s|NEXTAUTH_SECRET=.*|NEXTAUTH_SECRET=$SECRET|" .env
-    echo "✅ Generated NEXTAUTH_SECRET"
+# 3. Require an .env file (see .env.example)
+if [ ! -f .env ]; then
+    echo "❌ Missing .env — copy .env.example to .env and fill it in first."
+    exit 1
 fi
 
 # 4. Build and start

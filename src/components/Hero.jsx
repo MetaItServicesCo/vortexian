@@ -1,10 +1,13 @@
 "use client";
 import React, { useState, useRef } from "react";
 import { motion } from "framer-motion";
+import { useContent } from "@/components/content/SiteContentProvider";
+import { mediaUrl } from "@/lib/api";
 
 const Hero = () => {
   const [isMuted, setIsMuted] = useState(true);
   const videoRef = useRef(null);
+  const hero = useContent("home.hero");
 
   const toggleMute = () => {
     if (videoRef.current) {
@@ -12,6 +15,8 @@ const Hero = () => {
       setIsMuted(videoRef.current.muted);
     }
   };
+
+  if (!hero.visible || !hero.video) return null;
 
   return (
     <section className="relative w-full overflow-hidden bg-black mt-10 h-[30vh] sm:h-[40vh] md:h-screen">
@@ -22,9 +27,11 @@ const Hero = () => {
         loop
         muted={isMuted}
         playsInline
+        poster={mediaUrl(hero.poster) || undefined}
+        key={hero.video}
         className="absolute inset-0 w-full h-full object-cover object-center z-10"
       >
-        <source src="/assets/video/video-6mb.mp4" type="video/mp4" />
+        <source src={mediaUrl(hero.video)} />
         Your browser does not support the video tag.
       </video>
 
@@ -33,6 +40,7 @@ const Hero = () => {
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onClick={toggleMute}
+        aria-label={isMuted ? "Unmute video" : "Mute video"}
         className="absolute bottom-5 right-5 sm:bottom-10 sm:right-10 z-20 p-2 sm:p-3 bg-white/20 backdrop-blur-md rounded-full text-white border border-white/30 hover:bg-white/40 transition-all"
       >
         {isMuted ? (

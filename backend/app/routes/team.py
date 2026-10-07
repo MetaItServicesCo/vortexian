@@ -11,15 +11,13 @@ from app.schema import (
 )
 
 from app.routes.admin import get_current_admin_dependence
+from app.uploads import IMAGE_EXTENSIONS, MAX_IMAGE_BYTES, delete_upload, has_file, save_upload
 
 
 router = APIRouter()
 
 
 # CREATE TEAM
-
-from typing import Annotated
-
 @router.post("/create-team")
 def create_team(
     db: Annotated[Session, Depends(get_db)],
@@ -32,10 +30,7 @@ def create_team(
     linkedin_link: Optional[str] = Form(None),
     image: UploadFile = File(...)
 ):
-    file_location = f"uploads/{image.filename}"
-
-    with open(file_location, "wb+") as file_object:
-        file_object.write(image.file.read())
+    file_location = save_upload(image, "team", IMAGE_EXTENSIONS, MAX_IMAGE_BYTES)
 
     new_team = models.Team(
         full_name=full_name,
@@ -104,7 +99,7 @@ def update_team(
     facebook_link: Optional[str] = Form(None),
     instagram_link: Optional[str] = Form(None),
     linkedin_link: Optional[str] = Form(None),
-    profile_image: Optional[UploadFile] = File(None) # File optional rakhein
+    profile_image: Optional[UploadFile] = File(None)
 ):
     team = db.query(models.Team).filter(models.Team.id == team_id).first()
     if not team:
@@ -118,12 +113,11 @@ def update_team(
     team.instagram_link = instagram_link
     team.linkedin_link = linkedin_link
 
-    # Agar nayi image upload hui hai
-    if profile_image:
-        file_location = f"uploads/{profile_image.filename}"
-        with open(file_location, "wb+") as file_object:
-            file_object.write(profile_image.file.read())
-        team.profile_image = file_location
+    # Replace the image only when a new one is uploaded
+    if has_file(profile_image):
+        new_image = save_upload(profile_image, "team", IMAGE_EXTENSIONS, MAX_IMAGE_BYTES)
+        delete_upload(team.profile_image)
+        team.profile_image = new_image
 
     db.commit()
     db.refresh(team)
@@ -148,9 +142,10 @@ def delete_team(
             detail="Team member not found"
         )
 
+    image_path = team.profile_image
     db.delete(team)
-
     db.commit()
+    delete_upload(image_path)
 
     return {
         "message": "Team member deleted successfully"

@@ -1,18 +1,18 @@
 import BreadcrumbHero from "@/components/BreadcrumbHero";
 import CtaBanner from "@/components/CtaBanner";
 import PortfolioGrid from "@/components/portfolio/PortfolioGrid";
+import { serverApiUrl } from "@/lib/api";
+import { getSection } from "@/lib/content";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 async function getLivePortfolioData() {
     try {
-        const res = await fetch("https://vortexiantech.com/api/portfolio/", { cache: "no-store",
-            method: "GET",
+        const res = await fetch(serverApiUrl("/api/portfolio/"), {
             headers: {
                 "Accept": "application/json",
             },
-            next: { revalidate: 0 },
             cache: "no-store"
         });
 
@@ -32,7 +32,7 @@ async function getLivePortfolioData() {
 // DYNAMIC SEO METADATA FOR GOOGLE BOT
 // ==========================================
 export async function generateMetadata() {
-    const projects = await getLivePortfolioData();
+    const [projects, page] = await Promise.all([getLivePortfolioData(), getSection("page.portfolio")]);
 
     // Map keywords from active database nodes
     const dbKeywords = projects
@@ -44,20 +44,19 @@ export async function generateMetadata() {
     const combinedKeywords = dbKeywords ? `${baseKeywords}, ${dbKeywords}` : baseKeywords;
 
     // Map description from latest project for dynamic context
-    const dynamicDescription = projects[0]?.meta_description || 
-        "Explore our elite range of projects in web development, serverless applications, enterprise platforms, and custom digital architectures.";
+    const dynamicDescription = page.meta_description || projects[0]?.meta_description || "";
 
     return {
-        title: "Portfolio | Vortexian Tech - Showcasing Digital Excellence",
+        title: page.meta_title,
         description: dynamicDescription.substring(0, 160), // Google prefers max 160 chars
         keywords: combinedKeywords,
         alternates: {
-            canonical: `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/portfolio`,
+            canonical: "/portfolio",
         },
         openGraph: {
-            title: "Portfolio | Vortexian Tech - Showcasing Excellence",
+            title: page.meta_title,
             description: dynamicDescription.substring(0, 160),
-            url: `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/portfolio`,
+            url: "/portfolio",
             type: "website",
             images: [
                 {
@@ -77,14 +76,15 @@ export async function generateMetadata() {
 }
 
 export default async function PortfolioPage() {
+    const page = await getSection("page.portfolio");
     const liveProjects = await getLivePortfolioData();
 
     return (
         <main>
             {/* Structural Breadcrumb */}
             <BreadcrumbHero
-                title="PORTFOLIO"
-                currentPage="PORTFOLIO"
+                title={page.hero_title}
+                currentPage={page.hero_title}
             />
 
             {/* Injected Server side fetched dataset directly passed to layout client grid */}

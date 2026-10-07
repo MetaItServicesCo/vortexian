@@ -1,18 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session
-import shutil, uuid, os
-
 from app.database import get_db
 from app import models
 from app.schema import CreateBlog, UpdateBlog, BlogResponse
 from app.routes.admin import get_current_admin_dependence
+from app.sanitize import clean_html
+from app.uploads import IMAGE_EXTENSIONS, MAX_IMAGE_BYTES, delete_upload, has_file, save_upload
 
 
 router = APIRouter()
-
-UPLOAD_DIR = "uploads/blogs"
-os.makedirs(UPLOAD_DIR, exist_ok=True)
-
 
 @router.post("/create")
 def create_blog(
@@ -30,20 +26,13 @@ def create_blog(
 
     image_path = None
 
-    if image:
-        file_ext = image.filename.split(".")[-1]
-        file_name = f"{uuid.uuid4()}.{file_ext}"
-        file_location = f"{UPLOAD_DIR}/{file_name}"
-
-        with open(file_location, "wb") as buffer:
-            shutil.copyfileobj(image.file, buffer)
-
-        image_path = f"/uploads/blogs/{file_name}"
+    if has_file(image):
+        image_path = save_upload(image, "blogs", IMAGE_EXTENSIONS, MAX_IMAGE_BYTES)
 
     blog = models.Blog(
         title=title,
         excerpt=excerpt,
-        content=content,
+        content=clean_html(content),
         category=category,
         author=author,
         featured_image=image_path,
@@ -92,7 +81,11 @@ def update_blog(
     if not blog:
         raise HTTPException(status_code=404, detail="Blog not found")
 
-    for key, value in data.model_dump(exclude_unset=True).items():
+    updates = data.model_dump(exclude_unset=True)
+    if updates.get("content") is not None:
+        updates["content"] = clean_html(updates["content"])
+
+    for key, value in updates.items():
         setattr(blog, key, value)
 
     db.commit()
@@ -113,7 +106,9 @@ def delete_blog(
     if not blog:
         raise HTTPException(status_code=404, detail="Blog not found")
 
+    image_path = blog.featured_image
     db.delete(blog)
     db.commit()
+    delete_upload(image_path)
 
     return {"message": "Blog deleted successfully"}

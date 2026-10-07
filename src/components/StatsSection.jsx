@@ -1,19 +1,15 @@
 "use client";
 import React from "react";
 import { motion } from "framer-motion";
-import { Briefcase, Users, UserCheck, Star } from "lucide-react";
-import Image from "next/image";
+import Link from "next/link";
+import { useContent } from "@/components/content/SiteContentProvider";
+import { mediaUrl } from "@/lib/api";
+import DynamicIcon from "@/components/content/DynamicIcon";
 const StatsSection = () => {
-  const stats = [
-    {
-      label: "Projects Completed",
-      value: "8600",
-      icon: <Briefcase size={30} />,
-    },
-    { label: "Active Clients", value: "680", icon: <Users size={30} /> },
-    { label: "Expert People", value: "102", icon: <UserCheck size={30} /> },
-    { label: "Happy Clients", value: "7430", icon: <Star size={30} /> },
-  ];
+  const section = useContent("home.stats");
+  if (!section.visible) return null;
+
+  const stats = section.items || [];
 
   return (
     <section className="relative py-24 px-6 md:px-20 lg:px-32 font-sans overflow-hidden">
@@ -21,8 +17,7 @@ const StatsSection = () => {
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage:
-            "url('https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80')",
+          backgroundImage: section.background_image ? `url('${mediaUrl(section.background_image)}')` : undefined,
         }}
       >
         <div className="absolute inset-0 bg-black/35 backdrop-blur-[1px]"></div>
@@ -50,7 +45,7 @@ const StatsSection = () => {
                 {/* CSS Hexagon Shape */}
                 <div className="absolute inset-0 bg-white rotate-45 rounded-xl group-hover:rotate-[135deg] transition-transform duration-700"></div>
                 <div className="relative z-10 text-[#1D1D7E] group-hover:scale-110 transition-transform">
-                  {item.icon}
+                  <DynamicIcon name={item.icon} size={30} />
                 </div>
               </div>
 
@@ -83,27 +78,33 @@ const StatsSection = () => {
           <div className="flex flex-col md:flex-row items-center gap-8 text-center md:text-left">
           
             <div className="hidde lg:block -mb-5 lg:-mb-12 position-relative">
+              {section.cta_image && (
+              // eslint-disable-next-line @next/next/no-img-element -- admin-uploaded image
               <img
-                src="/assets/images/ceoo.png"
-                alt="Representative"
+                src={mediaUrl(section.cta_image)}
+                alt=""
                 className="h-[220px] lg:h-[400px] w-full  object-contain position-absolute top-[-100px] left-0 transform hover:scale-105 transition-transform duration-700"
               />
+              )}
             </div>
 
             <div className="text-white">
-              <h4 className="text-2xl md:text-3xl font-bold leading-tight">
-                Let’s Discuss How to <br /> Make your Business Better.
+              <h4 className="text-2xl md:text-3xl font-bold leading-tight whitespace-pre-line">
+                {section.cta_heading}
               </h4>
             </div>
           </div>
 
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="bg-[#111133] text-white px-8 py-4 font-bold text-xs uppercase tracking-widest hover:bg-white hover:text-[#111133] transition-all duration-300"
-          >
-            Discover More
-          </motion.button>
+          {section.cta_button_label && (
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Link
+                href={section.cta_button_link || "/about"}
+                className="inline-block bg-[#111133] text-white px-8 py-4 font-bold text-xs uppercase tracking-widest hover:bg-white hover:text-[#111133] transition-all duration-300"
+              >
+                {section.cta_button_label}
+              </Link>
+            </motion.div>
+          )}
         </motion.div>
       </div>
     </section>

@@ -1,11 +1,12 @@
 "use client";
 import React from "react";
+import Link from "next/link";
+import { useContent } from "@/components/content/SiteContentProvider";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
 import {
   User,
   ArrowRight,
-  MessageCircle,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
@@ -14,7 +15,8 @@ import {
 import "swiper/css";
 import "swiper/css/navigation";
 
-const blogPosts = [
+// Shown until blog posts are published from the admin dashboard
+const fallbackPosts = [
   {
     id: 1,
     author: "admin",
@@ -46,7 +48,13 @@ const blogPosts = [
   },
 ];
 
-const BlogSlider = () => {
+const BlogSlider = ({ posts = [] }) => {
+  const section = useContent("home.blog");
+  const hasLivePosts = posts.length > 0;
+  const blogPosts = hasLivePosts ? posts.slice(0, 8) : fallbackPosts;
+
+  if (!section.visible) return null;
+
   return (
     <section className="bg-white py-20 px-6 md:px-20 lg:px-32 font-sans overflow-hidden relative">
       <div className="max-w-7xl mx-auto">
@@ -56,11 +64,11 @@ const BlogSlider = () => {
             <div className="flex items-center gap-2 mb-4">
               <div className="w-8 h-[2px] bg-[#1D1D7E]"></div>
               <span className="text-[#5DB4D1] font-bold text-sm uppercase tracking-widest">
-                From The Blog
+                {section.eyebrow}
               </span>
             </div>
             <h2 className="text-4xl md:text-5xl font-black max-w-[600px] text-[#111] tracking-tight leading-[1.1]">
-              Latest News & Articles from the Blog.
+              {section.heading}
             </h2>
           </div>
 
@@ -119,8 +127,10 @@ const BlogSlider = () => {
                     </div>
 
                     {/* Title */}
-                    <h3 className="text-xl md:text-2xl font-black text-[#1D1D7E] leading-tight mb-4 hover:text-[#5DB4D1] cursor-pointer transition-colors duration-300 line-clamp-3">
-                      {post.title}
+                    <h3 className="text-xl md:text-2xl font-black text-[#1D1D7E] leading-tight mb-4 hover:text-[#5DB4D1] transition-colors duration-300 line-clamp-3">
+                      <Link href={hasLivePosts ? `/blog/${post.id}` : "/blog"}>
+                        {post.title}
+                      </Link>
                     </h3>
 
                     {/* Excerpt */}
@@ -131,16 +141,19 @@ const BlogSlider = () => {
 
                   {/* Footer Action Bars */}
                   <div className="bg-[#F8F9FA] px-8 py-5 flex justify-between items-center text-[10px] font-black tracking-widest uppercase border-t border-gray-50 mt-auto transition-colors duration-300 group-hover:bg-slate-50">
-                    <button className="flex items-center gap-2 text-[#5DB4D1] font-black transition-colors duration-300 group-hover:text-[#1D1D7E] cursor-pointer">
+                    <Link
+                      href={hasLivePosts ? `/blog/${post.id}` : "/blog"}
+                      className="flex items-center gap-2 text-[#5DB4D1] font-black transition-colors duration-300 group-hover:text-[#1D1D7E]"
+                    >
                       <ArrowRight
                         size={14}
                         className="transition-transform duration-300 group-hover:translate-x-1.5"
                       />{" "}
-                      More
-                    </button>
-                    <button className="flex items-center gap-2 text-[#5DB4D1] font-black transition-colors duration-300 hover:text-[#1D1D7E] cursor-pointer">
-                      <MessageCircle size={14} /> 0 Comments
-                    </button>
+                      Read More
+                    </Link>
+                    {post.category && (
+                      <span className="text-gray-400">{post.category}</span>
+                    )}
                   </div>
                 </div>
               </SwiperSlide>

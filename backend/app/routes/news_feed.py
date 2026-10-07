@@ -1,16 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session
-import os, uuid, shutil
 
 from app.database import get_db
 from app import models
 from app.schema import NewsFeedResponse
 from app.routes.admin import get_current_admin_dependence
+from app.sanitize import clean_html
+from app.uploads import IMAGE_EXTENSIONS, MAX_VIDEO_BYTES, VIDEO_EXTENSIONS, delete_upload, has_file, save_upload
 
 router = APIRouter()
 
-UPLOAD_DIR = "uploads/newsfeed"
-os.makedirs(UPLOAD_DIR, exist_ok=True)
+MEDIA_EXTENSIONS = IMAGE_EXTENSIONS | VIDEO_EXTENSIONS
 
 
 # ---------------- CREATE NEWS FEED ----------------
@@ -27,20 +27,13 @@ def create_news_feed(
 ):
     media_path = None
 
-    if file:
-        ext = file.filename.split(".")[-1]
-        filename = f"{uuid.uuid4()}.{ext}"
-        file_location = f"{UPLOAD_DIR}/{filename}"
-
-        with open(file_location, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
-
-        media_path = f"/uploads/newsfeed/{filename}"
+    if has_file(file):
+        media_path = save_upload(file, "newsfeed", MEDIA_EXTENSIONS, MAX_VIDEO_BYTES)
 
     news = models.NewsFeed(
         title=title,
         feed_type=feed_type,
-        description=description,
+        description=clean_html(description),
         author=author,
         event_date=event_date,
         media_url=media_path,
@@ -93,28 +86,16 @@ def update_news_feed(
     if not news:
         raise HTTPException(status_code=404, detail="News feed not found")
 
-    # Agar naya file upload hua to purana delete karo
-    if file and file.filename:
-        # Purana file delete
-        if news.media_url:
-            old_path = news.media_url.lstrip("/")
-            if os.path.exists(old_path):
-                os.remove(old_path)
-
-        # Naya file save
-        ext = file.filename.split(".")[-1]
-        filename = f"{uuid.uuid4()}.{ext}"
-        file_location = f"{UPLOAD_DIR}/{filename}"
-
-        with open(file_location, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
-
-        news.media_url = f"/uploads/newsfeed/{filename}"
+    # Replace media only when a new file is uploaded
+    if has_file(file):
+        new_media = save_upload(file, "newsfeed", MEDIA_EXTENSIONS, MAX_VIDEO_BYTES)
+        delete_upload(news.media_url)
+        news.media_url = new_media
 
     # Fields update karo
     news.title = title
     news.feed_type = feed_type
-    news.description = description
+    news.description = clean_html(description)
     news.author = author
     news.event_date = event_date
 
@@ -136,7 +117,9 @@ def delete_news_feed(
     if not news:
         raise HTTPException(status_code=404, detail="News feed not found")
 
+    media_path = news.media_url
     db.delete(news)
     db.commit()
+    delete_upload(media_path)
 
     return {"message": "News feed deleted successfully"}

@@ -1,8 +1,13 @@
 "use client";
 import React from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
+import { useContent } from "@/components/content/SiteContentProvider";
 
 const CtaBanner = () => {
+  const cta = useContent("home.cta");
+  if (!cta.visible) return null;
+
   return (
     <section className="py-12 px-6 md:px-20 lg:px-32 bg-white">
       <motion.div
@@ -15,22 +20,25 @@ const CtaBanner = () => {
         {/* --- LEFT TEXT CONTENT --- */}
         <div className="text-white space-y-2 text-center md:text-left">
           <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
-            Unlock expert guidance and insight
+            {cta.heading}
           </h2>
           <p className="text-lg md:text-xl font-medium opacity-90">
-            consult with us now for solutions tailored to your needs.
+            {cta.text}
           </p>
         </div>
 
         {/* --- RIGHT BUTTON CONTENT --- */}
         <div className="shrink-0">
-          <motion.button
-            whileHover={{ scale: 1.05, backgroundColor: "#000000" }}
-            whileTap={{ scale: 0.95 }}
-            className="bg-[#111133] text-white px-10 py-4 font-bold text-sm uppercase tracking-widest transition-colors duration-300 shadow-lg rounded-sm"
-          >
-            Get A Quote
-          </motion.button>
+          {cta.button_label && (
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Link
+                href={cta.button_link || "/contact"}
+                className="inline-block bg-[#111133] hover:bg-black text-white px-10 py-4 font-bold text-sm uppercase tracking-widest transition-colors duration-300 shadow-lg rounded-sm"
+              >
+                {cta.button_label}
+              </Link>
+            </motion.div>
+          )}
         </div>
 
         {/* Subtle Decorative Light Effect (Optional) */}

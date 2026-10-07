@@ -10,22 +10,27 @@ import RecruitmentBanner from "@/components/RecruitmentBanner";
 import ServicesSection from "@/components/ServicesSection";
 import StatsSection from "@/components/StatsSection";
 import TestimonialSlider from "@/components/TestimonialSlider";
+import { serverApiUrl } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-async function getServices() {
+async function getList(path) {
   try {
-    const res = await fetch("https://vortexiantech.com/api/services/", { cache: "no-store" });
+    const res = await fetch(serverApiUrl(path), { cache: "no-store" });
     if (!res.ok) return [];
-    return await res.json();
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
   } catch {
     return [];
   }
 }
 
 export default async function Home() {
-    const services = await getServices();
+    const [services, blogs] = await Promise.all([
+        getList("/api/services/"),
+        getList("/api/blog/public"),
+    ]);
     return (
         <>
             <Hero />
@@ -36,7 +41,7 @@ export default async function Home() {
             <EmployeePerks />
             <StatsSection />
             <TestimonialSlider />
-            <BlogSlider />
+            <BlogSlider posts={blogs} />
             <ContactSection />
             <CtaBanner />
             <NewsDrawerWrapper />

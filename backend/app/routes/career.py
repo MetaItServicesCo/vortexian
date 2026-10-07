@@ -1,19 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session
-import os, uuid, shutil
+from pydantic import EmailStr, TypeAdapter, ValidationError
 
 from app.database import get_db
 from app import models
 from app.schema import CareerApplicationResponse
 from app.routes.admin import get_current_admin_dependence
+from app.uploads import DOCUMENT_EXTENSIONS, MAX_DOCUMENT_BYTES, delete_upload, save_upload
 
 router = APIRouter()
-
-UPLOAD_DIR = "uploads/career"
-os.makedirs(UPLOAD_DIR, exist_ok=True)
-
-ALLOWED_EXTENSIONS = {"pdf", "doc", "docx"}
-
 
 # ---------------- CREATE CAREER APPLICATION ----------------
 @router.post("/", status_code=201)
@@ -27,21 +22,14 @@ def create_career_application(
     cv: UploadFile = File(...),
     db: Session = Depends(get_db),
 ):
-    ext = cv.filename.split(".")[-1].lower()
+    email = (email or "").strip() or None
+    if email:
+        try:
+            email = TypeAdapter(EmailStr).validate_python(email)
+        except ValidationError:
+            raise HTTPException(status_code=400, detail="Invalid email address")
 
-    if ext not in ALLOWED_EXTENSIONS:
-        raise HTTPException(
-            status_code=400,
-            detail="Only PDF, DOC, and DOCX files are allowed",
-        )
-
-    filename = f"{uuid.uuid4()}.{ext}"
-    file_location = f"{UPLOAD_DIR}/{filename}"
-
-    with open(file_location, "wb") as buffer:
-        shutil.copyfileobj(cv.file, buffer)
-
-    cv_path = f"/uploads/career/{filename}"
+    cv_path = save_upload(cv, "career", DOCUMENT_EXTENSIONS, MAX_DOCUMENT_BYTES)
 
     application = models.CareerApplication(
         company_name=company_name,
@@ -110,13 +98,9 @@ def delete_application(
     if not application:
         raise HTTPException(status_code=404, detail="Application not found")
 
-    # CV file bhi server se delete karo
-    if application.cv_url:
-        file_path = application.cv_url.lstrip("/")
-        if os.path.exists(file_path):
-            os.remove(file_path)
-
+    cv_path = application.cv_url
     db.delete(application)
     db.commit()
+    delete_upload(cv_path)
 
     return {"message": "Application deleted successfully"}

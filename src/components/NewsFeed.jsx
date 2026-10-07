@@ -144,7 +144,7 @@ export default function NewsFeed() {
                   {/* Description */}
                   {/* Description */}
                   <div
-                    className="text-[12px] text-gray-500 mb-2 ql-editor-preview"
+                    className="rich-content text-[12px] text-gray-500 mb-2 [&_*]:text-[12px]"
                     dangerouslySetInnerHTML={{ __html: item.description }}
                   />
 

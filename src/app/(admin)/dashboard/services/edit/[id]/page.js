@@ -4,8 +4,11 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Loader2, Save, Image as ImageIcon, Upload, Link2 } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 
-const BASE_URL = "/api/services/";
+const RichTextEditor = dynamic(() => import("@/components/editor/RichTextEditor"), { ssr: false });
+
+const BASE_URL = "/api/services";
 
 export default function EditServicePage({ params }) {
     const { id } = use(params);
@@ -97,7 +100,7 @@ export default function EditServicePage({ params }) {
         if (!file) return;
         setSelectedFile(file);
         setPreviewUrl(URL.createObjectURL(file));
-        toast.success("New asset image targeted!");
+        toast.success("Image selected — it will upload when you save.");
     };
 
     // ✅ SUBMIT — backend field names, PATCH, JSON body
@@ -137,6 +140,23 @@ export default function EditServicePage({ params }) {
                 },
                 body: JSON.stringify(updatePayload),
             });
+
+            if (res.ok && uploadType === "file" && selectedFile) {
+                const imageData = new FormData();
+                imageData.append("image_file", selectedFile);
+
+                const imageRes = await fetch(`${BASE_URL}/update-service-image/${id}`, {
+                    method: "POST",
+                    headers: { Authorization: `Bearer ${token}` },
+                    body: imageData,
+                });
+
+                if (!imageRes.ok) {
+                    const errorData = await imageRes.json().catch(() => ({}));
+                    toast.error(errorData.detail || "Details saved, but image upload failed.");
+                    return;
+                }
+            }
 
             if (res.ok) {
                 toast.success("Service updated successfully!");
@@ -268,8 +288,11 @@ export default function EditServicePage({ params }) {
                     </div>
                     <div>
                         <label className="text-xs font-black uppercase text-gray-400 block mb-1.5">Deep Long Content Description</label>
-                        <textarea rows="4" required value={formData.longDesc || ""} className="w-full p-3.5 bg-gray-50 border border-gray-200 rounded-xl text-base outline-none focus:ring-2 focus:ring-[#5DB4D1] focus:bg-white transition-all"
-                            onChange={(e) => setFormData({ ...formData, longDesc: e.target.value })} />
+                        <RichTextEditor
+                            value={formData.longDesc || ""}
+                            onChange={(value) => setFormData((prev) => ({ ...prev, longDesc: value }))}
+                            minHeight={220}
+                        />
                     </div>
                 </div>
 

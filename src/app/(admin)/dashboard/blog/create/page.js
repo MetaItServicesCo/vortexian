@@ -3,23 +3,9 @@
 import { useState } from "react";
 import dynamic from "next/dynamic";
 import axios from "axios";
-import "react-quill-new/dist/quill.snow.css";
 import { useRouter } from "next/navigation";
 
-const ReactQuill = dynamic(
-    () => import("react-quill-new"),
-    { ssr: false }
-);
-
-const modules = {
-    toolbar: [
-        [{ header: [1, 2, false] }],
-        ["bold", "italic", "underline", "strike"],
-        ["blockquote", "link", "image"],
-        [{ list: "ordered" }, { list: "bullet" }],
-        ["clean"],
-    ],
-};
+const RichTextEditor = dynamic(() => import("@/components/editor/RichTextEditor"), { ssr: false });
 
 export default function AddBlog() {
     const [loading, setLoading] = useState(false);
@@ -238,17 +224,15 @@ export default function AddBlog() {
                         Content
                     </label>
 
-                    <ReactQuill
-                        theme="snow"
-                        modules={modules}
+                    <RichTextEditor
                         value={formData.content}
                         onChange={(value) =>
-                            setFormData({
-                                ...formData,
+                            setFormData((prev) => ({
+                                ...prev,
                                 content: value,
-                            })
+                            }))
                         }
-                        className="mb-16"
+                        minHeight={400}
                     />
                 </div>
 

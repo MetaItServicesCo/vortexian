@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiPhoneCall, FiMail, FiChevronDown, FiLoader } from "react-icons/fi";
+import { useContent, useSettings } from "@/components/content/SiteContentProvider";
 import { IoCloseOutline } from "react-icons/io5";
 import toast, { Toaster } from "react-hot-toast";
 
@@ -25,14 +26,9 @@ const QuoteForm = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const availableServices = [
-    "Digital Marketing",
-    "Web Development",
-    "App Development",
-    "UI/UX Design",
-    "Cloud Solutions",
-    "Lead Generation",
-  ];
+  const form = useContent("contact.form");
+  const settings = useSettings();
+  const availableServices = (form.services || []).map((s) => s.name).filter(Boolean);
 
   const toggleService = (service) => {
     if (selectedServices.includes(service)) {
@@ -373,7 +369,7 @@ const QuoteForm = () => {
                   Submission...
                 </>
               ) : (
-                "Submit Request Quote"
+                form.submit_label
               )}
             </motion.button>
           </form>
@@ -387,7 +383,7 @@ const QuoteForm = () => {
           className="flex-1 space-y-12 lg:pt-20"
         >
           <h2 className="text-[#1D1D7E] text-3xl font-black tracking-tight uppercase border-b-2 border-gray-100 pb-3">
-            Contact Details
+            {form.details_heading}
           </h2>
           <div className="space-y-12">
             <div className="flex flex-col gap-3 group">
@@ -395,11 +391,11 @@ const QuoteForm = () => {
                 <FiPhoneCall size={22} />
               </div>
               <h4 className="text-slate-400 text-xs font-black uppercase tracking-widest mt-2">
-                Phone Operations
+                {form.phone_label}
               </h4>
-              <p className="text-[#1D1D7E] font-black text-xl hover:text-[#5DB4D1] transition-colors cursor-pointer">
-                +92 335 4018789
-              </p>
+              <a href={`tel:${(settings.phone || "").replace(/[^\d+]/g, "")}`} className="text-[#1D1D7E] font-black text-xl hover:text-[#5DB4D1] transition-colors">
+                {settings.phone}
+              </a>
             </div>
 
             <div className="flex flex-col gap-3 group">
@@ -407,11 +403,11 @@ const QuoteForm = () => {
                 <FiMail size={22} />
               </div>
               <h4 className="text-slate-400 text-xs font-black uppercase tracking-widest mt-2">
-                Enterprise Mailbox
+                {form.email_label}
               </h4>
-              <p className="text-[#1D1D7E] font-black text-xl hover:text-[#5DB4D1] transition-colors cursor-pointer">
-                info@vortexiantech.com
-              </p>
+              <a href={`mailto:${settings.enquiries_email}`} className="text-[#1D1D7E] font-black text-xl hover:text-[#5DB4D1] transition-colors break-all">
+                {settings.enquiries_email}
+              </a>
             </div>
           </div>
         </motion.div>

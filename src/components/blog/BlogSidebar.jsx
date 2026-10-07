@@ -105,10 +105,10 @@ export default function BlogSidebar({ popularPosts, categories }) {
         </div>
         <h4 className="font-bold text-base mb-2">Looking to Hire?</h4>
         <p className="text-white/70 text-sm leading-relaxed mb-4">
-          Connect with top talent through TIGI HR's expert recruitment network.
+          Connect with top talent through Vortexian Tech&apos;s expert recruitment network.
         </p>
         <Link
-          href="/hire-talent"
+          href="/contact"
           className="inline-flex items-center gap-2 bg-[#22c55e] text-white text-sm font-bold px-5 py-2.5 rounded-lg hover:bg-[#16a34a] transition-colors w-full justify-center"
         >
           Hire Talent Now

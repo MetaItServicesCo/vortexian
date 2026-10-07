@@ -6,12 +6,14 @@ import { notFound } from "next/navigation";
 import { cache } from "react";
 import { CheckCircle2, Shield, Zap, Target } from "lucide-react";
 import BreadcrumbHero from "@/components/BreadcrumbHero";
+import { serverApiUrl } from "@/lib/api";
+import RichText from "@/components/content/RichText";
 
 // ✅ Direct FastAPI URL, slug se match karo
 const getLiveServiceData = cache(async (slug) => {
     try {
         const res = await fetch(
-            `https://vortexiantech.com/api/services/${slug}`,
+            serverApiUrl(`/api/services/${encodeURIComponent(slug)}`),
             { cache: "no-store" }
         );
         if (!res.ok) return null;
@@ -98,9 +100,10 @@ export default async function ServiceDetailPage({ params }) {
 
                     <article className="space-y-4">
                         <h2 className="text-[14px] font-black uppercase text-[#5DB4D1] tracking-[0.2em]">Core Overview</h2>
-                        <p className="text-white/80 text-base sm:text-lg leading-relaxed font-medium">
-                            {service.long_description} {/* ✅ */}
-                        </p>
+                        <RichText
+                            html={service.long_description}
+                            className="rich-content-invert text-base sm:text-lg font-medium"
+                        />
                     </article>
 
                     {features.length > 0 && (

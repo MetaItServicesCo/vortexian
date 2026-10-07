@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast";
 import { Loader2 } from "lucide-react";
@@ -119,12 +120,12 @@ export default function LoginPage() {
 
         <p className="text-center text-[12px] text-gray-400 mt-6 font-bold uppercase tracking-wider">
           Don&apos;t have an account?{" "}
-          <a
+          <Link
             href="/register"
             className="text-[#1D1D7E] text-[12px] hover:text-[#5DB4D1] transition-colors"
           >
             Register
-          </a>
+          </Link>
         </p>
       </div>
     </div>

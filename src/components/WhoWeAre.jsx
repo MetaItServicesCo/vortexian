@@ -1,9 +1,15 @@
 "use client";
 import React from "react";
 import { motion } from "framer-motion";
+import { useContent } from "@/components/content/SiteContentProvider";
+import { mediaUrl } from "@/lib/api";
+import RichText from "@/components/content/RichText";
 import { HelpCircle } from "lucide-react"; // Alternative icon if 3D image is not available
 
 const WhoWeAre = () => {
+  const section = useContent("about.who");
+  if (!section.visible) return null;
+
   return (
     <section className="bg-white py-20 px-6 md:px-20 lg:px-32 font-sans overflow-hidden">
       <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-12 lg:gap-24">
@@ -16,21 +22,13 @@ const WhoWeAre = () => {
           className="flex-[1.2] space-y-6"
         >
           <h2 className="text-[#1D1D7E] text-3xl md:text-[38px] font-bold tracking-tight">
-            Who We Are?
+            {section.heading}
           </h2>
 
-          <p className="text-gray-800 text-[15px] md:text-[16px] leading-[1.8] font-medium text-justify">
-            Welcome to <span className="font-bold">Vortexian Tech</span>, where
-            our commitment to driving businesses towards unparalleled success is
-            unwavering. We understand that in today’s rapidly evolving
-            landscape, businesses require multifaceted support to thrive. That’s
-            why we offer a comprehensive suite of services spanning staffing,
-            payroll management, creativity, marketing, technology solutions,
-            consultancy, and lead generation. Each of these capabilities is
-            meticulously designed to address the diverse needs of our clients,
-            empowering them to navigate challenges with confidence and seize
-            opportunities with clarity.
-          </p>
+          <RichText
+            html={section.body_html}
+            className="text-gray-800 text-[15px] md:text-[16px] leading-[1.8] font-medium text-justify [&_strong]:text-[#1D1D7E]"
+          />
         </motion.div>
 
         {/* --- RIGHT SIDE: 3D ICON / IMAGE --- */}
@@ -45,6 +43,10 @@ const WhoWeAre = () => {
           }}
           className="flex-1 flex justify-center items-center"
         >
+          {section.image ? (
+            // eslint-disable-next-line @next/next/no-img-element -- admin-uploaded image
+            <img src={mediaUrl(section.image)} alt="" className="w-full max-w-md h-auto object-contain" />
+          ) : (
           <div className="relative group">
             {/* 3D Question Mark Image Placeholder */}
             {/* Aap yahan apni actual 3D image use kar sakte hain */}
@@ -68,6 +70,7 @@ const WhoWeAre = () => {
             {/* Subtle shadow glow below the icon */}
             <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-32 h-6 bg-black/5 blur-2xl rounded-full"></div>
           </div>
+          )}
         </motion.div>
       </div>
     </section>

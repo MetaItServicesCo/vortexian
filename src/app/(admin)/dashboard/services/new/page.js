@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import axios from "axios";
 import {
     ArrowLeft,
@@ -14,6 +15,8 @@ import {
 
 import toast, { Toaster } from "react-hot-toast";
 import Link from "next/link";
+
+const RichTextEditor = dynamic(() => import("@/components/editor/RichTextEditor"), { ssr: false });
 
 export default function CreateNewService() {
 
@@ -541,17 +544,15 @@ export default function CreateNewService() {
                             Deep Long Content Description
                         </label>
 
-                        <textarea
-                            rows="4"
-                            required
-                            className="w-full p-3.5 bg-gray-50 border border-gray-200 rounded-xl"
+                        <RichTextEditor
                             value={formData.longDesc}
-                            onChange={(e) =>
-                                setFormData({
-                                    ...formData,
-                                    longDesc: e.target.value
-                                })
+                            onChange={(value) =>
+                                setFormData((prev) => ({
+                                    ...prev,
+                                    longDesc: value
+                                }))
                             }
+                            minHeight={220}
                         />
                     </div>
                 </div>

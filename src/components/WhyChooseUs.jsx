@@ -1,9 +1,15 @@
 "use client";
 import React from "react";
 import { motion } from "framer-motion";
+import { useContent } from "@/components/content/SiteContentProvider";
+import { mediaUrl } from "@/lib/api";
+import RichText from "@/components/content/RichText";
 import { Search } from "lucide-react"; // Alternative for the magnifying glass
 
 const WhyChooseUs = () => {
+  const section = useContent("about.why");
+  if (!section.visible) return null;
+
   return (
     <section className="bg-white py-20 px-6 md:px-20 lg:px-32 font-sans overflow-hidden">
       <div className="max-w-7xl mx-auto flex flex-col lg:flex-row-reverse items-center gap-12 lg:gap-24">
@@ -16,22 +22,13 @@ const WhyChooseUs = () => {
           className="flex-[1.2] space-y-6"
         >
           <h2 className="text-[#1D1D7E] text-3xl md:text-[38px] font-bold tracking-tight">
-            Why Choose Us?
+            {section.heading}
           </h2>
 
-          <p className="text-gray-800 text-[15px] md:text-[16px] leading-[1.8] font-medium text-justify">
-            At Vortexian Tech, we’re dedicated to delivering tailored,
-            innovative
-            <span className="text-[#1D1D7E] font-semibold">
-              {" "}
-              IT solutions
-            </span>{" "}
-            that drive business success. With a proven track record of
-            excellence, we prioritize your unique needs, ensuring superior
-            quality, expert support, and a customer-centric approach. Partner
-            with us to elevate your technology strategy and achieve your
-            business goals with confidence.
-          </p>
+          <RichText
+            html={section.body_html}
+            className="text-gray-800 text-[15px] md:text-[16px] leading-[1.8] font-medium text-justify [&_strong]:text-[#1D1D7E]"
+          />
         </motion.div>
 
         {/* --- LEFT SIDE: 3D MAGNIFYING GLASS IMAGE --- */}
@@ -42,6 +39,10 @@ const WhyChooseUs = () => {
           transition={{ duration: 1.4 }}
           className="flex-1 flex justify-center items-center relative"
         >
+          {section.image ? (
+            // eslint-disable-next-line @next/next/no-img-element -- admin-uploaded image
+            <img src={mediaUrl(section.image)} alt="" className="w-full max-w-md h-auto object-contain" />
+          ) : (
           <div className="relative group">
             {/* 3D Image Placeholder */}
             {/* Aap yahan apni actual PNG image use kar sakte hain jo image_dc3157.png jaisi ho */}
@@ -79,6 +80,7 @@ const WhyChooseUs = () => {
               ))}
             </div>
           </div>
+          )}
         </motion.div>
       </div>
     </section>

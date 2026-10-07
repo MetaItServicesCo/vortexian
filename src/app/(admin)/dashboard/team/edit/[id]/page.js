@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import Link from "next/link";
+import { mediaUrl } from "@/lib/api";
 
 export default function EditTeamProfilePanel() {
     const router = useRouter();
@@ -58,7 +59,7 @@ export default function EditTeamProfilePanel() {
 
                 // Existing image preview
                 if (data.profile_image) {
-                    setPreviewUrl(`${data.profile_image}`);
+                    setPreviewUrl(mediaUrl(data.profile_image));
                 }
             } catch (err) {
                 toast.error(err.message);

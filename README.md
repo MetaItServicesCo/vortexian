@@ -1,36 +1,106 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Vortexian Tech
 
-## Getting Started
+Company website and admin dashboard for [vortexiantech.com](https://vortexiantech.com).
 
-First, run the development server:
+| Part | Stack | Location |
+| --- | --- | --- |
+| Frontend | Next.js 16 (App Router), React 19, Tailwind 4 | `src/` |
+| Backend API | FastAPI, SQLAlchemy 2, PostgreSQL | `backend/` |
+| Deployment | Docker Compose behind host nginx | `docker-compose.yml`, `deploy.sh`, `nginx-host.conf` |
+
+The browser only ever talks to Next.js. Next proxies `/api/*` and `/uploads/*` to
+FastAPI (see `next.config.mjs`). Server Components call the API directly using
+`serverApiUrl()` from `src/lib/api.js`.
+
+## Local development
+
+**Backend** (Python 3.12):
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cd backend
+python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+cp ../.env.example .env        # fill in; DATABASE_URL can be sqlite:///./dev.db locally
+uvicorn app.main:app --reload --port 8000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+API docs: http://127.0.0.1:8000/docs
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+**Frontend:**
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm install
+BACKEND_URL=http://127.0.0.1:8000 API_INTERNAL_URL=http://127.0.0.1:8000 npm run dev
+```
 
-## Learn More
+Open http://localhost:3000. Create the first admin at `/register` using `ADMIN_SECRET_KEY`.
 
-To learn more about Next.js, take a look at the following resources:
+## Environment variables
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+All documented in [`.env.example`](.env.example). The non-obvious ones:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `BACKEND_URL`: where Next proxies `/api` and `/uploads`. Read at **build time**
+  (rewrites are compiled into the build). Defaults to `http://backend:8000`.
+- `API_INTERNAL_URL`: base URL for server-side fetches. Defaults to
+  `NEXT_PUBLIC_SITE_URL`. Docker sets it to `http://backend:8000`.
+- `ENABLE_NEWSLETTER_SCHEDULER`: off by default. The job runs once per uvicorn
+  worker, so only enable it with a single worker.
 
-## Deploy on Vercel
+## Deployment
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+cp .env.example .env   # fill in real secrets
+./deploy.sh
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Then follow the nginx and certbot steps the script prints. The backend port is
+bound to `127.0.0.1:8001` for debugging only. Public traffic goes nginx → frontend.
+
+Uploaded files persist in `./uploads` on the host.
+
+## Content management
+
+Admins edit the site from the dashboard without code changes:
+
+| Dashboard section | What it controls | Stored in |
+| --- | --- | --- |
+| **Basic Info** | Company name, logo, emails, phone, WhatsApp, address, office hours, social links, default SEO | `SiteContent` key `settings` |
+| **Site Content** | Every text/image block on every page, header menu, footer, page banners, per-page SEO, show/hide per section | `SiteContent`, one key per section |
+| **Pages** | Standalone pages (privacy policy, terms, …) served at `/<slug>`, optionally listed in the footer | `Page` table |
+
+How it fits together:
+
+- [`src/content/registry.js`](src/content/registry.js) declares every editable section: its form
+  fields and its **default content**. The site shows the defaults until an admin saves changes,
+  and saved values are merged over them, so adding a field is backwards-compatible.
+- The public layout loads all content once per request (`src/lib/content.js`) and exposes it
+  through `useContent(key)` / `useSettings()`.
+- The admin form at `/dashboard/content/<key>` is generated from the registry. No per-section
+  admin code needed.
+
+**To make a new block editable:** add an entry (or field) to the registry with defaults, then
+read it in the component with `useContent("<key>")`. Rich text field names must end in `_html`
+(the API sanitises those).
+
+### Rich text editor
+
+`src/components/editor/RichTextEditor.jsx` (TipTap) is used for blog posts, news feed, service
+descriptions, custom pages and rich text content fields. It supports headings, lists, links,
+alignment, image/video upload and tables. Tables pasted from Word, Excel, Google Docs/Sheets or
+web pages stay tables; tab-separated text is converted too.
+
+Rich text HTML is sanitised server-side on save (`backend/app/sanitize.py`).
+
+## Uploads
+
+All file uploads go through `backend/app/uploads.py`, which enforces an extension
+allowlist and size limits, stores files under random names, and cleans up
+replaced/deleted files. Use it for any new upload field.
+
+## Notes
+
+- Tables are created at startup via `Base.metadata.create_all`. The single Alembic
+  migration does not cover `NewsFeed`, `career_applications`, `Testimonial`, `SiteContent` or `Page`;
+  generate a new migration before relying on Alembic for schema changes.
+- Admin auth: JWT in `localStorage`, validated by `AdminGuard` on every
+  dashboard page. The API enforces auth independently.

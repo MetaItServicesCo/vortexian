@@ -1,11 +1,15 @@
 "use client";
 
-import Image from "next/image";
+import { useContent } from "@/components/content/SiteContentProvider";
+import { mediaUrl } from "@/lib/api";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function HeroBanner() {
+  const banner = useContent("blog.banner");
+  if (!banner.visible) return null;
+
   return (
     <section className="bg-[#f5f5f7] py-16 lg:py-24 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 lg:px-6">
@@ -66,13 +70,14 @@ export default function HeroBanner() {
                 }}
                 className="relative h-[300px] sm:h-[400px] lg:h-[400px] w-full"
               >
-                <Image
-                  src="/assets/images/ceo.jpeg"
-                  alt="Professional"
-                  fill
-                  priority
-                  className="object-contain object-bottom"
-                />
+                {banner.image && (
+                  // eslint-disable-next-line @next/next/no-img-element -- admin-uploaded image
+                  <img
+                    src={mediaUrl(banner.image)}
+                    alt=""
+                    className="absolute inset-0 w-full h-full object-contain object-bottom"
+                  />
+                )}
               </motion.div>
             </motion.div>
 
@@ -97,7 +102,7 @@ export default function HeroBanner() {
                 }}
                 className="text-white text-2xl md:text-3xl lg:text-5xl font-bold leading-tight"
               >
-                We understand the critical need for timely, high-quality hires!
+                {banner.heading}
               </motion.h2>
 
               <motion.div
@@ -120,10 +125,10 @@ export default function HeroBanner() {
                   }}
                 >
                   <Link
-                    href="/hire-talent"
+                    href={banner.primary_link || "/contact"}
                     className="inline-flex items-center gap-3 bg-white text-[#2D145E] px-8 py-4 rounded-2xl font-semibold shadow-lg"
                   >
-                    Hire Talent Now
+                    {banner.primary_label}
                     <motion.div
                       animate={{
                         x: [0, 5, 0],
@@ -149,10 +154,10 @@ export default function HeroBanner() {
                   }}
                 >
                   <Link
-                    href="/jobs"
+                    href={banner.secondary_link || "/career"}
                     className="inline-flex items-center gap-3 bg-[#1FC400] text-white px-8 py-4 rounded-2xl font-semibold shadow-lg"
                   >
-                    Find Job Now
+                    {banner.secondary_label}
                     <motion.div
                       animate={{
                         x: [0, 5, 0],

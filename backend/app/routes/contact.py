@@ -1,16 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form 
 from sqlalchemy.orm import Session
-import shutil, uuid, os
+from pydantic import EmailStr, ValidationError
 
 from app.database import get_db
 from app import models
 from app.schema import ContactResponse
 from app.routes.admin import get_current_admin_dependence
+from app.uploads import ATTACHMENT_EXTENSIONS, MAX_DOCUMENT_BYTES, delete_upload, has_file, save_upload
 
 router = APIRouter()
-
-UPLOAD_DIR = "uploads/contacts"
-os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
 @router.post("/", status_code=201)
@@ -18,7 +16,7 @@ def create_contact(
     first_name: str = Form(...),
     last_name: str = Form(...),
     phone: str = Form(...),
-    email: str = Form(...),
+    email: EmailStr = Form(...),
     preferred_contact_method: str = Form(...),
     service: str = Form(...),
     website_url: str = Form(None),
@@ -30,15 +28,8 @@ def create_contact(
 
     file_path = None
 
-    if file:
-        file_ext = file.filename.split(".")[-1]
-        file_name = f"{uuid.uuid4()}.{file_ext}"
-        file_location = f"{UPLOAD_DIR}/{file_name}"
-
-        with open(file_location, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
-
-        file_path = f"/uploads/contacts/{file_name}"
+    if has_file(file):
+        file_path = save_upload(file, "contacts", ATTACHMENT_EXTENSIONS, MAX_DOCUMENT_BYTES)
 
     contact = models.Contact(
         first_name=first_name,
@@ -86,7 +77,9 @@ def delete_contact(
     if not contact:
         raise HTTPException(status_code=404, detail="Contact not found")
 
+    file_path = contact.project_file
     db.delete(contact)
     db.commit()
+    delete_upload(file_path)
 
     return {"message": "Contact deleted successfully"}

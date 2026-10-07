@@ -1,6 +1,8 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { motion, animate } from "framer-motion";
+import { useContent } from "@/components/content/SiteContentProvider";
 
 // --- COUNTER COMPONENT ---
 const RollingNumber = ({ value, isFirstLoad }) => {
@@ -27,6 +29,7 @@ const RollingNumber = ({ value, isFirstLoad }) => {
 const RecruitmentBanner = () => {
   const [currentTime, setCurrentTime] = useState(null);
   const [isFirstLoad, setIsFirstLoad] = useState(true);
+  const banner = useContent("home.recruitment");
 
   useEffect(() => {
     // 2 seconds baad isFirstLoad ko false kar denge taake loop khatam ho jaye
@@ -51,7 +54,8 @@ const RecruitmentBanner = () => {
     };
   }, []);
 
-  if (!currentTime) return null;
+  if (!banner.visible) return null;
+  if (banner.show_clock && !currentTime) return null;
 
   return (
     <section className="bg-white py-16 px-4 md:px-20 lg:px-32 font-sans overflow-hidden">
@@ -67,7 +71,7 @@ const RecruitmentBanner = () => {
           <div className="relative inline-block mb-2">
             <h2 className="text-[32px] md:text-[44px] font-bold text-[#111] leading-[1.1] tracking-tight">
               <span className="relative">
-                RECRUIT
+                {banner.heading_underlined}
                 <motion.span
                   initial={{ width: 0 }}
                   whileInView={{ width: "100%" }}
@@ -75,8 +79,8 @@ const RecruitmentBanner = () => {
                   className="absolute bottom-0 left-0 h-[2px] bg-black"
                 ></motion.span>
               </span>{" "}
-              <span className="text-[#1D1D7E]">WORKFORCES</span> FOR COUNTRYWIDE
-              PROJECTS
+              <span className="text-[#1D1D7E]">{banner.heading_highlight}</span>{" "}
+              {banner.heading_rest}
             </h2>
           </div>
 
@@ -86,19 +90,23 @@ const RecruitmentBanner = () => {
             transition={{ delay: 1.2, duration: 1 }}
             className="text-[17px] md:text-[20px] font-bold text-black mt-8 mb-8"
           >
-            Offering Limited Time Discount On Recruitment Services
+            {banner.subheading}
           </motion.p>
 
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="bg-[#1D1D7E] text-white px-10 py-5 text-[13px] font-bold uppercase tracking-wider hover:bg-black transition-all shadow-lg"
-          >
-            Get In Touch
-          </motion.button>
+          {banner.button_label && (
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="inline-block">
+              <Link
+                href={banner.button_link || "/contact"}
+                className="inline-block bg-[#1D1D7E] text-white px-10 py-5 text-[13px] font-bold uppercase tracking-wider hover:bg-black transition-all shadow-lg"
+              >
+                {banner.button_label}
+              </Link>
+            </motion.div>
+          )}
         </motion.div>
 
         {/* --- RIGHT SIDE --- */}
+        {banner.show_clock && (
         <div className="flex items-center gap-2 md:gap-3 mt-4">
           {[
             { label: "DATE", val: currentTime.days },
@@ -134,6 +142,7 @@ const RecruitmentBanner = () => {
             </motion.div>
           ))}
         </div>
+        )}
       </div>
     </section>
   );

@@ -1,45 +1,68 @@
 "use client";
 import React, { useState } from "react";
 import Link from "next/link";
-// Dono libraries se icons import karein
-import { FaFacebook, FaLinkedinIn } from "react-icons/fa";
+import { FaFacebook, FaLinkedinIn, FaInstagram, FaXTwitter, FaYoutube } from "react-icons/fa6";
 import { Mail, Menu, X, ChevronDown } from "lucide-react";
-import Logo from "../../public/assets/images/logo-f.png";
-import Image from "next/image";
+import { useContent, useSettings } from "@/components/content/SiteContentProvider";
+import { mediaUrl } from "@/lib/api";
+
+const TOP_BAR_SOCIALS = [
+  { key: "facebook", Icon: FaFacebook, label: "Facebook" },
+  { key: "linkedin", Icon: FaLinkedinIn, label: "LinkedIn" },
+  { key: "instagram", Icon: FaInstagram, label: "Instagram" },
+  { key: "twitter", Icon: FaXTwitter, label: "X" },
+  { key: "youtube", Icon: FaYoutube, label: "YouTube" },
+];
+
+// Menu items may have no link of their own (dropdown-only parents)
+function MenuLink({ href, children, ...props }) {
+  if (!href) return <span {...props}>{children}</span>;
+  return <Link href={href} {...props}>{children}</Link>;
+}
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const settings = useSettings();
+  const header = useContent("header");
+  const menu = header.menu || [];
+  const socials = TOP_BAR_SOCIALS.filter((s) => settings[s.key]);
 
   return (
     <nav className="w-full fixed top-0 z-50 shadow-sm">
       {/* --- TOP BAR --- */}
-      <div className="bg-[#5DB4D1] text-white py-2 px-4 md:px-12 flex justify-between items-center text-sm">
-        <div className="flex items-center gap-2">
-          <Mail size={16} />
-          <span className="hidden sm:inline">farina@vortexiantech.com</span>
+      {header.show_top_bar && (
+        <div className="bg-[#5DB4D1] text-white py-2 px-4 md:px-12 flex justify-between items-center text-sm min-h-9">
+          <div className="flex items-center gap-2">
+            {settings.email && (
+              <>
+                <Mail size={16} />
+                <a href={`mailto:${settings.email}`} className="hidden sm:inline hover:text-gray-200">
+                  {settings.email}
+                </a>
+              </>
+            )}
+          </div>
+          <div className="flex items-center gap-4">
+            {socials.map(({ key, Icon, label }) => (
+              <a key={key} href={settings[key]} target="_blank" rel="noopener noreferrer" aria-label={label} className="hover:text-gray-200 transition">
+                <Icon size={18} />
+              </a>
+            ))}
+          </div>
         </div>
-        <div className="flex items-center gap-4">
-          <Link href="#" className="hover:text-gray-200 transition">
-            <FaFacebook size={18} />
-          </Link>
-          <Link href="#" className="hover:text-gray-200 transition">
-            {/* Lucide wala Linkedin icon agar use karna hai */}
-            <FaLinkedinIn size={18} />
-          </Link>
-        </div>
-      </div>
+      )}
 
       {/* --- MAIN NAVIGATION --- */}
       <div className="bg-white py-4 px-4 md:px-12 flex justify-between items-center ">
         {/* Logo Section */}
         <div className="flex items-center">
           <Link href="/">
-            <Image
-              src={Logo} // Direct import object pass karein, Next.js background mein khud .src nikal lega
-              alt="Vortexian Tech Logo"
-              width={200} // Pixels dynamic range standard
+            {/* eslint-disable-next-line @next/next/no-img-element -- logo is admin-uploaded */}
+            <img
+              src={mediaUrl(settings.logo, "/assets/images/logo-f.png")}
+              alt={`${settings.site_name} Logo`}
+              width={200}
               height={90}
-              priority // Target LCP image optimizations parameters
               className="object-contain w-[200px] h-[90px]"
             />
           </Link>
@@ -47,57 +70,45 @@ const Navbar = () => {
 
         {/* Desktop Menu */}
         <div className="hidden lg:flex items-center gap-8 font-semibold text-[#002B5B]">
-          <Link href="/" className="hover:text-[#5DB4D1] transition">
-            HOME
-          </Link>
-
-          <div className="group relative cursor-pointer flex items-center gap-1 hover:text-[#5DB4D1] transition">
-            <Link href="/services">SERVICES</Link> <ChevronDown size={16} />
-            <div className="absolute top-full left-0 hidden group-hover:block bg-white shadow-lg p-4 w-48 border-t-2 border-[#5DB4D1]">
-              <ul className="flex flex-col gap-2 text-sm text-slate-700">
-                <li className="hover:text-[#5DB4D1]">Web Development</li>
-                <li className="hover:text-[#5DB4D1]">Digital Marketing</li>
-              </ul>
-            </div>
-          </div>
-
-          <Link href="/career" className="hover:text-[#5DB4D1] transition">
-            CAREER
-          </Link>
-
-          <div className="group relative cursor-pointer flex items-center gap-1 hover:text-[#5DB4D1] transition">
-            ABOUT <ChevronDown size={16} />
-            <div className="absolute top-full left-0 hidden group-hover:block bg-white shadow-lg p-4 w-48 border-t-2 border-[#5DB4D1]">
-              <ul className="flex flex-col gap-2 text-sm text-slate-700">
-                <li className="hover:text-[#5DB4D1]">
-                  <Link href="/about">About Us</Link>
-                </li>
-                <li className="hover:text-[#5DB4D1]">
-                  <Link href="/portfolio">Portfolio</Link>
-                </li>
-                <li className="hover:text-[#5DB4D1]">
-                  <Link href="/blog">Blog</Link>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          <Link href="/contact" className="hover:text-[#5DB4D1] transition">
-            CONTACT US
-          </Link>
+          {menu.map((item, i) =>
+            item.children?.length ? (
+              <div key={i} className="group relative cursor-pointer flex items-center gap-1 hover:text-[#5DB4D1] transition">
+                <MenuLink href={item.href}>{item.label}</MenuLink> <ChevronDown size={16} />
+                <div className="absolute top-full left-0 hidden group-hover:block bg-white shadow-lg p-4 w-48 border-t-2 border-[#5DB4D1]">
+                  <ul className="flex flex-col gap-2 text-sm text-slate-700">
+                    {item.children.map((child, j) => (
+                      <li key={j} className="hover:text-[#5DB4D1]">
+                        <MenuLink href={child.href}>{child.label}</MenuLink>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            ) : (
+              <MenuLink key={i} href={item.href} className="hover:text-[#5DB4D1] transition">
+                {item.label}
+              </MenuLink>
+            )
+          )}
         </div>
 
         {/* Get A Quote Button */}
-        <div className="hidden lg:block">
-          <button className="bg-[#1D1D42] text-white px-8 py-3 font-bold hover:bg-[#5DB4D1] transition uppercase tracking-wider">
-            Get A Quote
-          </button>
-        </div>
+        {header.cta_label && (
+          <div className="hidden lg:block">
+            <Link
+              href={header.cta_link || "/contact"}
+              className="inline-block bg-[#1D1D42] text-white px-8 py-3 font-bold hover:bg-[#5DB4D1] transition uppercase tracking-wider"
+            >
+              {header.cta_label}
+            </Link>
+          </div>
+        )}
 
         {/* Mobile Hamburger Icon */}
         <div className="lg:hidden">
           <button
             onClick={() => setIsOpen(!isOpen)}
+            aria-label={isOpen ? "Close menu" : "Open menu"}
             className="text-[#002B5B] focus:outline-none"
           >
             {isOpen ? <X size={28} /> : <Menu size={28} />}
@@ -107,26 +118,29 @@ const Navbar = () => {
 
       {/* --- MOBILE MENU --- */}
       {isOpen && (
-        <div className="lg:hidden bg-white w-full border-b shadow-xl absolute top-full left-0">
+        <div className="lg:hidden bg-white w-full border-b shadow-xl absolute top-full left-0 max-h-[70vh] overflow-y-auto">
           <div className="flex flex-col p-6 gap-4 font-semibold text-[#002B5B]">
-            <Link href="/" onClick={() => setIsOpen(false)}>
-              HOME
-            </Link>
-            <Link href="/services" onClick={() => setIsOpen(false)}>
-              SERVICES
-            </Link>
-            <Link href="/career" onClick={() => setIsOpen(false)}>
-              CAREER
-            </Link>
-            <Link href="/about" onClick={() => setIsOpen(false)}>
-              ABOUT
-            </Link>
-            <Link href="/contact" onClick={() => setIsOpen(false)}>
-              CONTACT US
-            </Link>
-            <button className="bg-[#1D1D42] text-white px-6 py-3 mt-2 font-bold">
-              GET A QUOTE
-            </button>
+            {menu.map((item, i) => (
+              <div key={i} className="flex flex-col gap-2">
+                <MenuLink href={item.href} onClick={() => setIsOpen(false)}>
+                  {item.label}
+                </MenuLink>
+                {item.children?.map((child, j) => (
+                  <MenuLink key={j} href={child.href} onClick={() => setIsOpen(false)} className="pl-4 text-sm font-medium text-slate-600">
+                    {child.label}
+                  </MenuLink>
+                ))}
+              </div>
+            ))}
+            {header.cta_label && (
+              <Link
+                href={header.cta_link || "/contact"}
+                onClick={() => setIsOpen(false)}
+                className="bg-[#1D1D42] text-white px-6 py-3 mt-2 font-bold text-center uppercase"
+              >
+                {header.cta_label}
+              </Link>
+            )}
           </div>
         </div>
       )}

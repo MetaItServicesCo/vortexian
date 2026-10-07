@@ -11,23 +11,27 @@ from sqlalchemy import select
 from app.auth import admin_oauth2_scheme
 from app.config import ADMIN_SECRET_KEY
 from sqlalchemy.orm import Session
+import secrets
 
 
 router=APIRouter()
 
 @router.post("/register-admin",
+             response_model=BaseAdmin,
              status_code=status.HTTP_201_CREATED)
 def create_admin(data:CreateAdmin,
                  db:Annotated[Session,Depends(get_db)]):
     
-    if data.admin_secret_key != ADMIN_SECRET_KEY:
+    if not ADMIN_SECRET_KEY or not secrets.compare_digest(data.admin_secret_key, ADMIN_SECRET_KEY):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Invalid admin secret key"
         )
 
-    result=db.execute(select(models.Admin).where(models.Admin.username==data.username))
-     
+    result=db.execute(select(models.Admin).where(
+        (models.Admin.username==data.username) | (models.Admin.email==data.email)
+    ))
+
     existing_admin=result.scalars().first()
 
     if existing_admin:

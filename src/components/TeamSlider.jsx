@@ -13,6 +13,7 @@ import {
 } from "react-icons/hi";
 
 import "swiper/css";
+import { useContent } from "@/components/content/SiteContentProvider";
 
 /* ✅ SINGLE IMAGE HELPER (FINAL FIX) */
 const getImageUrl = (path) => {
@@ -28,6 +29,7 @@ const getImageUrl = (path) => {
 const TeamSlider = () => {
   const [teamMembers, setTeamMembers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const section = useContent("about.team");
 
   useEffect(() => {
     async function getTeamRoster() {
@@ -65,6 +67,8 @@ const TeamSlider = () => {
     getTeamRoster();
   }, []);
 
+  if (!section.visible) return null;
+
   if (loading) {
     return (
       <div className="w-full py-32 bg-white flex items-center justify-center font-sans text-sm font-black uppercase tracking-widest text-[#1D1D7E]">
@@ -86,7 +90,7 @@ const TeamSlider = () => {
     <section className="bg-white py-24 px-6 md:px-20 lg:px-32 font-sans overflow-hidden relative">
       {/* Background Text */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[15vw] font-black text-slate-100/60 uppercase pointer-events-none select-none tracking-tighter -z-10">
-        Vortexian
+        {section.watermark}
       </div>
 
       <div className="max-w-[1200px] mx-auto relative z-10">
@@ -94,13 +98,13 @@ const TeamSlider = () => {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 gap-8">
           <div>
             <span className="text-[#5DB4D1] text-xs font-black uppercase tracking-[0.3em] mb-3 block">
-              Meet The Minds
+              {section.eyebrow}
             </span>
 
             <h2 className="text-4xl md:text-5xl font-black text-black tracking-tighter uppercase leading-none">
-              Architects of <br />
+              {section.heading} <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#1D1D7E] to-[#5DB4D1]">
-                Digital Innovation
+                {section.heading_highlight}
               </span>
             </h2>
           </div>

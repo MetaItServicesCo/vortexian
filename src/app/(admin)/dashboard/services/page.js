@@ -44,7 +44,7 @@ export default function AdminServicesList() {
 
         try {
             const token = localStorage.getItem("token"); // ✅ fix 2
-            await axios.delete(`${API_URL}/delete-service/${id}`, {
+            await axios.delete(`/api/services/delete-service/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 

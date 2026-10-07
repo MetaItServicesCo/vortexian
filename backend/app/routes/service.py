@@ -1,12 +1,13 @@
 from fastapi import APIRouter, status, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from typing import Annotated
-import shutil, os, uuid
 
 from app.database import get_db
 from app import models
 from app.schema import CreateService, ServiceResponse, UpdateService
 from app.routes.admin import get_current_admin_dependence
+from app.sanitize import clean_html
+from app.uploads import IMAGE_EXTENSIONS, MAX_IMAGE_BYTES, delete_upload, has_file, save_upload
 
 router = APIRouter()
 
@@ -44,20 +45,15 @@ def create_service(
     image_path = None
 
     if image_source_type == "url":
+        if not image_showcase_url:
+            raise HTTPException(status_code=400, detail="Image URL required")
         image_path = image_showcase_url
 
     elif image_source_type == "file":
-        if not image_file:
+        if not has_file(image_file):
             raise HTTPException(status_code=400, detail="Image file required")
 
-        file_extension = image_file.filename.split(".")[-1]
-        file_name = f"{uuid.uuid4()}.{file_extension}"
-        file_location = f"uploads/services/{file_name}"
-
-        with open(file_location, "wb") as buffer:
-            shutil.copyfileobj(image_file.file, buffer)
-
-        image_path = f"/uploads/services/{file_name}"
+        image_path = save_upload(image_file, "services", IMAGE_EXTENSIONS, MAX_IMAGE_BYTES)
     else:
         raise HTTPException(status_code=400, detail="Invalid image source type")
 
@@ -69,7 +65,7 @@ def create_service(
         image_source_type=image_source_type,
         image_showcase_url=image_path,
         short_description=short_description,
-        long_description=long_description,
+        long_description=clean_html(long_description),
         feature_1=feature_1,
         feature_2=feature_2,
         feature_3=feature_3,
@@ -129,11 +125,41 @@ def update_service(
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Slug already exists")
 
     update_data = data.model_dump(exclude_unset=True)
+    if update_data.get("long_description") is not None:
+        update_data["long_description"] = clean_html(update_data["long_description"])
+    old_image = service.image_showcase_url
     for key, value in update_data.items():
         setattr(service, key, value)
 
     db.commit()
     db.refresh(service)
+
+    if service.image_showcase_url != old_image:
+        delete_upload(old_image)
+
+    return service
+
+
+@router.post("/update-service-image/{service_id}", response_model=ServiceResponse)
+def update_service_image(
+    service_id: int,
+    db: Annotated[Session, Depends(get_db)],
+    image_file: UploadFile = File(...),
+    admin: models.Admin = Depends(get_current_admin_dependence)
+):
+    service = db.query(models.Service).filter(models.Service.id == service_id).first()
+    if not service:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Service not found")
+
+    new_image = save_upload(image_file, "services", IMAGE_EXTENSIONS, MAX_IMAGE_BYTES)
+    old_image = service.image_showcase_url
+
+    service.image_source_type = "file"
+    service.image_showcase_url = new_image
+    db.commit()
+    db.refresh(service)
+
+    delete_upload(old_image)
     return service
 
 
@@ -147,6 +173,8 @@ def delete_service(
     if not service:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Service not found")
 
+    image_path = service.image_showcase_url
     db.delete(service)
     db.commit()
+    delete_upload(image_path)
     return {"message": "Service deleted successfully"}

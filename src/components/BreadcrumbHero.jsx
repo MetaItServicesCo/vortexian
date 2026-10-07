@@ -2,16 +2,18 @@
 import React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { useContent } from "@/components/content/SiteContentProvider";
+import { mediaUrl } from "@/lib/api";
 
 const BreadcrumbHero = ({ title, currentPage }) => {
+  const banner = useContent("page_banner");
   return (
     <section className="relative h-[300px] md:h-[400px] w-full flex items-center justify-center overflow-hidden font-sans">
       {/* 1. Background Image with Dark Overlay */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage:
-            "url('https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80')",
+          backgroundImage: banner.background_image ? `url('${mediaUrl(banner.background_image)}')` : undefined,
           backgroundAttachment: "fixed",
         }}
       >

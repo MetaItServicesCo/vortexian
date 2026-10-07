@@ -1,82 +1,18 @@
 "use client";
 import React from "react";
 import { motion } from "framer-motion";
-import {
-  DollarSign,
-  Heart,
-  Users,
-  Utensils,
-  Cake,
-  Handshake,
-  BookOpen,
-  Wallet,
-  GraduationCap,
-  Dumbbell,
-} from "lucide-react";
+import { useContent } from "@/components/content/SiteContentProvider";
+import DynamicIcon from "@/components/content/DynamicIcon";
 
 const EmployeePerks = () => {
-  const perks = [
-    {
-      title: "Compensation",
-      icon: <DollarSign size={24} />,
-      desc: "Competitive salary and performance bonuses. The company covers conferences, certifications, courses, and internet service.",
-      span: "lg:col-span-2",
-    },
-    {
-      title: "Health & Wellness",
-      icon: <Heart size={24} />,
-      desc: "We offer top-tier international medical coverage and pays for 100% of the insurance cost for its employees.",
-      span: "lg:col-span-2",
-    },
-    {
-      title: "Family",
-      icon: <Users size={24} />,
-      desc: "Parental leave, flexible vacation time and time-off policies. Kids + pet friendly office and liberal WFH policies.",
-      span: "lg:col-span-2",
-    },
-    {
-      title: "Food",
-      icon: <Utensils size={24} />,
-      desc: "We provide catered, gourmet meals every weekday and stock an impressive supply of cold-pressed juices and snacks.",
-      span: "lg:col-span-2",
-    },
-    {
-      title: "Birthday Celebrations",
-      icon: <Cake size={24} />,
-      desc: "Birthday celebrations include company-sponsored parties, gifts, and paid time off, ensuring all employees feel valued.",
-      span: "lg:col-span-2",
-    },
-    {
-      title: "All Hands",
-      icon: <Handshake size={24} />,
-      desc: "Weekly meetings dedicated to English proficiency and company news, plus a monthly Tech-Lunch meeting.",
-      span: "lg:col-span-2",
-    },
-    {
-      title: "Access to Course and Certification",
-      icon: <BookOpen size={24} />,
-      desc: "Employees have access to courses and certifications fully funded by the company, encouraging continuous development.",
-      span: "lg:col-span-3",
-    },
-    {
-      title: "Employee Loan",
-      icon: <Wallet size={24} />,
-      desc: "Employee loan programs offer financial assistance with favorable terms, helping staff manage personal expenses.",
-      span: "lg:col-span-3",
-    },
-    {
-      title: "Paid Trainings",
-      icon: <GraduationCap size={24} />,
-      desc: "The company provides paid trainings to employees, ensuring ongoing professional development and skill enhancement.",
-      span: "lg:col-span-3",
-    },
-    {
-      title: "Gym Membership",
-      icon: <Dumbbell size={24} />,
-      desc: "The company provides paid trainings to enhance employee skills and knowledge, supporting professional advancement.",
-      span: "lg:col-span-3",
-    },
-  ];
+  const section = useContent("home.perks");
+  if (!section.visible) return null;
+
+  // First six cards take a third of the row, the rest half (matches the original layout)
+  const perks = (section.items || []).map((perk, index) => ({
+    ...perk,
+    span: index < 6 ? "lg:col-span-2" : "lg:col-span-3",
+  }));
 
   return (
     <section className="bg-[#1D1D7E] py-20 px-6 md:px-20 lg:px-32">
@@ -89,8 +25,8 @@ const EmployeePerks = () => {
           className="text-center mb-16"
         >
           <div className="w-10 h-[2px] bg-[#5DB4D1] mx-auto mb-4"></div>
-          <h2 className="text-white text-3xl md:text-5xl font-extrabold uppercase tracking-tight">
-            What We Do For Our <br /> Employees
+          <h2 className="text-white text-3xl md:text-5xl font-extrabold uppercase tracking-tight whitespace-pre-line">
+            {section.heading}
           </h2>
         </motion.div>
 
@@ -114,7 +50,7 @@ const EmployeePerks = () => {
 
               {/* Floating Icon */}
               <div className="absolute top-6 left-8 w-14 h-14 bg-white rounded-full shadow-md flex items-center justify-center text-black z-20 group-hover:bg-[#5DB4D1] group-hover:text-white transition-all duration-500 group-hover:scale-110">
-                {perk.icon}
+                <DynamicIcon name={perk.icon} size={24} />
               </div>
 
               {/* Content */}

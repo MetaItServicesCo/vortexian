@@ -6,20 +6,21 @@ import CeoMessage from "@/components/CeoMessage";
 import WhoWeAre from "@/components/WhoWeAre";
 import WhyChooseUs from "@/components/WhyChooseUs";
 import TeamSlider from "@/components/TeamSlider";
+import { getSection, pageMetadata } from "@/lib/content";
 
 // SEO Metadata
-export const metadata = {
-    title: "About Us | Vortexian Tech - Our Story & Mission",
-    description: "Learn more about Vortexian Tech. We are a team of expert developers and strategists dedicated to providing innovative business solutions.",
-};
+export function generateMetadata() {
+    return pageMetadata("page.about", "/about");
+}
 
-export default function AboutPage() {
+export default async function AboutPage() {
+    const page = await getSection("page.about");
     return (
         <main>
             {/* 1. Hero Section (Same as Career but with About Title) */}
             <BreadcrumbHero
-                title="ABOUT US"
-                currentPage="ABOUT US"
+                title={page.hero_title}
+                currentPage={page.hero_title}
             />
 
             <CeoMessage />

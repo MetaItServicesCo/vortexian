@@ -182,3 +182,56 @@ class CareerApplication(Base):
     cv_url = Column(String, nullable=False)
     show_contact_public = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+# ///////// testimonials //////////
+
+class Testimonial(Base):
+    __tablename__ = "Testimonial"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+
+    client_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    client_designation: Mapped[str | None] = mapped_column(String(150), nullable=True)
+    company: Mapped[str | None] = mapped_column(String(150), nullable=True)
+
+    testimonial_text: Mapped[str] = mapped_column(Text, nullable=False)
+    rating: Mapped[int] = mapped_column(Integer, nullable=False, default=5)
+
+    profile_image: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    created_at = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+# ///////// CMS: editable site content //////////
+
+class SiteContent(Base):
+    """One JSON document per key: "settings" for global site info, plus one
+    per editable page section (e.g. "home.about")."""
+    __tablename__ = "SiteContent"
+
+    key: Mapped[str] = mapped_column(String(100), primary_key=True)
+    data: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+    updated_at = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+
+# ///////// CMS: custom pages (legal pages etc.) //////////
+
+class Page(Base):
+    __tablename__ = "Page"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    slug: Mapped[str] = mapped_column(String(150), unique=True, nullable=False, index=True)
+    content: Mapped[str] = mapped_column(Text, nullable=False, default="")
+
+    meta_title: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    meta_description: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    is_published: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    show_in_footer: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    footer_order: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+
+    created_at = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())

@@ -86,10 +86,12 @@ def delete_subscriber(
 
 
 @router.get("/test-email")
-async def test_email():
+async def test_email(
+    admin: models.Admin = Depends(get_current_admin_dependence),
+):
     try:
         await send_newsletter_email(
-            email="vortexian@gmail.com",
+            email=admin.email,
             subject="Test Email",
             body="<h1>Email Working Successfully</h1>",
         )

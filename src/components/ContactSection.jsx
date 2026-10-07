@@ -3,9 +3,13 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import toast, { Toaster } from "react-hot-toast";
 import { FiLoader } from "react-icons/fi";
+import { useContent, useSettings } from "@/components/content/SiteContentProvider";
+import { mediaUrl } from "@/lib/api";
 
 const ContactSection = () => {
   const [loading, setLoading] = useState(false);
+  const section = useContent("home.contact");
+  const settings = useSettings();
 
   const handleFormPost = async (e) => {
     e.preventDefault();
@@ -51,6 +55,8 @@ const ContactSection = () => {
     }
   };
 
+  if (!section.visible) return null;
+
   return (
     <section className="bg-white py-20 px-4 md:px-10 lg:px-20 font-sans overflow-hidden">
       <Toaster position="top-center" />
@@ -68,11 +74,11 @@ const ContactSection = () => {
               <div className="flex flex-col gap-1 mb-4">
                 <div className="w-8 h-[2.5px] bg-[#1D1D7E]"></div>
                 <span className="text-[12px] font-bold uppercase tracking-widest">
-                  Contact Us
+                  {section.eyebrow}
                 </span>
               </div>
               <h2 className="text-4xl md:text-5xl font-bold">
-                Drop us a Line.
+                {section.heading}
               </h2>
             </div>
 
@@ -149,17 +155,19 @@ const ContactSection = () => {
                     <FiLoader className="animate-spin" /> Processing...
                   </>
                 ) : (
-                  "Send A Message"
+                  section.button_label
                 )}
               </motion.button>
             </form>
           </div>
 
-          <div className="absolute right-0 top-0 bottom-0 w-16 bg-[#1D1D7E]/40 hidden lg:flex items-center justify-center">
-            <p className="rotate-90 whitespace-nowrap text-[16px] font-bold tracking-[3px] text-white opacity-80">
-              Office Hours: Monday- Friday 8:00 AM - 5:00 PM (CST)
-            </p>
-          </div>
+          {settings.office_hours && (
+            <div className="absolute right-0 top-0 bottom-0 w-16 bg-[#1D1D7E]/40 hidden lg:flex items-center justify-center">
+              <p className="rotate-90 whitespace-nowrap text-[16px] font-bold tracking-[3px] text-white opacity-80">
+                Office Hours: {settings.office_hours}
+              </p>
+            </div>
+          )}
         </motion.div>
 
         {/* RIGHT IMAGE (SAME) */}
@@ -169,11 +177,14 @@ const ContactSection = () => {
           transition={{ duration: 1.4 }}
           className="lg:w-1/4 hidden lg:block"
         >
-          <img
-            src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80"
-            alt="Office Team"
-            className="w-full h-full object-cover"
-          />
+          {section.image && (
+            // eslint-disable-next-line @next/next/no-img-element -- admin-uploaded image
+            <img
+              src={mediaUrl(section.image)}
+              alt=""
+              className="w-full h-full object-cover"
+            />
+          )}
         </motion.div>
       </div>
     </section>

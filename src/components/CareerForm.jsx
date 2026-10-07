@@ -1,6 +1,8 @@
 "use client";
 import React, { useState } from "react";
 import { motion } from "framer-motion";
+import { useContent } from "@/components/content/SiteContentProvider";
+import RichText from "@/components/content/RichText";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -9,6 +11,7 @@ const CareerForm = () => {
     "w-full bg-[#F3F4F6] border-none p-4 rounded-sm outline-none focus:ring-2 focus:ring-[#5DB4D1] transition-all duration-300";
   const labelStyles = "block text-[#5DB4D1] text-[14px] font-medium mb-2";
 
+  const intro = useContent("career.intro");
   const [companyName, setCompanyName] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -82,13 +85,10 @@ const CareerForm = () => {
           className="mb-12 space-y-4"
         >
           <h2 className="text-[#1D1D7E] text-2xl md:text-3xl font-bold tracking-tight">
-            Explore Exciting Career Opportunities at Vortexian Tech
+            {intro.heading}
           </h2>
 
-          <p className="text-gray-800 text-[15px] leading-relaxed max-w-6xl">
-            Join the dynamic team at Vortexian Tech and embark on a rewarding
-            career in the forefront of technology innovation.
-          </p>
+          <RichText html={intro.text_html} className="text-gray-800 text-[15px] leading-relaxed max-w-6xl" />
         </motion.div>
 
         {/* FORM */}
@@ -105,7 +105,7 @@ const CareerForm = () => {
           {/* Success Message */}
           {success && (
             <div className="p-4 bg-green-100 text-green-700 rounded-sm">
-              Your Application is submitted successfully, shortly we'll reach
+              Your Application is submitted successfully, shortly we&apos;ll reach
               you!
             </div>
           )}

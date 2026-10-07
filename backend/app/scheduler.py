@@ -4,6 +4,7 @@ from app import models
 from app.email_service import send_newsletter_email
 import asyncio
 import logging
+import os
 
 scheduler = BackgroundScheduler()
 
@@ -43,6 +44,12 @@ def send_newsletter_job():
 
 
 def start_scheduler():
+    # Opt-in: every uvicorn worker runs this, so enabling it with multiple
+    # workers sends duplicate emails. Run with a single worker if enabled.
+    if os.getenv("ENABLE_NEWSLETTER_SCHEDULER", "").lower() not in ("1", "true", "yes"):
+        print("Newsletter scheduler disabled (set ENABLE_NEWSLETTER_SCHEDULER=true to enable)")
+        return
+
     scheduler.add_job(
         send_newsletter_job,
         trigger="interval",

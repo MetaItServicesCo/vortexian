@@ -4,12 +4,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { useRouter, useParams } from "next/navigation";
 import dynamic from "next/dynamic";
-import "react-quill-new/dist/quill.snow.css";
-
-// ✅ SSR SAFE REACT QUILL (IMPORTANT FIX)
-const ReactQuill = dynamic(() => import("react-quill-new"), {
-    ssr: false,
-});
+const RichTextEditor = dynamic(() => import("@/components/editor/RichTextEditor"), { ssr: false });
 
 export default function EditBlogPage() {
     const router = useRouter();
@@ -188,12 +183,12 @@ export default function EditBlogPage() {
                 <div>
                     <label className="font-semibold">Content</label>
 
-                    <ReactQuill
-                        theme="snow"
+                    <RichTextEditor
                         value={form.content}
                         onChange={(value) =>
-                            setForm({ ...form, content: value })
+                            setForm((prev) => ({ ...prev, content: value }))
                         }
+                        minHeight={400}
                     />
                 </div>
 

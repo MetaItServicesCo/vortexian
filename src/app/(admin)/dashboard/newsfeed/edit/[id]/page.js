@@ -1,6 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
+
+const RichTextEditor = dynamic(() => import("@/components/editor/RichTextEditor"), { ssr: false });
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -145,12 +148,10 @@ export default function EditNewsFeed() {
                     <label className="block text-sm font-medium mb-1">
                         Description
                     </label>
-                    <textarea
+                    <RichTextEditor
                         value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        required
-                        rows={4}
-                        className="w-full border rounded-lg px-3 py-2"
+                        onChange={setDescription}
+                        allowVideo
                     />
                 </div>
 

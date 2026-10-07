@@ -12,7 +12,12 @@ from app.routes.blog import router as blog_router
 from fastapi.middleware.cors import CORSMiddleware
 from app.scheduler import start_scheduler
 from app.routes.career import router as career_router
+from app.routes.testimonial import router as testimonial_router
+from app.routes.content import router as content_router
+from app.routes.pages import router as pages_router
+from app.routes.media import router as media_router
 from fastapi.staticfiles import StaticFiles
+import os
 
 
 Base.metadata.create_all(bind=engine)
@@ -36,6 +41,7 @@ app.add_middleware(
 def root():
     return {"message": "Backend Running Successfully"}
 
+os.makedirs("uploads", exist_ok=True)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 app.include_router(admin_router,prefix="/api/admins",tags=["Admins"])
@@ -48,3 +54,7 @@ app.include_router(newsletter_router, prefix="/api/newsletter", tags=["Newslette
 app.include_router(blog_router, prefix="/api/blog", tags=["Blog"])
 app.include_router(newsfeed_router,prefix='/api/newsfeed',tags=['Newsfeed'])
 app.include_router(career_router, prefix="/api/career", tags=["Career"])
+app.include_router(testimonial_router, prefix="/api/testimonials", tags=["Testimonials"])
+app.include_router(content_router, prefix="/api/content", tags=["Content"])
+app.include_router(pages_router, prefix="/api/pages", tags=["Pages"])
+app.include_router(media_router, prefix="/api/media", tags=["Media"])

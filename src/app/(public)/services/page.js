@@ -3,12 +3,12 @@ export const dynamic = "force-dynamic";
 
 import BreadcrumbHero from "@/components/BreadcrumbHero";
 import ServicesClient from "@/components/servicepage/ServicesClient";
-
-const API_URL = "https://vortexiantech.com/api/services/"; 
+import { serverApiUrl } from "@/lib/api";
+import { getSection } from "@/lib/content";
 
 async function fetchServicesData() {
     try {
-        const res = await fetch("https://vortexiantech.com/api/services/", { 
+        const res = await fetch(serverApiUrl("/api/services/"), {
             cache: "no-store",
         });
         if (!res.ok) return [];
@@ -23,10 +23,10 @@ async function fetchServicesData() {
 // DYNAMIC METADATA (Keywords synced with DB Schema Arrays)
 // ==========================================
 export async function generateMetadata() {
-    const services = await fetchServicesData();
+    const [services, page] = await Promise.all([fetchServicesData(), getSection("page.services")]);
 
     // SAFE FIX: Extract all explicit nested SEO keywords from every document safely
-    const dbKeywords = services.flatMap(s => s.seo?.keywords || s.title || []);
+    const dbKeywords = services.flatMap(s => (s.keywords || "").split(",").map(k => k.trim()));
 
     // Premium core keywords fallback framework
     const baseKeywords = ["Vortexian Tech", "IT Capabilities", "Enterprise Solutions", "Full Stack Development"];
@@ -36,13 +36,14 @@ export async function generateMetadata() {
     const combinedKeywords = Array.from(finalKeywordsSet).filter(Boolean).join(", ");
 
     return {
-        title: "Enterprise Solutions & IT Capabilities | Vortexian Tech",
-        description: "Explore our technical and creative digital capabilities. From cutting-edge UX/UI system models to server-side web development configurations.",
-        keywords: combinedKeywords, // Now fully mapped directly to your database nested array structure!
+        title: page.meta_title,
+        description: page.meta_description,
+        keywords: combinedKeywords,
+        alternates: { canonical: "/services" },
         openGraph: {
-            title: "Enterprise Solutions & IT Capabilities | Vortexian Tech",
-            description: "Explore our technical and creative digital capabilities.",
-            url: `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/services`,
+            title: page.meta_title,
+            description: page.meta_description,
+            url: "/services",
         }
     };
 }
@@ -50,7 +51,11 @@ export async function generateMetadata() {
 export const revalidate = 0;
 
 export default async function ServicesPage() {
-    const activeServices = await fetchServicesData();
+    const [activeServices, page, intro] = await Promise.all([
+        fetchServicesData(),
+        getSection("page.services"),
+        getSection("services.intro"),
+    ]);
     const processingError = activeServices.length === 0;
 
     return (
@@ -63,7 +68,7 @@ export default async function ServicesPage() {
             <div className="absolute bottom-[5%] left-[-5%] w-[40%] h-[40%] rounded-full bg-[#14143a]/40 blur-[120px] pointer-events-none -z-10" />
 
             {/* Existing Dynamic Header */}
-            <BreadcrumbHero title="Our Services" currentPage="Services" />
+            <BreadcrumbHero title={page.hero_title} currentPage={page.hero_title} />
 
             {/* Main Content Area Container */}
             <section className="py-24 px-4 sm:px-8 md:px-16 lg:px-24 max-w-[1400px] mx-auto relative z-10">
@@ -71,13 +76,13 @@ export default async function ServicesPage() {
                 {/* Modern Brand Intro Header blocks */}
                 <div className="max-w-3xl mb-20">
                     <p className="text-[#5DB4D1] text-[10px] font-black tracking-[0.3em] uppercase mb-4">
-                        Capabilities & Systems
+                        {intro.eyebrow}
                     </p>
                     <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tighter text-white uppercase leading-[0.95]">
-                        Transforming Concepts into <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#5DB4D1] to-[#1D1D7E]">Elite Architectures</span>
+                        {intro.heading} <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#5DB4D1] to-[#1D1D7E]">{intro.heading_highlight}</span>
                     </h1>
                     <p className="text-gray-400 mt-6 text-sm sm:text-base md:text-lg font-medium leading-relaxed max-w-2xl">
-                        We decoupled from standard outdated WordPress frameworks to deliver staggering serverless speed, layout configuration flexibility, and pure organic positioning.
+                        {intro.text}
                     </p>
                 </div>
 

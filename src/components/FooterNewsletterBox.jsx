@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { FiLoader } from "react-icons/fi";
 import toast, { Toaster } from "react-hot-toast";
 
-const FooterNewsletterBox = () => {
+const FooterNewsletterBox = ({ heading = "Newsletter", text = "" }) => {
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -50,12 +50,10 @@ const FooterNewsletterBox = () => {
       <Toaster position="bottom-right" />
 
       <h3 className="text-xl font-bold border-l-4 border-[#5DB4D1] pl-3">
-        Newsletter
+        {heading}
       </h3>
 
-      <p className="text-gray-400">
-        Subscribe our newsletter to get our latest update & news
-      </p>
+      {text && <p className="text-gray-400 whitespace-pre-line">{text}</p>}
 
       <form onSubmit={handleSubscribe} className="space-y-3">
         <input

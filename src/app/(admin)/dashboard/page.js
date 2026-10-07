@@ -1,25 +1,43 @@
 "use client";
-import React, { useEffect } from "react";
-import { FiDatabase, FiLayers, FiUsers, FiPlus } from "react-icons/fi";
+import React, { useEffect, useState } from "react";
+import {
+    FiLayers, FiUsers, FiPlus, FiBriefcase, FiFileText,
+    FiMail, FiInbox, FiSend, FiUserCheck,
+} from "react-icons/fi";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+
+const STAT_SOURCES = [
+    { label: "Services", path: "/api/services/", href: "/dashboard/services", icon: <FiLayers />, color: "bg-blue-500" },
+    { label: "Portfolio Projects", path: "/api/portfolio/", href: "/dashboard/portfolio", icon: <FiBriefcase />, color: "bg-cyan-500" },
+    { label: "Blog Posts", path: "/api/blog/public", href: "/dashboard/blog", icon: <FiFileText />, color: "bg-indigo-500" },
+    { label: "Team Members", path: "/api/team/teams", href: "/dashboard/team", icon: <FiUsers />, color: "bg-[#1D1D7E]" },
+    { label: "Quote Requests", path: "/api/contact/", href: "/dashboard/contacts", icon: <FiInbox />, color: "bg-emerald-500", auth: true },
+    { label: "Home Page Enquiries", path: "/api/contact-us/contact-us", href: "/dashboard/quotes", icon: <FiMail />, color: "bg-teal-500", auth: true },
+    { label: "Job Applications", path: "/api/career/", href: "/dashboard/career", icon: <FiUserCheck />, color: "bg-amber-500", auth: true },
+    { label: "Newsletter Subscribers", path: "/api/newsletter/subscribers", href: "/dashboard/newsletter", icon: <FiSend />, color: "bg-rose-500", auth: true },
+];
 
 const DashboardHome = () => {
-    const router = useRouter();
+    const [counts, setCounts] = useState({});
 
-    const stats = [
-        { label: "Total Services", value: "19", icon: <FiLayers />, color: "bg-blue-500" },
-        { label: "Total Categories", value: "4", icon: <FiDatabase />, color: "bg-cyan-500" },
-        { label: "Team Members", value: "8", icon: <FiUsers />, color: "bg-[#1D1D7E]" },
-    ];
     useEffect(() => {
         const token = localStorage.getItem("token");
 
-        if (!token) {
-            router.push("/login");
-        }
+        Promise.all(
+            STAT_SOURCES.map(async (source) => {
+                try {
+                    const res = await fetch(source.path, {
+                        headers: source.auth ? { Authorization: `Bearer ${token}` } : {},
+                    });
+                    if (!res.ok) return [source.label, "—"];
+                    const data = await res.json();
+                    return [source.label, Array.isArray(data) ? data.length : "—"];
+                } catch {
+                    return [source.label, "—"];
+                }
+            })
+        ).then((entries) => setCounts(Object.fromEntries(entries)));
     }, []);
-  
 
     return (
         <div className="space-y-8">
@@ -33,17 +51,23 @@ const DashboardHome = () => {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {stats.map((stat, i) => (
-                    <div key={i} className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-6">
-                        <div className={`w-16 h-16 ${stat.color} text-white flex items-center justify-center rounded-xl text-2xl`}>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                {STAT_SOURCES.map((stat) => (
+                    <Link
+                        key={stat.label}
+                        href={stat.href}
+                        className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-6 hover:border-[#5DB4D1]/50 hover:shadow-md transition-all"
+                    >
+                        <div className={`w-16 h-16 shrink-0 ${stat.color} text-white flex items-center justify-center rounded-xl text-2xl`}>
                             {stat.icon}
                         </div>
                         <div>
                             <p className="text-gray-400 text-xs font-bold uppercase tracking-widest">{stat.label}</p>
-                            <h3 className="text-3xl font-black text-black">{stat.value}</h3>
+                            <h3 className="text-3xl font-black text-black">
+                                {counts[stat.label] ?? "…"}
+                            </h3>
                         </div>
-                    </div>
+                    </Link>
                 ))}
             </div>
         </div>

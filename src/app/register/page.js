@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast";
 import { Loader2, Eye, EyeOff } from "lucide-react";
@@ -39,7 +40,11 @@ export default function RegisterPage() {
         toast.success("Admin account created successfully!");
         setTimeout(() => router.push("/login"), 1500);
       } else {
-        toast.error(result.detail || "Registration failed."); 
+        toast.error(
+          Array.isArray(result.detail)
+            ? result.detail.map((d) => d.msg).join(", ")
+            : result.detail || "Registration failed."
+        );
       }
     } catch (err) {
       toast.error("Something went wrong. Please try again.");
@@ -70,6 +75,7 @@ export default function RegisterPage() {
             <input
               type="text"
               required
+              maxLength={15}
               className="w-full p-4 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-[#5DB4D1] outline-none transition-all"
               onChange={(e) => setData({ ...data, name: e.target.value })}
             />
@@ -95,6 +101,9 @@ export default function RegisterPage() {
               <input
                 type={showPass ? "text" : "password"}
                 required
+                minLength={8}
+                maxLength={128}
+                placeholder="Minimum 8 characters"
                 className="w-full p-4 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-[#5DB4D1] outline-none transition-all"
                 onChange={(e) => setData({ ...data, password: e.target.value })}
               />
@@ -149,12 +158,12 @@ export default function RegisterPage() {
 
         <p className="text-center text-[11px] text-gray-400 mt-6 font-bold uppercase tracking-wider">
           Already have an account?{" "}
-          <a
+          <Link
             href="/login"
             className="text-[#1D1D7E] hover:text-[#5DB4D1] transition-colors"
           >
             Login
-          </a>
+          </Link>
         </p>
       </div>
     </div>

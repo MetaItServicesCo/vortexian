@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Plus, Edit, Trash2, Quote, Star } from "lucide-react";
+import { Loader2, Plus, Trash2, Quote, Star } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import Link from "next/link";
 
@@ -208,7 +208,7 @@ export default function TestimonialsListPage() {
                             {/* Content */}
                             <div className="flex-1 min-w-0">
                                 <p className="text-sm text-gray-500 italic leading-relaxed line-clamp-2 mb-2">
-                                    "{t.testimonial_text}"
+                                    &ldquo;{t.testimonial_text}&rdquo;
                                 </p>
                                 <div className="flex items-center gap-3">
                                     <div>
@@ -227,13 +227,6 @@ export default function TestimonialsListPage() {
 
                             {/* Actions */}
                             <div className="flex items-center gap-2 shrink-0">
-                                <Link
-                                    href={`/dashboard/testimonials/edit/${t.id}`}
-                                >
-                                    <button className="w-8 h-8 border border-gray-200 rounded-lg flex items-center justify-center text-gray-400 hover:text-[#1D1D7E] hover:border-[#1D1D7E] transition-colors">
-                                        <Edit size={14} />
-                                    </button>
-                                </Link>
                                 <button
                                     onClick={() => handleDelete(t.id)}
                                     className="w-8 h-8 border border-gray-200 rounded-lg flex items-center justify-center text-gray-400 hover:text-red-500 hover:border-red-300 transition-colors"

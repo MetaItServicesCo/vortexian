@@ -10,30 +10,46 @@ import {
   FiUsers,
   FiBriefcase,
   FiImage,
+  FiInbox,
+  FiRss,
+  FiStar,
+  FiUserCheck,
+  FiInfo,
+  FiEdit3,
+  FiFile,
   FiChevronRight,
   FiLogOut,
 } from "react-icons/fi";
 
 const menuItems = [
   { label: "Overview", icon: FiHome, href: "/dashboard" },
+  { label: "Basic Info", icon: FiInfo, href: "/dashboard/content/settings" },
+  { label: "Site Content", icon: FiEdit3, href: "/dashboard/content" },
+  { label: "Pages", icon: FiFile, href: "/dashboard/pages" },
   { label: "Manage Services", icon: FiLayers, href: "/dashboard/services" },
-  { label: "Contact Us", icon: FiMail, href: "/dashboard/quotes" },
-  { label: "Home Page Forum", icon: FiFileText, href: "/dashboard/contacts" },
+  { label: "Home Page Enquiries", icon: FiMail, href: "/dashboard/quotes" },
+  { label: "Quote Requests", icon: FiInbox, href: "/dashboard/contacts" },
   { label: "Newsletter", icon: FiSend, href: "/dashboard/newsletter" },
   { label: "Team Management", icon: FiUsers, href: "/dashboard/team" },
   { label: "Portfolio", icon: FiBriefcase, href: "/dashboard/portfolio" },
-  { label: "Blog", icon: FiBriefcase, href: "/dashboard/blog" },
-  { label: "News Feed", icon: FiBriefcase, href: "/dashboard/newsfeed" },
+  { label: "Blog", icon: FiFileText, href: "/dashboard/blog" },
+  { label: "News Feed", icon: FiRss, href: "/dashboard/newsfeed" },
   // { label: "Media Library", icon: FiImage, href: "/dashboard/media" },
-  { label: "Testimonials", icon: FiBriefcase, href: "/dashboard/testimonials" },
-  { label: "Career", icon: FiBriefcase, href: "/dashboard/career" },
+  { label: "Testimonials", icon: FiStar, href: "/dashboard/testimonials" },
+  { label: "Career", icon: FiUserCheck, href: "/dashboard/career" },
 ];
 
 const Sidebar = () => {
   const pathname = usePathname();
+  // Longest matching prefix wins, so /dashboard/blog/edit/3 highlights "Blog"
+  const activeHref = menuItems
+    .map((item) => item.href)
+    .filter((href) => pathname === href || pathname.startsWith(href + "/"))
+    .sort((a, b) => b.length - a.length)[0];
   const router = useRouter();
   const logout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("admin_email");
     router.push("/login");
   };
   return (
@@ -75,7 +91,7 @@ const Sidebar = () => {
       >
         {menuItems.map((item) => {
           const Icon = item.icon;
-          const isActive = pathname === item.href;
+          const isActive = item.href === activeHref;
 
           return (
             <Link
