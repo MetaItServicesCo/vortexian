@@ -6,7 +6,7 @@ from app.database import get_db
 from app import models
 from app.schema import CreateService, ServiceResponse, UpdateService
 from app.routes.admin import get_current_admin_dependence
-from app.sanitize import clean_html
+from app.sanitize import clean_html, slugify
 from app.uploads import IMAGE_EXTENSIONS, MAX_IMAGE_BYTES, delete_upload, has_file, save_upload
 
 router = APIRouter()
@@ -35,6 +35,10 @@ def create_service(
     db: Session = Depends(get_db),
     admin: models.Admin = Depends(get_current_admin_dependence)
 ):
+    url_slug = slugify(url_slug)
+    if not url_slug:
+        raise HTTPException(status_code=400, detail="URL slug must contain letters or numbers")
+
     existing_service = db.query(models.Service).filter(
         models.Service.url_slug == url_slug
     ).first()
@@ -116,7 +120,10 @@ def update_service(
     if not service:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Service not found")
 
-    if data.url_slug:
+    if data.url_slug is not None:
+        data.url_slug = slugify(data.url_slug)
+        if not data.url_slug:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="URL slug must contain letters or numbers")
         existing_slug = db.query(models.Service).filter(
             models.Service.url_slug == data.url_slug,
             models.Service.id != service_id

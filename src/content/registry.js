@@ -15,7 +15,12 @@ const visible = { name: "visible", label: "Show this section", type: "boolean" }
 
 const pageMeta = (heroTitle, metaTitle, metaDescription) => ({
     fields: [
-        { name: "hero_title", label: "Page banner title", type: "text" },
+        {
+            name: "hero_title",
+            label: "Page heading (H1)",
+            type: "text",
+            help: "The page's main heading, shown in the top banner. Each page should have a unique H1 that includes its main keyword (e.g. \"About Vortexian Tech – IT & Recruitment Experts\").",
+        },
         { name: "meta_title", label: "SEO title", type: "text", help: "Shown in browser tabs and Google results (≈60 characters)." },
         { name: "meta_description", label: "SEO description", type: "textarea", help: "Shown under the title in Google results (≈160 characters)." },
     ],
@@ -191,8 +196,21 @@ export const CONTENT_SECTIONS = [
             visible,
             { name: "video", label: "Background video", type: "video" },
             { name: "poster", label: "Poster image", type: "image", help: "Shown while the video loads." },
+            {
+                name: "heading",
+                label: "Home page heading (H1)",
+                type: "text",
+                help: "The home page's main heading for Google and screen readers. Include your main keywords.",
+            },
+            { name: "show_heading", label: "Show the heading over the video", type: "boolean", help: "Off: the heading is in the page for SEO and accessibility but not visible." },
         ],
-        defaults: { visible: true, video: "/assets/video/video-6mb.mp4", poster: "" },
+        defaults: {
+            visible: true,
+            video: "/assets/video/video-6mb.mp4",
+            poster: "",
+            heading: "Vortexian Tech – IT Solutions, Recruitment & Digital Marketing",
+            show_heading: false,
+        },
     },
     {
         key: "home.recruitment",

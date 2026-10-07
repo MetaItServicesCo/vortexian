@@ -78,9 +78,9 @@ export default async function ServicesPage() {
                     <p className="text-[#5DB4D1] text-[10px] font-black tracking-[0.3em] uppercase mb-4">
                         {intro.eyebrow}
                     </p>
-                    <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tighter text-white uppercase leading-[0.95]">
+                    <h2 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tighter text-white uppercase leading-[0.95]">
                         {intro.heading} <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#5DB4D1] to-[#1D1D7E]">{intro.heading_highlight}</span>
-                    </h1>
+                    </h2>
                     <p className="text-gray-400 mt-6 text-sm sm:text-base md:text-lg font-medium leading-relaxed max-w-2xl">
                         {intro.text}
                     </p>

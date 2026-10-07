@@ -9,11 +9,21 @@ import BreadcrumbHero from "@/components/BreadcrumbHero";
 import { serverApiUrl } from "@/lib/api";
 import RichText from "@/components/content/RichText";
 
+// Next.js passes the segment still percent-encoded ("web%20dev"); decode before
+// re-encoding or the backend receives "web%2520dev" and returns 404.
+function safeDecode(value) {
+    try {
+        return decodeURIComponent(value);
+    } catch {
+        return value;
+    }
+}
+
 // ✅ Direct FastAPI URL, slug se match karo
 const getLiveServiceData = cache(async (slug) => {
     try {
         const res = await fetch(
-            serverApiUrl(`/api/services/${encodeURIComponent(slug)}`),
+            serverApiUrl(`/api/services/${encodeURIComponent(safeDecode(slug))}`),
             { cache: "no-store" }
         );
         if (!res.ok) return null;

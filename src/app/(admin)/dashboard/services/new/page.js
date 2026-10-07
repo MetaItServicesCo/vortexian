@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { slugify, slugifyTyping } from "@/lib/slugify";
 import dynamic from "next/dynamic";
 import axios from "axios";
 import {
@@ -337,10 +338,13 @@ export default function CreateNewService() {
                                 onChange={(e) =>
                                     setFormData({
                                         ...formData,
-                                        slug: e.target.value
+                                        slug: slugifyTyping(e.target.value)
                                     })
                                 }
                             />
+                            <p className="text-xs text-gray-400 mt-1">
+                                Page address: /services/{slugify(formData.slug) || "…"}
+                            </p>
                         </div>
                     </div>
 

@@ -58,3 +58,13 @@ def clean_html_fields(data: Any) -> Any:
     if isinstance(data, list):
         return [clean_html_fields(item) for item in data]
     return data
+
+
+def slugify(value: str | None) -> str:
+    """URL-safe slug: "Sit necessitatibus " -> "sit-necessitatibus"."""
+    import re
+    import unicodedata
+
+    text = unicodedata.normalize("NFKD", value or "").encode("ascii", "ignore").decode()
+    text = re.sub(r"[^a-zA-Z0-9]+", "-", text.replace("&", " and ")).strip("-").lower()
+    return text[:150].rstrip("-")

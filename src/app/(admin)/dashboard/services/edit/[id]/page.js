@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Loader2, Save, Image as ImageIcon, Upload, Link2 } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import Link from "next/link";
+import { slugify, slugifyTyping } from "@/lib/slugify";
 import dynamic from "next/dynamic";
 
 const RichTextEditor = dynamic(() => import("@/components/editor/RichTextEditor"), { ssr: false });
@@ -209,7 +210,12 @@ export default function EditServicePage({ params }) {
                         <div>
                             <label className="text-xs font-black uppercase text-gray-400 block mb-1.5">URL Slug</label>
                             <input type="text" required value={formData.slug || ""} className="w-full p-3.5 bg-gray-50 border border-gray-200 rounded-xl text-base outline-none focus:ring-2 focus:ring-[#5DB4D1] focus:bg-white transition-all"
-                                onChange={(e) => setFormData({ ...formData, slug: e.target.value })} />
+                                onChange={(e) => setFormData({ ...formData, slug: slugifyTyping(e.target.value) })} />
+                            <p className={`text-xs mt-1 ${formData.slug && slugify(formData.slug) !== formData.slug ? "text-amber-600 font-semibold" : "text-gray-400"}`}>
+                                {formData.slug && slugify(formData.slug) !== formData.slug
+                                    ? `This address will be cleaned up when you save: /services/${slugify(formData.slug)}`
+                                    : `Page address: /services/${formData.slug || "…"}`}
+                            </p>
                         </div>
                     </div>
 

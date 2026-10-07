@@ -9,6 +9,13 @@ const nextConfig = {
   // then redirects to its own internal host (http://backend:8000/...), which
   // browsers can't reach. Keep URLs exactly as requested.
   skipTrailingSlashRedirect: true,
+  // Old URLs that may be indexed or shared; 308 keeps their search ranking
+  async redirects() {
+    return [
+      { source: "/contact-us", destination: "/contact", permanent: true },
+      { source: "/contact-us/", destination: "/contact", permanent: true },
+    ];
+  },
   async rewrites() {
     return [
       {

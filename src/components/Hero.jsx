@@ -16,7 +16,21 @@ const Hero = () => {
     }
   };
 
-  if (!hero.visible || !hero.video) return null;
+  // The home page's only H1. Visible over the video if enabled, otherwise
+  // present for search engines and screen readers only.
+  const heading = hero.heading ? (
+    <h1
+      className={
+        hero.show_heading && hero.visible && hero.video
+          ? "absolute inset-x-0 bottom-0 z-20 px-6 pt-24 pb-10 sm:pb-16 text-center text-white text-xl sm:text-3xl md:text-5xl font-bold tracking-tight bg-gradient-to-t from-black/70 to-transparent pointer-events-none"
+          : "sr-only"
+      }
+    >
+      {hero.heading}
+    </h1>
+  ) : null;
+
+  if (!hero.visible || !hero.video) return heading;
 
   return (
     <section className="relative w-full overflow-hidden bg-black mt-10 h-[30vh] sm:h-[40vh] md:h-screen">
@@ -34,6 +48,8 @@ const Hero = () => {
         <source src={mediaUrl(hero.video)} />
         Your browser does not support the video tag.
       </video>
+
+      {heading}
 
       {/* MUTE BUTTON */}
       <motion.button
