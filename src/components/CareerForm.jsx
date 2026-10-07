@@ -3,8 +3,23 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useContent } from "@/components/content/SiteContentProvider";
 import RichText from "@/components/content/RichText";
+import { useSettings } from "@/components/content/SiteContentProvider";
+import { errorMessage } from "@/lib/adminApi";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
+
+// Mirrors the backend limits so applicants find out before uploading
+const CV_TYPES = ["pdf", "doc", "docx"];
+const IMAGE_TYPES = ["jpg", "jpeg", "png", "webp", "gif", "avif"];
+const MB = 1024 * 1024;
+
+function checkFile(file, types, maxMb, label) {
+  if (!file) return "";
+  const ext = file.name.split(".").pop().toLowerCase();
+  if (!types.includes(ext)) return `${label} must be one of: ${types.join(", ").toUpperCase()}.`;
+  if (file.size > maxMb * MB) return `${label} is too large (max ${maxMb} MB).`;
+  return "";
+}
 
 const CareerForm = () => {
   const inputStyles =
@@ -18,6 +33,8 @@ const CareerForm = () => {
   const [email, setEmail] = useState("");
   const [linkedinUrl, setLinkedinUrl] = useState("");
   const [cv, setCv] = useState(null);
+  const [image, setImage] = useState(null);
+  const settings = useSettings();
   const [agree, setAgree] = useState(false);
 
   const [submitting, setSubmitting] = useState(false);
@@ -30,7 +47,13 @@ const CareerForm = () => {
     setSuccess(false);
 
     if (!cv) {
-      setError("CV/Resume required.");
+      setError("Please attach your CV / resume.");
+      return;
+    }
+    const fileError =
+      checkFile(cv, CV_TYPES, 20, "CV / resume") || checkFile(image, IMAGE_TYPES, 10, "Image");
+    if (fileError) {
+      setError(fileError);
       return;
     }
 
@@ -45,6 +68,7 @@ const CareerForm = () => {
       formData.append("email", email);
       formData.append("show_contact_public", agree);
       formData.append("cv", cv);
+      if (image) formData.append("image", image);
 
       const res = await fetch(`${API_BASE_URL}/api/career/`, {
         method: "POST",
@@ -53,7 +77,12 @@ const CareerForm = () => {
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.detail || `Error ${res.status}`);
+        if (res.status >= 500) {
+          throw new Error(
+            `Something went wrong on our side and your application was not submitted. Please try again in a few minutes${settings.enquiries_email ? ` or email your CV to ${settings.enquiries_email}` : ""}.`
+          );
+        }
+        throw new Error(errorMessage(data, "Your application could not be submitted. Please check the form and try again."));
       }
 
       setSuccess(true);
@@ -63,11 +92,14 @@ const CareerForm = () => {
       setEmail("");
       setLinkedinUrl("");
       setCv(null);
+      setImage(null);
       setAgree(false);
       e.target.reset();
     } catch (err) {
       setError(
-        err.message || "Your Application is not submitted try again later",
+        err.message === "Failed to fetch"
+          ? "We couldn't reach the server. Please check your internet connection and try again."
+          : err.message || "Your application could not be submitted. Please try again.",
       );
     } finally {
       setSubmitting(false);
@@ -183,6 +215,7 @@ const CareerForm = () => {
               />
             </motion.div>
 
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* CV / FILE UPLOAD */}
             <motion.div>
               <label className={labelStyles}>
@@ -193,10 +226,23 @@ const CareerForm = () => {
                 type="file"
                 accept=".pdf,.doc,.docx"
                 className="w-full bg-[#F3F4F6] p-3 rounded-sm outline-none file:mr-4 file:py-2 file:px-4 file:border-0 file:bg-[#5DB4D1] file:text-white file:font-semibold hover:file:bg-[#1D1D7E] transition-all duration-300"
-                onChange={(e) => setCv(e.target.files[0])}
-                // required
+                onChange={(e) => setCv(e.target.files[0] || null)}
               />
+              <p className="text-xs text-gray-400 mt-1">PDF, DOC or DOCX, up to 20 MB.</p>
             </motion.div>
+
+            {/* PHOTO (OPTIONAL) */}
+            <motion.div>
+              <label className={labelStyles}>Upload Image (optional)</label>
+              <input
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/gif,image/avif"
+                className="w-full bg-[#F3F4F6] p-3 rounded-sm outline-none file:mr-4 file:py-2 file:px-4 file:border-0 file:bg-[#5DB4D1] file:text-white file:font-semibold hover:file:bg-[#1D1D7E] transition-all duration-300"
+                onChange={(e) => setImage(e.target.files[0] || null)}
+              />
+              <p className="text-xs text-gray-400 mt-1">JPG, PNG or WEBP, up to 10 MB.</p>
+            </motion.div>
+            </div>
 
             {/* Checkbox */}
             <motion.div className="flex items-center gap-3 pt-4">

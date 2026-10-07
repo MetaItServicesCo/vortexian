@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
+import { adminFetch } from "@/lib/adminApi";
+import { mediaUrl } from "@/lib/api";
 
 export default function CareerApplicationsList() {
     const [applications, setApplications] = useState([]);
@@ -14,20 +14,10 @@ export default function CareerApplicationsList() {
             setLoading(true);
             setError("");
 
-            const token = localStorage.getItem("token");
-
-            const res = await fetch(`${API_BASE_URL}/api/career/`, {
-                headers: {
-                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-                },
-            });
-
-            if (!res.ok) throw new Error(`Error ${res.status}`);
-
-            const data = await res.json();
-            setApplications(data);
+            const data = await adminFetch("/api/career/");
+            setApplications(Array.isArray(data) ? data : []);
         } catch (err) {
-            setError("Applications load nahi ho saki. Dobara try karein.");
+            setError(`Applications could not be loaded: ${err.message}`);
         } finally {
             setLoading(false);
         }
@@ -38,24 +28,15 @@ export default function CareerApplicationsList() {
     }, []);
 
     const handleDelete = async (id) => {
-        if (!confirm("Kya aap yeh application delete karna chahte hain?")) return;
+        if (!confirm("Delete this application? Its CV and photo will be removed too.")) return;
 
         try {
             setDeletingId(id);
-            const token = localStorage.getItem("token");
-
-            const res = await fetch(`${API_BASE_URL}/api/career/${id}`, {
-                method: "DELETE",
-                headers: {
-                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-                },
-            });
-
-            if (!res.ok) throw new Error(`Error ${res.status}`);
+            await adminFetch(`/api/career/${id}`, { method: "DELETE" });
 
             setApplications((prev) => prev.filter((item) => item.id !== id));
         } catch (err) {
-            alert("Delete nahi ho saka. Dobara try karein.");
+            alert(`Could not delete the application: ${err.message}`);
         } finally {
             setDeletingId(null);
         }
@@ -81,15 +62,18 @@ export default function CareerApplicationsList() {
 
             {/* Error */}
             {error && (
-                <div className="mb-4 p-3 bg-red-100 text-red-600 rounded">
-                    {error}
+                <div className="mb-4 p-3 bg-red-100 text-red-600 rounded flex items-center justify-between gap-4">
+                    <span>{error}</span>
+                    <button onClick={fetchApplications} className="shrink-0 px-3 py-1 text-sm bg-white border border-red-200 rounded hover:bg-red-50">
+                        Retry
+                    </button>
                 </div>
             )}
 
             {/* Loading */}
             {loading ? (
                 <div className="text-center py-10">Loading...</div>
-            ) : applications.length === 0 ? (
+            ) : error ? null : applications.length === 0 ? (
                 <div className="text-center py-10">No applications found</div>
             ) : (
                 <div className="overflow-x-auto bg-white shadow rounded-lg">
@@ -99,6 +83,7 @@ export default function CareerApplicationsList() {
                         <thead className="bg-gray-100 text-left text-sm">
                             <tr>
                                 <th className="p-3">#</th>
+                                <th className="p-3">Photo</th>
                                 <th className="p-3">Name</th>
                                 <th className="p-3">Company</th>
                                 <th className="p-3">Email</th>
@@ -117,6 +102,20 @@ export default function CareerApplicationsList() {
 
                                     {/* Index */}
                                     <td className="p-3">{index + 1}</td>
+
+                                    {/* Photo */}
+                                    <td className="p-3">
+                                        {item.image_url ? (
+                                            <a href={mediaUrl(item.image_url)} target="_blank" rel="noopener noreferrer">
+                                                {/* eslint-disable-next-line @next/next/no-img-element -- applicant upload */}
+                                                <img src={mediaUrl(item.image_url)} alt={`${item.first_name} ${item.last_name}`} className="w-10 h-10 rounded-full object-cover border" />
+                                            </a>
+                                        ) : (
+                                            <span className="w-10 h-10 rounded-full bg-gray-100 text-gray-500 text-xs font-bold flex items-center justify-center">
+                                                {(item.first_name?.[0] || "") + (item.last_name?.[0] || "")}
+                                            </span>
+                                        )}
+                                    </td>
 
                                     {/* Name */}
                                     <td className="p-3 font-medium">
@@ -153,7 +152,7 @@ export default function CareerApplicationsList() {
                                     {/* CV */}
                                     <td className="p-3">
                                         <a
-                                            href={`${API_BASE_URL}${item.cv_url}`}
+                                            href={mediaUrl(item.cv_url)}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="px-3 py-1 text-sm bg-blue-100 text-blue-600 rounded hover:bg-blue-200 inline-block"

@@ -6,7 +6,7 @@ from app.database import get_db
 from app import models
 from app.schema import CareerApplicationResponse
 from app.routes.admin import get_current_admin_dependence
-from app.uploads import DOCUMENT_EXTENSIONS, MAX_DOCUMENT_BYTES, delete_upload, save_upload
+from app.uploads import DOCUMENT_EXTENSIONS, IMAGE_EXTENSIONS, MAX_DOCUMENT_BYTES, MAX_IMAGE_BYTES, delete_upload, has_file, save_upload
 
 router = APIRouter()
 
@@ -20,8 +20,13 @@ def create_career_application(
     email: str = Form(None),
     show_contact_public: bool = Form(False),
     cv: UploadFile = File(...),
+    image: UploadFile = File(None),
     db: Session = Depends(get_db),
 ):
+    first_name, last_name, linkedin_url = first_name.strip(), last_name.strip(), linkedin_url.strip()
+    if not (first_name and last_name and linkedin_url):
+        raise HTTPException(status_code=400, detail="First name, last name and LinkedIn URL are required")
+
     email = (email or "").strip() or None
     if email:
         try:
@@ -30,20 +35,31 @@ def create_career_application(
             raise HTTPException(status_code=400, detail="Invalid email address")
 
     cv_path = save_upload(cv, "career", DOCUMENT_EXTENSIONS, MAX_DOCUMENT_BYTES)
+    image_path = None
 
-    application = models.CareerApplication(
-        company_name=company_name,
-        first_name=first_name,
-        last_name=last_name,
-        email=email,
-        linkedin_url=linkedin_url,
-        cv_url=cv_path,
-        show_contact_public=show_contact_public,
-    )
+    try:
+        if has_file(image):
+            image_path = save_upload(image, "career", IMAGE_EXTENSIONS, MAX_IMAGE_BYTES)
 
-    db.add(application)
-    db.commit()
-    db.refresh(application)
+        application = models.CareerApplication(
+            company_name=(company_name or "").strip() or None,
+            first_name=first_name,
+            last_name=last_name,
+            email=email,
+            linkedin_url=linkedin_url,
+            cv_url=cv_path,
+            image_url=image_path,
+            show_contact_public=show_contact_public,
+        )
+
+        db.add(application)
+        db.commit()
+    except BaseException:
+        # Don't leave orphaned files behind when validation or the insert fails
+        db.rollback()
+        delete_upload(cv_path)
+        delete_upload(image_path)
+        raise
 
     return {"message": "Application submitted successfully"}
 
@@ -98,9 +114,10 @@ def delete_application(
     if not application:
         raise HTTPException(status_code=404, detail="Application not found")
 
-    cv_path = application.cv_url
+    cv_path, image_path = application.cv_url, application.image_url
     db.delete(application)
     db.commit()
     delete_upload(cv_path)
+    delete_upload(image_path)
 
     return {"message": "Application deleted successfully"}

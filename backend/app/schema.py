@@ -263,6 +263,7 @@ class CareerApplicationResponse(BaseModel):
     email: Optional[str] = None
     linkedin_url: str
     cv_url: str
+    image_url: Optional[str] = None
     show_contact_public: bool
     created_at: datetime
 

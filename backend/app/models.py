@@ -180,6 +180,7 @@ class CareerApplication(Base):
     email = Column(String, nullable=True)
     linkedin_url = Column(String, nullable=False)
     cv_url = Column(String, nullable=False)
+    image_url = Column(String, nullable=True)
     show_contact_public = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
