@@ -5,6 +5,8 @@ import { ArrowLeft, Loader2, Save, Image as ImageIcon, Upload, Link2 } from "luc
 import toast, { Toaster } from "react-hot-toast";
 import Link from "next/link";
 import { slugify, slugifyTyping } from "@/lib/slugify";
+import ImageAltField, { altError } from "@/components/admin/ImageAltField";
+import { richTextAltError } from "@/lib/richText";
 import dynamic from "next/dynamic";
 
 const RichTextEditor = dynamic(() => import("@/components/editor/RichTextEditor"), { ssr: false });
@@ -29,6 +31,7 @@ export default function EditServicePage({ params }) {
         shortDesc: "",
         icon: "Share2",
         image: "",
+        image_alt: "",
         longDesc: "",
         features: ["", "", "", ""],
         whyChoose: { expertise: "", scalability: "", quality: "" },
@@ -55,6 +58,7 @@ export default function EditServicePage({ params }) {
                     shortDesc: data.short_description || "",
                     icon: data.lucide_icon || "Share2",
                     image: isLocalUpload ? "" : (data.image_showcase_url || ""),
+                    image_alt: data.image_alt || "",
                     longDesc: data.long_description || "",
                     features: [
                         data.feature_1 || "",
@@ -100,6 +104,7 @@ export default function EditServicePage({ params }) {
         const file = e.target.files[0];
         if (!file) return;
         setSelectedFile(file);
+        setFormData((prev) => ({ ...prev, image_alt: "" })); // describe the new picture
         setPreviewUrl(URL.createObjectURL(file));
         toast.success("Image selected — it will upload when you save.");
     };
@@ -107,6 +112,11 @@ export default function EditServicePage({ params }) {
     // ✅ SUBMIT — backend field names, PATCH, JSON body
     const handleFormSubmit = async (e) => {
         e.preventDefault();
+        const altProblem = altError(true, formData.image_alt) || richTextAltError(formData.longDesc, "long description");
+        if (altProblem) {
+            toast.error(altProblem);
+            return;
+        }
         setLoading(true);
 
         try {
@@ -121,6 +131,7 @@ export default function EditServicePage({ params }) {
                 long_description: formData.longDesc,
                 image_source_type: uploadType,
                 image_showcase_url: uploadType === "url" ? formData.image : undefined,
+                image_alt: formData.image_alt.trim(),
                 feature_1: formData.features[0],
                 feature_2: formData.features[1],
                 feature_3: formData.features[2],
@@ -145,6 +156,7 @@ export default function EditServicePage({ params }) {
             if (res.ok && uploadType === "file" && selectedFile) {
                 const imageData = new FormData();
                 imageData.append("image_file", selectedFile);
+                imageData.append("image_alt", formData.image_alt.trim());
 
                 const imageRes = await fetch(`${BASE_URL}/update-service-image/${id}`, {
                     method: "POST",
@@ -281,11 +293,17 @@ export default function EditServicePage({ params }) {
                                 <ImageIcon size={12} /> Active Live Preview Matrix
                             </p>
                             <div className="relative w-full h-52 rounded-xl overflow-hidden shadow-inner bg-white flex items-center justify-center">
-                                <img src={previewUrl} alt="Preview" className="w-full h-full object-cover"
+                                <img src={previewUrl} alt={formData.image_alt || "Preview"} className="w-full h-full object-cover"
                                     onError={(e) => { e.target.src = "https://placehold.co/600x400?text=Invalid+Image"; }} />
                             </div>
                         </div>
                     )}
+
+                    <ImageAltField
+                        id="service-image-alt"
+                        value={formData.image_alt}
+                        onChange={(value) => setFormData((prev) => ({ ...prev, image_alt: value }))}
+                    />
 
                     <div>
                         <label className="text-xs font-black uppercase text-gray-400 block mb-1.5">Short Description</label>

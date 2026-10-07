@@ -56,7 +56,7 @@ export default async function BlogDetailPage({ params }) {
                 <div className="w-full h-[300px] md:h-[400px] rounded-xl overflow-hidden mb-7">
                     <img
                         src={getImageUrl(blog.featured_image)}
-                        alt={blog.title}
+                        alt={blog.featured_image_alt || blog.title}
                         className="w-full h-full object-cover"
                     />
                 </div>

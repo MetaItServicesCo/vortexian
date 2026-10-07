@@ -5,7 +5,7 @@ from app.schema import PortfolioResponse, UpdatePortfolio
 from app.database import get_db
 from app import models
 from app.routes.admin import get_current_admin_dependence
-from app.uploads import IMAGE_EXTENSIONS, MAX_IMAGE_BYTES, delete_upload, has_file, save_upload
+from app.uploads import IMAGE_EXTENSIONS, MAX_IMAGE_BYTES, delete_upload, has_file, require_alt, save_upload
 
 router = APIRouter()
 
@@ -26,10 +26,12 @@ def create_portfolio(
     meta_keywords: Optional[str] = Form(None),
 
     image_file: UploadFile = File(...),
+    primary_image_alt: str = Form(None),
 
     db: Session = Depends(get_db),
     admin=Depends(get_current_admin_dependence)
 ):
+    alt = require_alt(True, primary_image_alt)
     image_url = save_upload(image_file, "portfolio", IMAGE_EXTENSIONS, MAX_IMAGE_BYTES)
 
     new_portfolio = models.Portfolio(
@@ -37,6 +39,7 @@ def create_portfolio(
         category_node=category_node,
         deployment_year=deployment_year,
         primary_image=image_url,
+        primary_image_alt=alt,
         business_challenge=business_challenge,
         solution_node=solution_node,
         meta_title=meta_title,
@@ -82,6 +85,7 @@ def update_portfolio(
     meta_description: Optional[str] = Form(""),
     meta_keywords: Optional[str] = Form(""),
     image_file: Optional[UploadFile] = File(None),  # 🔴 Sync with frontend and Create route name
+    primary_image_alt: Optional[str] = Form(None),
     db: Session = Depends(get_db),
     admin = Depends(get_current_admin_dependence)
 ):
@@ -100,6 +104,9 @@ def update_portfolio(
     item.meta_keywords = meta_keywords
 
     # Replace the image only when a new one is uploaded
+    # Every portfolio item has an image, so alt text is always required
+    item.primary_image_alt = require_alt(True, primary_image_alt if primary_image_alt is not None else item.primary_image_alt)
+
     if has_file(image_file):
         new_image = save_upload(image_file, "portfolio", IMAGE_EXTENSIONS, MAX_IMAGE_BYTES)
         delete_upload(item.primary_image)

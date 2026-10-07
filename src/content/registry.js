@@ -8,6 +8,8 @@
 // Field types: text | textarea | richtext | image | video | url | number
 //              | boolean | icon | list (with nested `fields`)
 // Rich text field names MUST end in "_html" (the API sanitises those).
+// Image fields store their alt text in "<name>_alt" (or `altKey`); alt text
+// is required. Mark CSS backgrounds `decorative: true` (no alt needed).
 // Saved content is merged over defaults, so adding a field here is safe.
 // =====================================================================
 
@@ -66,6 +68,7 @@ export const CONTENT_SECTIONS = [
         defaults: {
             site_name: "Vortexian Tech",
             logo: "/assets/images/logo-f.png",
+            logo_alt: "Vortexian Tech logo",
             email: "farina@vortexiantech.com",
             enquiries_email: "info@vortexiantech.com",
             career_email: "",
@@ -152,8 +155,7 @@ export const CONTENT_SECTIONS = [
                 type: "list",
                 itemLabel: "alt",
                 fields: [
-                    { name: "image", label: "Logo", type: "image" },
-                    { name: "alt", label: "Name", type: "text" },
+                    { name: "image", label: "Logo", type: "image", altKey: "alt" },
                 ],
             },
             { name: "newsletter_heading", label: "Newsletter heading", type: "text" },
@@ -185,7 +187,7 @@ export const CONTENT_SECTIONS = [
         group: "Global",
         title: "Page Banner",
         description: "Background image behind the title banner on inner pages.",
-        fields: [{ name: "background_image", label: "Background image", type: "image" }],
+        fields: [{ name: "background_image", label: "Background image", type: "image", decorative: true }],
         defaults: {
             background_image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80",
         },
@@ -199,7 +201,7 @@ export const CONTENT_SECTIONS = [
         fields: [
             visible,
             { name: "video", label: "Background video", type: "video" },
-            { name: "poster", label: "Poster image", type: "image", help: "Shown while the video loads." },
+            { name: "poster", label: "Poster image", type: "image", decorative: true, help: "Shown while the video loads." },
             {
                 name: "heading",
                 label: "Home page heading (H1)",
@@ -247,8 +249,7 @@ export const CONTENT_SECTIONS = [
         title: "Full-width Banner Image",
         fields: [
             visible,
-            { name: "image", label: "Image", type: "image" },
-            { name: "alt", label: "Image description", type: "text" },
+            { name: "image", label: "Image", type: "image", altKey: "alt" },
             { name: "link", label: "Link (optional)", type: "url" },
         ],
         defaults: { visible: true, image: "/assets/images/rrrrrr.png", alt: "Vortexian Tech Banner Showcase", link: "" },
@@ -288,6 +289,7 @@ export const CONTENT_SECTIONS = [
                 "<p>Welcome to <strong>Vortexian Tech</strong>, your all-in-one solution for navigating the complexities of modern business. Our diverse range of capabilities encompasses everything from payroll management and creative design to marketing strategies, technology solutions, and expert consultancy services. With a focus on innovation and efficiency, we empower businesses to streamline their operations, elevate their brand presence, and drive sustainable growth. At <strong>Vortexian Tech</strong>, we understand that every business is unique, which is why we offer tailored solutions to meet your specific needs and objectives.</p>" +
                 "<p>Whether you're looking to optimize your payroll processes, unleash your creative potential, amplify your marketing efforts, harness the power of technology, or find the right talent to fuel your success, our dedicated team is here to guide you every step of the way. With our comprehensive capabilities and unwavering commitment to excellence, trust Vortexian Tech to be your trusted partner in achieving your business goals. At <strong>Vortexian Tech</strong>, your success is our priority, and we are dedicated to turning your challenges into opportunities. We pride ourselves on building lasting relationships with our clients, driven by trust, transparency, and a shared vision for the future. Join us and experience the transformative power of innovation and efficiency, propelling your business to new heights.</p>",
             image: "/assets/images/home-about.jpg",
+            image_alt: "Vortexian Tech team in a meeting",
         },
     },
     {
@@ -332,7 +334,7 @@ export const CONTENT_SECTIONS = [
         title: "Stats & Call to Action",
         fields: [
             visible,
-            { name: "background_image", label: "Background image", type: "image" },
+            { name: "background_image", label: "Background image", type: "image", decorative: true },
             {
                 name: "items",
                 label: "Statistics",
@@ -360,6 +362,7 @@ export const CONTENT_SECTIONS = [
             ],
             cta_heading: "Let’s Discuss How to\nMake your Business Better.",
             cta_image: "/assets/images/ceoo.png",
+            cta_image_alt: "Vortexian Tech business consultant",
             cta_button_label: "Discover More",
             cta_button_link: "/about",
         },
@@ -397,6 +400,7 @@ export const CONTENT_SECTIONS = [
             heading: "Drop us a Line.",
             button_label: "Send A Message",
             image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80",
+            image_alt: "Vortexian Tech office team at work",
         },
     },
     {
@@ -446,6 +450,7 @@ export const CONTENT_SECTIONS = [
             name: "CEO: Farina Sadiq",
             email: "Email: farina@vortexiantech.com",
             image: "/assets/images/ceo.jpeg",
+            image_alt: "Farina Sadiq, CEO of Vortexian Tech",
         },
     },
     {
@@ -622,6 +627,7 @@ export const CONTENT_SECTIONS = [
             secondary_label: "Find Job Now →",
             secondary_link: "/career",
             image: "/assets/images/ceo.jpeg",
+            image_alt: "Farina Sadiq, CEO of Vortexian Tech",
             badges: [{ text: "Hire Faster" }, { text: "Pay-Per-Hire" }, { text: "Hire Through Expert" }],
         },
     },
@@ -667,6 +673,7 @@ export const CONTENT_SECTIONS = [
             visible: true,
             heading: "We understand the critical need for timely, high-quality hires!",
             image: "/assets/images/ceo.jpeg",
+            image_alt: "Farina Sadiq, CEO of Vortexian Tech",
             primary_label: "Hire Talent Now",
             primary_link: "/contact",
             secondary_label: "Find Job Now",

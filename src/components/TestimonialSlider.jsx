@@ -42,6 +42,7 @@ function toSlide(t) {
     id: t.id,
     text: t.testimonial_text,
     name: t.client_name,
+    imageAlt: t.profile_image_alt || t.client_name,
     role: role ? role.toUpperCase() : "HAPPY CUSTOMER",
     image: mediaUrl(
       t.profile_image,
@@ -148,7 +149,7 @@ export default function TestimonialSlider() {
 
                       <img
                         src={item.image}
-                        alt={item.name}
+                        alt={item.imageAlt || item.name}
                         className="absolute inset-0 w-full h-full object-cover p-1 rotate-0 rounded-lg"
                       />
                     </div>

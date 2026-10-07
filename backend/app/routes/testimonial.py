@@ -6,7 +6,7 @@ from app.database import get_db
 from app import models
 from app.schema import TestimonialResponse
 from app.routes.admin import get_current_admin_dependence
-from app.uploads import IMAGE_EXTENSIONS, MAX_IMAGE_BYTES, delete_upload, has_file, save_upload
+from app.uploads import IMAGE_EXTENSIONS, MAX_IMAGE_BYTES, delete_upload, has_file, require_alt, save_upload
 
 router = APIRouter()
 
@@ -20,6 +20,7 @@ def create_testimonial(
     company: Optional[str] = Form(None),
     rating: int = Form(5),
     profile_image: UploadFile = File(None),
+    profile_image_alt: Optional[str] = Form(None),
     db: Session = Depends(get_db),
     admin=Depends(get_current_admin_dependence),
 ):
@@ -27,6 +28,7 @@ def create_testimonial(
         raise HTTPException(status_code=400, detail="Rating must be between 1 and 5")
 
     image_path = None
+    alt = require_alt(has_file(profile_image), profile_image_alt)
     if has_file(profile_image):
         image_path = save_upload(profile_image, "testimonials", IMAGE_EXTENSIONS, MAX_IMAGE_BYTES)
 
@@ -37,6 +39,7 @@ def create_testimonial(
         testimonial_text=testimonial_text.strip(),
         rating=rating,
         profile_image=image_path,
+        profile_image_alt=alt,
     )
 
     db.add(testimonial)

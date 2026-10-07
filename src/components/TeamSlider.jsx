@@ -51,6 +51,7 @@ const TeamSlider = () => {
           role: member.designation,
           description: member.bio_description,
           image: member.profile_image, // 👈 RAW ONLY
+          imageAlt: member.profile_image_alt || member.full_name,
           facebook: member.facebook_link,
           instagram: member.instagram_link,
           linkedin: member.linkedin_link,
@@ -150,7 +151,7 @@ const TeamSlider = () => {
                     <div className="w-full md:w-[35%] relative rounded-3xl overflow-hidden min-h-[220px] md:h-[400px] bg-[#1D1D7E]/5 border border-gray-200/50">
                       <img
                         src={getImageUrl(member.image)}
-                        alt={member.name}
+                        alt={member.imageAlt || member.name}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
 

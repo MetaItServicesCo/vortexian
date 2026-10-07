@@ -41,7 +41,7 @@ const WhyChooseUs = () => {
         >
           {section.image ? (
             // eslint-disable-next-line @next/next/no-img-element -- admin-uploaded image
-            <img src={mediaUrl(section.image)} alt="" className="w-full max-w-md h-auto object-contain" />
+            <img src={mediaUrl(section.image)} alt={section.image_alt || ""} className="w-full max-w-md h-auto object-contain" />
           ) : (
           <div className="relative group">
             {/* 3D Image Placeholder */}

@@ -4,6 +4,8 @@ import { useState } from "react";
 import dynamic from "next/dynamic";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import ImageAltField, { altError } from "@/components/admin/ImageAltField";
+import { richTextAltError } from "@/lib/richText";
 
 const RichTextEditor = dynamic(() => import("@/components/editor/RichTextEditor"), { ssr: false });
 
@@ -19,11 +21,18 @@ export default function AddBlog() {
         meta_description: "",
         content: "",
         image: null,
+        image_alt: "",
     });
     const router = useRouter();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        const validation = altError(!!formData.image, formData.image_alt) || richTextAltError(formData.content);
+        if (validation) {
+            alert(validation);
+            return;
+        }
 
         try {
             setLoading(true);
@@ -50,6 +59,7 @@ export default function AddBlog() {
 
             if (formData.image) {
                 data.append("image", formData.image);
+                data.append("featured_image_alt", formData.image_alt.trim());
             }
 
             const response = await axios.post(
@@ -99,6 +109,8 @@ export default function AddBlog() {
                 error.message ||
                 "Server Error"
             );
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -164,6 +176,15 @@ export default function AddBlog() {
                                 })
                             }
                         />
+                        {formData.image && (
+                            <div className="mt-3">
+                                <ImageAltField
+                                    id="blog-image-alt"
+                                    value={formData.image_alt}
+                                    onChange={(value) => setFormData((prev) => ({ ...prev, image_alt: value }))}
+                                />
+                            </div>
+                        )}
                     </div>
                 </div>
 

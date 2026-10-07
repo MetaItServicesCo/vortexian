@@ -82,3 +82,27 @@ def delete_upload(public_path: str | None) -> None:
 
     if os.path.isfile(target):
         os.remove(target)
+
+
+IMAGE_ALT_MAX = 255
+
+
+def clean_alt(alt: str | None) -> str | None:
+    alt = " ".join((alt or "").split())
+    return alt[:IMAGE_ALT_MAX] or None
+
+
+def require_alt(has_image: bool, alt: str | None) -> str | None:
+    """Alt text is mandatory whenever an image is present (accessibility + SEO)."""
+    alt = clean_alt(alt)
+    if has_image and not alt:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Alt text is required for the image (describe what the image shows).",
+        )
+    return alt
+
+
+def is_image(path_or_name: str | None) -> bool:
+    ext = os.path.splitext(path_or_name or "")[1].lstrip(".").lower()
+    return ext in IMAGE_EXTENSIONS

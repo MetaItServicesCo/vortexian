@@ -19,7 +19,7 @@ export async function generateMetadata() {
       title: settings.meta_title,
       description: settings.meta_description,
       type: "website",
-      ...(ogImage ? { images: [{ url: ogImage }] } : {}),
+      ...(ogImage ? { images: [{ url: ogImage, alt: settings.og_image_alt || settings.site_name }] } : {}),
     },
   };
 }

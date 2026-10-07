@@ -104,7 +104,7 @@ export default function BlogHero() {
           >
             {/* CENTER IMAGE */}
            {/* eslint-disable-next-line @next/next/no-img-element -- admin-uploaded image */}
-           {hero.image && <img src={mediaUrl(hero.image)} alt="" className="w-full h-full object-cover opacity-90" />}
+           {hero.image && <img src={mediaUrl(hero.image)} alt={hero.image_alt || ""} className="w-full h-full object-cover opacity-90" />}
           </motion.div>
 
           {/* Dashed Ring (Position absolute rakha hai taake image ke upar/peeche adjust ho) */}

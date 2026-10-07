@@ -23,6 +23,7 @@ class BaseService(BaseModel):
     lucide_icon:str
     image_source_type:str
     image_showcase_url:str
+    image_alt:Optional[str]=None
     short_description:str
     long_description:str
     feature_1:Optional[str]=None
@@ -56,6 +57,7 @@ class UpdateService(BaseModel):
 
     image_source_type: Optional[str] = None
     image_showcase_url: Optional[str] = None
+    image_alt: Optional[str] = None
 
     short_description: Optional[str] = None
     long_description: Optional[str] = None
@@ -82,6 +84,7 @@ class BaseTeam(BaseModel):
     designation: str
     bio_description: str
     profile_image: str
+    profile_image_alt: Optional[str] = None
     facebook_link: Optional[str] = None
     instagram_link: Optional[str] = None
     linkedin_link: Optional[str] = None
@@ -108,6 +111,7 @@ class UpdateTeam(BaseModel):
     designation: Optional[str] = None
     bio_description: Optional[str] = None
     profile_image: Optional[str] = None
+    profile_image_alt: Optional[str] = None
     facebook_link: Optional[str] = None
     instagram_link: Optional[str] = None
     linkedin_link: Optional[str] = None
@@ -131,6 +135,7 @@ class CreatePortfolio(BasePortfolio):
 class PortfolioResponse(BasePortfolio):
     id: int
     primary_image: str
+    primary_image_alt: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -218,6 +223,7 @@ class CreateBlog(BlogBase):
 
 
 class UpdateBlog(BaseModel):
+    featured_image_alt: Optional[str] = None
     title: Optional[str] = None
     excerpt: Optional[str] = None
     content: Optional[str] = None
@@ -230,6 +236,7 @@ class UpdateBlog(BaseModel):
 class BlogResponse(BlogBase):
     id: int
     featured_image: Optional[str] = None
+    featured_image_alt: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -247,6 +254,7 @@ class CreateNewsFeed(BaseModel):
 class NewsFeedResponse(CreateNewsFeed):
     id: int
     media_url: Optional[str] = None
+    media_alt: Optional[str] = None
     is_published: bool
 
     class Config:
@@ -280,6 +288,7 @@ class TestimonialResponse(BaseModel):
     testimonial_text: str
     rating: int
     profile_image: Optional[str] = None
+    profile_image_alt: Optional[str] = None
 
     class Config:
         from_attributes = True

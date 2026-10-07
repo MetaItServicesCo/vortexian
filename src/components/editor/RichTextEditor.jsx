@@ -13,7 +13,7 @@ import {
     Code2, Minus, AlignLeft, AlignCenter, AlignRight, AlignJustify, ImagePlus,
     Film, Table as TableIcon, Undo2, Redo2, RemoveFormatting, Loader2,
     ArrowUpToLine, ArrowDownToLine, ArrowLeftToLine, ArrowRightToLine,
-    Rows3, Columns3, Merge, Split, Heading, Trash2,
+    Rows3, Columns3, Merge, Split, Heading, Trash2, Captions,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { uploadMedia } from "@/lib/adminApi";
@@ -171,15 +171,39 @@ export default function RichTextEditor({
         chain().extendMarkRange("link").setLink(linkAttributes(url.trim())).run();
     };
 
+    // Alt text is mandatory for images: keep asking until given, or cancel
+    const askAlt = (current = "") => {
+        let alt = current;
+        for (;;) {
+            const answer = window.prompt(
+                "Alt text (required) — describe what the image shows, e.g. \"Team reviewing a website design\":",
+                alt
+            );
+            if (answer === null) return null;
+            alt = answer.trim();
+            if (alt) return alt.slice(0, 255);
+        }
+    };
+
+    const editImageAlt = () => {
+        const alt = askAlt(editor.getAttributes("image").alt || "");
+        if (alt !== null) chain().updateAttributes("image", { alt }).run();
+    };
+
     const handleUpload = async (file, kind) => {
         if (!file) return;
+        let alt = "";
+        if (kind !== "video") {
+            alt = askAlt();
+            if (alt === null) return; // no alt text, no image
+        }
         setUploading(true);
         try {
             const url = await uploadMedia(file);
             if (kind === "video") {
                 chain().insertContent({ type: "video", attrs: { src: url } }).run();
             } else {
-                chain().setImage({ src: url, alt: file.name.replace(/\.[^.]+$/, "") }).run();
+                chain().setImage({ src: url, alt }).run();
             }
         } catch (err) {
             toast.error(err.message || "Upload failed");
@@ -232,6 +256,13 @@ export default function RichTextEditor({
                 <ToolbarButton title="Upload image" disabled={uploading} onClick={() => imageInput.current?.click()}>
                     {uploading ? <Loader2 size={15} className="animate-spin" /> : <ImagePlus size={15} />}
                 </ToolbarButton>
+                <ToolbarButton
+                    title="Alt text for the selected image"
+                    disabled={!editor.isActive("image")}
+                    onClick={editImageAlt}
+                >
+                    <Captions size={15} /><span className="ml-1 text-xs font-bold">Alt</span>
+                </ToolbarButton>
                 {allowVideo && (
                     <ToolbarButton title="Upload video" disabled={uploading} onClick={() => videoInput.current?.click()}><Film size={15} /></ToolbarButton>
                 )}
@@ -280,7 +311,7 @@ export default function RichTextEditor({
             <EditorContent editor={editor} className="px-5 py-4 overflow-x-auto" style={{ minHeight }} />
 
             <p className="px-4 py-2 border-t border-gray-100 bg-slate-50 text-[11px] text-slate-400">
-                Tip: tables copied from Word, Excel, Google Docs/Sheets or web pages paste as tables.
+                Tip: tables copied from Word, Excel, Google Docs/Sheets or web pages paste as tables. Images need alt text: click an image, then &ldquo;Alt&rdquo;. Images outlined in amber are missing it.
             </p>
         </div>
     );

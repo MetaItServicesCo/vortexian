@@ -22,6 +22,7 @@ class Service(Base):
     lucide_icon:Mapped[str]=mapped_column(String(100),nullable=False)
     image_source_type:Mapped[str]=mapped_column(String(50),nullable=False)
     image_showcase_url:Mapped[str]=mapped_column(Text,nullable=False)
+    image_alt:Mapped[str | None]=mapped_column(String(255),nullable=True)
     short_description:Mapped[str]=mapped_column(Text,nullable=False)
     long_description:Mapped[str]=mapped_column(Text,nullable=False)
     feature_1:Mapped[str | None]=mapped_column(Text,nullable=True)
@@ -46,6 +47,7 @@ class Team(Base):
     designation: Mapped[str] = mapped_column(String(150), nullable=False)
     bio_description: Mapped[str] = mapped_column(Text, nullable=False)
     profile_image: Mapped[str] = mapped_column(Text, nullable=False)
+    profile_image_alt: Mapped[str | None] = mapped_column(String(255), nullable=True)
     facebook_link: Mapped[str] = mapped_column(Text, nullable=True)
     instagram_link: Mapped[str] = mapped_column(Text, nullable=True)
     linkedin_link: Mapped[str] = mapped_column(Text, nullable=True)
@@ -60,6 +62,7 @@ class Portfolio(Base):
     category_node = mapped_column(String(100), nullable=False)
     deployment_year = mapped_column(String(10), nullable=False)
     primary_image = mapped_column(Text, nullable=False)
+    primary_image_alt = mapped_column(String(255), nullable=True)
     business_challenge = mapped_column(Text, nullable=False)
     solution_node = mapped_column(Text, nullable=False)
     meta_title = mapped_column(String(200), nullable=True)
@@ -141,6 +144,7 @@ class Blog(Base):
     author: Mapped[str] = mapped_column(String(100), nullable=False)
 
     featured_image: Mapped[str] = mapped_column(Text, nullable=True)
+    featured_image_alt: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     meta_title: Mapped[str] = mapped_column(String(60), nullable=False)
     meta_description: Mapped[str] = mapped_column(String(160), nullable=False)
@@ -164,6 +168,7 @@ class NewsFeed(Base):
     event_date: Mapped[str | None] = mapped_column(String(100), nullable=True)
 
     media_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+    media_alt: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     is_published: Mapped[bool] = mapped_column(Boolean, default=True)
     
@@ -200,6 +205,7 @@ class Testimonial(Base):
     rating: Mapped[int] = mapped_column(Integer, nullable=False, default=5)
 
     profile_image: Mapped[str | None] = mapped_column(Text, nullable=True)
+    profile_image_alt: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     created_at = mapped_column(DateTime(timezone=True), server_default=func.now())
 

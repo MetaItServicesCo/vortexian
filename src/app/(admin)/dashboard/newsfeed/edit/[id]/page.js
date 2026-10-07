@@ -2,6 +2,9 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
+import ImageAltField, { altError } from "@/components/admin/ImageAltField";
+import { richTextAltError } from "@/lib/richText";
+import { mediaUrl } from "@/lib/api";
 
 const RichTextEditor = dynamic(() => import("@/components/editor/RichTextEditor"), { ssr: false });
 
@@ -22,6 +25,7 @@ export default function EditNewsFeed() {
     const [eventDate, setEventDate] = useState("");
     const [file, setFile] = useState(null);
     const [existingMediaUrl, setExistingMediaUrl] = useState("");
+    const [mediaAlt, setMediaAlt] = useState("");
 
     // ---------------- FETCH EXISTING NEWS FEED ----------------
     useEffect(() => {
@@ -41,6 +45,7 @@ export default function EditNewsFeed() {
                 setAuthor(data.author || "");
                 setEventDate(data.event_date || "");
                 setExistingMediaUrl(data.media_url || "");
+                setMediaAlt(data.media_alt || "");
             } catch (err) {
                 setError("News feed load nahi ho saka. Dobara try karein.");
             } finally {
@@ -52,9 +57,18 @@ export default function EditNewsFeed() {
     }, [id]);
 
     // ---------------- UPDATE NEWS FEED ----------------
+    const isImage = (name) => /\.(jpe?g|png|gif|webp|avif)$/i.test(name || "");
+    // Alt text is required when the post shows an image (not for videos)
+    const showsImage = file ? isImage(file.name) : isImage(existingMediaUrl);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError("");
+        const altProblem = altError(showsImage, mediaAlt) || richTextAltError(description, "description");
+        if (altProblem) {
+            setError(altProblem);
+            return;
+        }
 
         try {
             setSubmitting(true);
@@ -66,6 +80,7 @@ export default function EditNewsFeed() {
             formData.append("description", description);
             formData.append("author", author);
             formData.append("event_date", eventDate);
+            formData.append("media_alt", mediaAlt.trim());
             if (file) {
                 formData.append("file", file);
             }
@@ -188,11 +203,16 @@ export default function EditNewsFeed() {
                         <label className="block text-sm font-medium mb-1">
                             Current Image
                         </label>
-                        <img
-                            src={`${API_BASE_URL}${existingMediaUrl}`}
-                            alt="current"
-                            className="w-24 h-24 object-cover rounded border"
-                        />
+                        {isImage(existingMediaUrl) ? (
+                            // eslint-disable-next-line @next/next/no-img-element -- admin preview
+                            <img
+                                src={mediaUrl(existingMediaUrl)}
+                                alt={mediaAlt || "Current image"}
+                                className="w-24 h-24 object-cover rounded border"
+                            />
+                        ) : (
+                            <video src={mediaUrl(existingMediaUrl)} className="w-40 rounded border" controls muted />
+                        )}
                     </div>
                 )}
 
@@ -203,11 +223,15 @@ export default function EditNewsFeed() {
                     </label>
                     <input
                         type="file"
-                        accept="image/*"
-                        onChange={(e) => setFile(e.target.files[0])}
+                        accept="image/png,image/jpeg,image/webp,image/gif,image/avif,video/mp4,video/webm"
+                        onChange={(e) => { setFile(e.target.files[0] || null); setMediaAlt(""); }}
                         className="w-full border rounded-lg px-3 py-2"
                     />
                 </div>
+
+                {showsImage && (
+                    <ImageAltField id="news-image-alt" value={mediaAlt} onChange={setMediaAlt} />
+                )}
 
                 {/* Actions */}
                 <div className="flex justify-end gap-3 pt-2">

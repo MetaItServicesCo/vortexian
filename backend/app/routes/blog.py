@@ -5,7 +5,7 @@ from app import models
 from app.schema import CreateBlog, UpdateBlog, BlogResponse
 from app.routes.admin import get_current_admin_dependence
 from app.sanitize import clean_html
-from app.uploads import IMAGE_EXTENSIONS, MAX_IMAGE_BYTES, delete_upload, has_file, save_upload
+from app.uploads import IMAGE_EXTENSIONS, MAX_IMAGE_BYTES, delete_upload, has_file, require_alt, save_upload
 
 
 router = APIRouter()
@@ -20,10 +20,11 @@ def create_blog(
     meta_title: str = Form(...),
     meta_description: str = Form(...),
     image: UploadFile = File(None),
+    featured_image_alt: str = Form(None),
     db: Session = Depends(get_db),
     admin: models.Admin = Depends(get_current_admin_dependence)
 ):
-
+    alt = require_alt(has_file(image), featured_image_alt)
     image_path = None
 
     if has_file(image):
@@ -36,6 +37,7 @@ def create_blog(
         category=category,
         author=author,
         featured_image=image_path,
+        featured_image_alt=alt,
         meta_title=meta_title,
         meta_description=meta_description
     )
@@ -85,12 +87,42 @@ def update_blog(
     if updates.get("content") is not None:
         updates["content"] = clean_html(updates["content"])
 
+    if "featured_image_alt" in updates:
+        updates["featured_image_alt"] = require_alt(bool(blog.featured_image), updates["featured_image_alt"])
+
     for key, value in updates.items():
         setattr(blog, key, value)
+
+    require_alt(bool(blog.featured_image), blog.featured_image_alt)
 
     db.commit()
     db.refresh(blog)
 
+    return blog
+
+
+@router.post("/update-image/{blog_id}", response_model=BlogResponse)
+def update_blog_image(
+    blog_id: int,
+    image: UploadFile = File(...),
+    featured_image_alt: str = Form(None),
+    db: Session = Depends(get_db),
+    admin: models.Admin = Depends(get_current_admin_dependence)
+):
+    blog = db.query(models.Blog).filter(models.Blog.id == blog_id).first()
+    if not blog:
+        raise HTTPException(status_code=404, detail="Blog not found")
+
+    alt = require_alt(True, featured_image_alt)
+    new_image = save_upload(image, "blogs", IMAGE_EXTENSIONS, MAX_IMAGE_BYTES)
+    old_image = blog.featured_image
+
+    blog.featured_image = new_image
+    blog.featured_image_alt = alt
+    db.commit()
+    db.refresh(blog)
+
+    delete_upload(old_image)
     return blog
 
 

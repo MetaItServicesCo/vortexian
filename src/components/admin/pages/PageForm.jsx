@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, ExternalLink, Loader2, Save } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import { adminFetch } from "@/lib/adminApi";
+import { richTextAltError } from "@/lib/richText";
 
 const RichTextEditor = dynamic(() => import("@/components/editor/RichTextEditor"), { ssr: false });
 
@@ -68,6 +69,11 @@ export default function PageForm({ initial }) {
         e.preventDefault();
         if (!page.title.trim() || !page.slug.trim()) {
             toast.error("Title and URL are required");
+            return;
+        }
+        const altProblem = richTextAltError(page.content);
+        if (altProblem) {
+            toast.error(altProblem, { duration: 6000 });
             return;
         }
 

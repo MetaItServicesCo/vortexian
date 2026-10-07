@@ -100,7 +100,7 @@ export default function BlogGrid({ blogs }) {
                   <div className="relative h-56 w-full">
                     <img
                       src={getImageUrl(blog.featured_image)}
-                      alt={blog.title}
+                      alt={blog.featured_image_alt || blog.title}
                       className="w-full h-56 object-cover"
                     />
                   </div>

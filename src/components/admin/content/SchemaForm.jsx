@@ -7,6 +7,27 @@ import toast from "react-hot-toast";
 import { uploadMedia } from "@/lib/adminApi";
 import { mediaUrl } from "@/lib/api";
 import DynamicIcon, { ICON_NAMES } from "@/components/content/DynamicIcon";
+import ImageAltField from "@/components/admin/ImageAltField";
+import { countImagesMissingAlt } from "@/lib/richText";
+
+export const altKeyFor = (field) => field.altKey || `${field.name}_alt`;
+const needsAlt = (field) => field.type === "image" && !field.decorative;
+
+// Labels of every image without alt text (and rich text with alt-less images),
+// including inside lists, so the editor can block saving with a clear message.
+export function findMissingAlt(fields, value, prefix = "") {
+    const problems = [];
+    for (const field of fields) {
+        const v = value?.[field.name];
+        const label = prefix + field.label;
+        if (needsAlt(field) && v && !(value?.[altKeyFor(field)] || "").trim()) problems.push(`${label} (alt text)`);
+        if (field.type === "richtext" && countImagesMissingAlt(v || "")) problems.push(`${label} (image in text)`);
+        if (field.type === "list" && Array.isArray(v)) {
+            v.forEach((item, i) => problems.push(...findMissingAlt(field.fields, item, `${label} #${i + 1} › `)));
+        }
+    }
+    return problems;
+}
 
 const RichTextEditor = dynamic(() => import("@/components/editor/RichTextEditor"), { ssr: false });
 
@@ -246,12 +267,22 @@ export function FieldList({ fields, value, onChange }) {
     return (
         <div className="space-y-5 pt-3">
             {fields.map((field) => (
-                <Field
-                    key={field.name}
-                    field={field}
-                    value={value?.[field.name]}
-                    onChange={(next) => onChange({ ...value, [field.name]: next })}
-                />
+                <div key={field.name} className="space-y-3">
+                    <Field
+                        field={field}
+                        value={value?.[field.name]}
+                        onChange={(next) => onChange({ ...value, [field.name]: next })}
+                    />
+                    {needsAlt(field) && value?.[field.name] && (
+                        <div className="pl-4 border-l-2 border-slate-100">
+                            <ImageAltField
+                                label={`${field.label} — alt text`}
+                                value={value?.[altKeyFor(field)]}
+                                onChange={(alt) => onChange({ ...value, [altKeyFor(field)]: alt })}
+                            />
+                        </div>
+                    )}
+                </div>
             ))}
         </div>
     );

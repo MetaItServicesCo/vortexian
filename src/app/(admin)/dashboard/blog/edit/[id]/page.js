@@ -4,6 +4,10 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { useRouter, useParams } from "next/navigation";
 import dynamic from "next/dynamic";
+import ImageAltField, { altError } from "@/components/admin/ImageAltField";
+import { richTextAltError } from "@/lib/richText";
+import { mediaUrl } from "@/lib/api";
+import { errorMessage } from "@/lib/adminApi";
 const RichTextEditor = dynamic(() => import("@/components/editor/RichTextEditor"), { ssr: false });
 
 export default function EditBlogPage() {
@@ -20,6 +24,7 @@ export default function EditBlogPage() {
         meta_title: "",
         meta_description: "",
         image: null,
+        image_alt: "",
     });
 
     const [preview, setPreview] = useState(null);
@@ -51,9 +56,10 @@ export default function EditBlogPage() {
                     meta_title: res.data.meta_title || "",
                     meta_description: res.data.meta_description || "",
                     image: null,
+                    image_alt: res.data.featured_image_alt || "",
                 });
 
-                setPreview(res.data.image || null);
+                setPreview(res.data.featured_image ? mediaUrl(res.data.featured_image) : null);
             } catch (err) {
                 console.log(err);
                 setError("Failed to load blog");
@@ -76,7 +82,8 @@ export default function EditBlogPage() {
     // ---------------- IMAGE HANDLER ----------------
     const handleImage = (e) => {
         const file = e.target.files[0];
-        setForm({ ...form, image: file });
+        // A new picture needs its own description
+        setForm({ ...form, image: file || null, image_alt: file ? "" : form.image_alt });
 
         if (file) {
             setPreview(URL.createObjectURL(file));
@@ -86,6 +93,12 @@ export default function EditBlogPage() {
     // ---------------- UPDATE BLOG ----------------
     const handleUpdate = async (e) => {
         e.preventDefault();
+
+        const validation = altError(!!preview, form.image_alt) || richTextAltError(form.content);
+        if (validation) {
+            alert(validation);
+            return;
+        }
 
         try {
             setUpdating(true);
@@ -116,6 +129,7 @@ export default function EditBlogPage() {
                     author: form.author,
                     meta_title: form.meta_title,
                     meta_description: form.meta_description,
+                    ...(preview && !form.image ? { featured_image_alt: form.image_alt.trim() } : {}),
                 },
                 {
                     headers: {
@@ -125,11 +139,21 @@ export default function EditBlogPage() {
                 }
             );
 
+            // A newly chosen featured image is uploaded separately
+            if (form.image) {
+                const imageData = new FormData();
+                imageData.append("image", form.image);
+                imageData.append("featured_image_alt", form.image_alt.trim());
+                await axios.post(`/api/blog/update-image/${blogId}`, imageData, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+            }
+
             alert("Blog updated successfully");
             router.push("/dashboard/blog");
         } catch (err) {
             console.log(err);
-            alert("Failed to update blog");
+            alert(`Failed to update blog: ${errorMessage(err.response?.data, err.message)}`);
         } finally {
             setUpdating(false);
         }
@@ -223,15 +247,27 @@ export default function EditBlogPage() {
                     <label className="font-semibold">Image</label>
                     <input
                         type="file"
+                        accept="image/png,image/jpeg,image/webp,image/gif,image/avif"
                         onChange={handleImage}
                         className="w-full p-2 border rounded"
                     />
 
                     {preview && (
-                        <img
-                            src={preview}
-                            className="w-40 h-32 object-cover mt-2 rounded"
-                        />
+                        <>
+                            {/* eslint-disable-next-line @next/next/no-img-element -- local preview */}
+                            <img
+                                src={preview}
+                                alt={form.image_alt || "Featured image preview"}
+                                className="w-40 h-32 object-cover mt-2 rounded"
+                            />
+                            <div className="mt-3">
+                                <ImageAltField
+                                    id="blog-image-alt"
+                                    value={form.image_alt}
+                                    onChange={(value) => setForm((prev) => ({ ...prev, image_alt: value }))}
+                                />
+                            </div>
+                        </>
                     )}
                 </div>
 

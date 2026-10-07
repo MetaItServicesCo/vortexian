@@ -11,7 +11,7 @@ from app.schema import (
 )
 
 from app.routes.admin import get_current_admin_dependence
-from app.uploads import IMAGE_EXTENSIONS, MAX_IMAGE_BYTES, delete_upload, has_file, save_upload
+from app.uploads import IMAGE_EXTENSIONS, MAX_IMAGE_BYTES, delete_upload, has_file, require_alt, save_upload
 
 
 router = APIRouter()
@@ -28,8 +28,10 @@ def create_team(
     facebook_link: Optional[str] = Form(None),
     instagram_link: Optional[str] = Form(None),
     linkedin_link: Optional[str] = Form(None),
-    image: UploadFile = File(...)
+    image: UploadFile = File(...),
+    profile_image_alt: Optional[str] = Form(None),
 ):
+    alt = require_alt(True, profile_image_alt)
     file_location = save_upload(image, "team", IMAGE_EXTENSIONS, MAX_IMAGE_BYTES)
 
     new_team = models.Team(
@@ -37,6 +39,7 @@ def create_team(
         designation=designation,
         bio_description=bio_description,
         profile_image=file_location,
+        profile_image_alt=alt,
         facebook_link=facebook_link,
         instagram_link=instagram_link,
         linkedin_link=linkedin_link
@@ -99,7 +102,8 @@ def update_team(
     facebook_link: Optional[str] = Form(None),
     instagram_link: Optional[str] = Form(None),
     linkedin_link: Optional[str] = Form(None),
-    profile_image: Optional[UploadFile] = File(None)
+    profile_image: Optional[UploadFile] = File(None),
+    profile_image_alt: Optional[str] = Form(None),
 ):
     team = db.query(models.Team).filter(models.Team.id == team_id).first()
     if not team:
@@ -112,6 +116,8 @@ def update_team(
     team.facebook_link = facebook_link
     team.instagram_link = instagram_link
     team.linkedin_link = linkedin_link
+
+    team.profile_image_alt = require_alt(True, profile_image_alt if profile_image_alt is not None else team.profile_image_alt)
 
     # Replace the image only when a new one is uploaded
     if has_file(profile_image):

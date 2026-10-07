@@ -181,7 +181,7 @@ const ContactSection = () => {
             // eslint-disable-next-line @next/next/no-img-element -- admin-uploaded image
             <img
               src={mediaUrl(section.image)}
-              alt=""
+              alt={section.image_alt || ""}
               className="w-full h-full object-cover"
             />
           )}

@@ -6,6 +6,7 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import Link from "next/link";
 import { mediaUrl } from "@/lib/api";
+import ImageAltField, { altError } from "@/components/admin/ImageAltField";
 
 export default function EditTeamProfilePanel() {
     const router = useRouter();
@@ -16,6 +17,7 @@ export default function EditTeamProfilePanel() {
     const [fetching, setFetching] = useState(true);
     const [fileObj, setFileObj] = useState(null);
     const [previewUrl, setPreviewUrl] = useState(null);
+    const [imageAlt, setImageAlt] = useState("");
 
     const [fields, setFields] = useState({
         full_name: "",
@@ -60,6 +62,7 @@ export default function EditTeamProfilePanel() {
                 // Existing image preview
                 if (data.profile_image) {
                     setPreviewUrl(mediaUrl(data.profile_image));
+                    setImageAlt(data.profile_image_alt || "");
                 }
             } catch (err) {
                 toast.error(err.message);
@@ -76,6 +79,7 @@ export default function EditTeamProfilePanel() {
         const file = e.target.files?.[0];
         if (!file) return;
         setFileObj(file);
+        setImageAlt(fields.full_name ? `Portrait of ${fields.full_name}` : "");
         setPreviewUrl(URL.createObjectURL(file));
     };
 
@@ -85,6 +89,11 @@ export default function EditTeamProfilePanel() {
 
         if (!token) {
             toast.error("Unauthorized: Please login again");
+            return;
+        }
+        const missingAlt = altError(true, imageAlt);
+        if (missingAlt) {
+            toast.error(missingAlt);
             return;
         }
 
@@ -102,6 +111,7 @@ export default function EditTeamProfilePanel() {
             formData.append("linkedin_link", fields.linkedin_link || "");
 
             // Only append image if user selected a new one
+            formData.append("profile_image_alt", imageAlt.trim());
             if (fileObj) {
                 formData.append("profile_image", fileObj);
             }
@@ -181,20 +191,23 @@ export default function EditTeamProfilePanel() {
                         <div className="mb-3">
                             <img
                                 src={previewUrl}
-                                alt="Current profile"
+                                alt={imageAlt || "Current profile"}
                                 className="w-20 h-20 rounded-full object-cover border border-gray-200"
                             />
                         </div>
                     )}
                     <input
                         type="file"
-                        accept="image/*"
+                        accept="image/png,image/jpeg,image/webp,image/gif,image/avif"
                         onChange={handleFileChange}
                         className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-blue-600 hover:file:bg-blue-100"
                     />
                     <p className="text-[11px] text-gray-400 mt-1">
                         Leave empty to keep existing image
                     </p>
+                    <div className="mt-3">
+                        <ImageAltField id="team-image-alt" value={imageAlt} onChange={setImageAlt} />
+                    </div>
                 </div>
 
                 <div>

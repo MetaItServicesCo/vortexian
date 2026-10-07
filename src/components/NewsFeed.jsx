@@ -163,13 +163,22 @@ export default function NewsFeed() {
                     <span>{item.author || "Admin"}</span>
                   </div>
 
-                  {/* Image */}
-                  {item.media_url && (
-                    <img
+                  {/* Media */}
+                  {item.media_url && (/\.(mp4|webm|mov)$/i.test(item.media_url) ? (
+                    <video
                       src={`${API_BASE_URL}${item.media_url}`}
                       className="mt-2 w-full h-32 object-cover rounded-lg"
+                      controls
+                      muted
                     />
-                  )}
+                  ) : (
+                    // eslint-disable-next-line @next/next/no-img-element -- admin-uploaded media
+                    <img
+                      src={`${API_BASE_URL}${item.media_url}`}
+                      alt={item.media_alt || item.title || ""}
+                      className="mt-2 w-full h-32 object-cover rounded-lg"
+                    />
+                  ))}
                 </div>
               </div>
             );

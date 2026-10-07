@@ -74,7 +74,7 @@ export default function HeroBanner() {
                   // eslint-disable-next-line @next/next/no-img-element -- admin-uploaded image
                   <img
                     src={mediaUrl(banner.image)}
-                    alt=""
+                    alt={banner.image_alt || ""}
                     className="absolute inset-0 w-full h-full object-contain object-bottom"
                   />
                 )}

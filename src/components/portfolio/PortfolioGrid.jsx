@@ -83,7 +83,7 @@ const PortfolioGrid = ({ initialProjects = [] }) => {
                           ? `${project.primary_image}`
                           : "https://placehold.co/600x400?text=No+Image+Found"
                       }
-                      alt={project.project_title || "Portfolio Project"}
+                      alt={project.primary_image_alt || project.project_title || "Portfolio project"}
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                       onError={(e) => {
                         e.target.src =

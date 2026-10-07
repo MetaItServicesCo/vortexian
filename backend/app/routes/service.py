@@ -7,7 +7,7 @@ from app import models
 from app.schema import CreateService, ServiceResponse, UpdateService
 from app.routes.admin import get_current_admin_dependence
 from app.sanitize import clean_html, slugify
-from app.uploads import IMAGE_EXTENSIONS, MAX_IMAGE_BYTES, delete_upload, has_file, save_upload
+from app.uploads import IMAGE_EXTENSIONS, MAX_IMAGE_BYTES, delete_upload, has_file, require_alt, save_upload
 
 router = APIRouter()
 
@@ -32,9 +32,11 @@ def create_service(
     keywords: str = Form(...),
     meta_description: str = Form(...),
     image_file: UploadFile = File(None),
+    image_alt: str = Form(None),
     db: Session = Depends(get_db),
     admin: models.Admin = Depends(get_current_admin_dependence)
 ):
+    image_alt = require_alt(True, image_alt)
     url_slug = slugify(url_slug)
     if not url_slug:
         raise HTTPException(status_code=400, detail="URL slug must contain letters or numbers")
@@ -68,6 +70,7 @@ def create_service(
         lucide_icon=lucide_icon,
         image_source_type=image_source_type,
         image_showcase_url=image_path,
+        image_alt=image_alt,
         short_description=short_description,
         long_description=clean_html(long_description),
         feature_1=feature_1,
@@ -138,6 +141,8 @@ def update_service(
     for key, value in update_data.items():
         setattr(service, key, value)
 
+    service.image_alt = require_alt(True, service.image_alt)
+
     db.commit()
     db.refresh(service)
 
@@ -152,17 +157,20 @@ def update_service_image(
     service_id: int,
     db: Annotated[Session, Depends(get_db)],
     image_file: UploadFile = File(...),
+    image_alt: str = Form(None),
     admin: models.Admin = Depends(get_current_admin_dependence)
 ):
     service = db.query(models.Service).filter(models.Service.id == service_id).first()
     if not service:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Service not found")
 
+    image_alt = require_alt(True, image_alt)
     new_image = save_upload(image_file, "services", IMAGE_EXTENSIONS, MAX_IMAGE_BYTES)
     old_image = service.image_showcase_url
 
     service.image_source_type = "file"
     service.image_showcase_url = new_image
+    service.image_alt = image_alt
     db.commit()
     db.refresh(service)
 

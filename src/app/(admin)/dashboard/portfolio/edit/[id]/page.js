@@ -4,6 +4,9 @@ import { useRouter, useParams } from "next/navigation";
 import { ArrowLeft, Loader2, Save, FileImage } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import Link from "next/link";
+import ImageAltField, { altError } from "@/components/admin/ImageAltField";
+import { adminFetch } from "@/lib/adminApi";
+import { mediaUrl } from "@/lib/api";
 
 export default function EditPortfolioAssetForm() {
     const router = useRouter();
@@ -12,6 +15,7 @@ export default function EditPortfolioAssetForm() {
     const [loading, setLoading] = useState(false);
     const [fileObj, setFileObj] = useState(null);
     const [preview, setPreview] = useState("");
+    const [imageAlt, setImageAlt] = useState("");
 
     const [form, setForm] = useState({
         project_title: "",
@@ -48,11 +52,8 @@ export default function EditPortfolioAssetForm() {
                     meta_keywords: data.meta_keywords || ""
                 });
 
-                setPreview(
-                    data.primary_image
-                        ? `${data.primary_image}`
-                        : ""
-                );
+                setPreview(data.primary_image ? mediaUrl(data.primary_image) : "");
+                setImageAlt(data.primary_image_alt || "");
             } catch (error) {
                 console.error(error);
                 toast.error("Failed to load portfolio data.");
@@ -71,15 +72,20 @@ export default function EditPortfolioAssetForm() {
         if (file) {
             setFileObj(file);
             setPreview(URL.createObjectURL(file));
+            setImageAlt(""); // describe the new picture
         }
     };
 
     const dispatchUpdate = async (e) => {
         e.preventDefault();
+        const missingAlt = altError(true, imageAlt);
+        if (missingAlt) {
+            toast.error(missingAlt);
+            return;
+        }
         setLoading(true);
 
         try {
-            const token = localStorage.getItem("token");
 
             // FastAPI Form fields ke mutabiq FormData taiyar karna
             const formData = new FormData();
@@ -92,39 +98,23 @@ export default function EditPortfolioAssetForm() {
             formData.append("meta_description", form.meta_description || "");
             formData.append("meta_keywords", form.meta_keywords || "");
 
+            formData.append("primary_image_alt", imageAlt.trim());
+            // The API expects the new file as "image_file" (it was sent as "primary_image", so changes were ignored)
             if (fileObj) {
-                formData.append("primary_image", fileObj);
+                formData.append("image_file", fileObj);
             }
 
-            const res = await fetch(
-                `/api/portfolio/update/${id}`,
-                {
-                    method: "PATCH",
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                        // Content-Type khud browser handle karega, yahan mat likhein
-                    },
-                    body: formData
-                }
-            );
-
-            const data = await res.json();
-
-            if (res.ok) {
-                toast.success("Portfolio updated successfully!");
-                setTimeout(() => {
-                    router.push("/dashboard/portfolio");
-                }, 1000);
-            } else {
-                if (Array.isArray(data.detail)) {
-                    toast.error(data.detail[0]?.msg || "Validation error");
-                } else {
-                    toast.error(data.detail || "Update failed");
-                }
-            }
+            await adminFetch(`/api/portfolio/update/${id}`, { method: "PATCH", body: formData });
+            toast.success("Portfolio updated successfully!");
+            setTimeout(() => {
+                router.push("/dashboard/portfolio");
+            }, 1000);
         } catch (error) {
-            console.error(error);
-            toast.error("Server connection failed.");
+            toast.error(
+                error.message === "Failed to fetch"
+                    ? "Could not reach the server. Check your internet connection and try again."
+                    : `Could not save: ${error.message}`
+            );
         } finally {
             setLoading(false);
         }
@@ -179,8 +169,11 @@ export default function EditPortfolioAssetForm() {
                                 <FileImage className="text-gray-400" size={24} />
                             )}
                             <span className="text-xs font-bold uppercase text-gray-400 truncate">{fileObj ? fileObj.name : "Select to rewrite graphic data source"}</span>
-                            <input type="file" accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer" onChange={handleFileChange} />
+                            <input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/avif" className="absolute inset-0 opacity-0 cursor-pointer" onChange={handleFileChange} />
                         </div>
+                    </div>
+                    <div className="md:col-span-2">
+                        <ImageAltField id="portfolio-image-alt" value={imageAlt} onChange={setImageAlt} />
                     </div>
                 </div>
 

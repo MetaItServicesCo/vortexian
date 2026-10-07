@@ -4,11 +4,16 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Loader2, Save, FileImage, Globe } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import Link from "next/link";
+import ImageAltField, { altError } from "@/components/admin/ImageAltField";
+import { adminFetch } from "@/lib/adminApi";
+
+const MAX_IMAGE_MB = 10;
 
 export default function CreatePortfolioAssetForm() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [fileObj, setFileObj] = useState(null);
+    const [imageAlt, setImageAlt] = useState("");
 
     // ✅ CHANGED: field names API ke mutabiq
     const [form, setForm] = useState({
@@ -24,39 +29,36 @@ export default function CreatePortfolioAssetForm() {
 
     const dispatchSubmission = async (e) => {
         e.preventDefault();
-            const token = localStorage.getItem("token");
-
-        // ✅ CHANGED: validation mein naye field names
         if (!form.project_title || !form.business_challenge || !form.solution_node || !fileObj) {
-            toast.error("Please deploy all baseline mandatory metrics!");
+            toast.error("Please fill in the title, challenge, solution and choose an image.");
+            return;
+        }
+        if (fileObj.size > MAX_IMAGE_MB * 1024 * 1024) {
+            toast.error(`The image is too large (max ${MAX_IMAGE_MB} MB). Please use a smaller or compressed image.`);
+            return;
+        }
+        const missingAlt = altError(true, imageAlt);
+        if (missingAlt) {
+            toast.error(missingAlt);
             return;
         }
 
         setLoading(true);
         const bundle = new FormData();
         Object.keys(form).forEach(key => bundle.append(key, form[key]));
-        bundle.append("image_file", fileObj); // ✅ CHANGED: mainImage → image_file
+        bundle.append("image_file", fileObj);
+        bundle.append("primary_image_alt", imageAlt.trim());
 
         try {
-            // ✅ CHANGED: URL /api/portfolio/create
-            const res = await fetch(
-                "/api/portfolio/create",
-                {
-                    method: "POST",
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    },
-                    body: bundle
-                }
+            await adminFetch("/api/portfolio/create", { method: "POST", body: bundle });
+            toast.success("Portfolio item published.");
+            setTimeout(() => router.push("/dashboard/portfolio"), 1200);
+        } catch (err) {
+            toast.error(
+                err.message === "Failed to fetch"
+                    ? "Could not reach the server. Check your internet connection and try again."
+                    : `Could not save the portfolio item: ${err.message}`
             );
-            if (res.ok) {
-                toast.success("Case study compiled natively inside system nodes!");
-                setTimeout(() => router.push("/dashboard/portfolio"), 1200);
-            } else {
-                toast.error("Transaction deployment error.");
-            }
-        } catch {
-            toast.error("API proxy cluster loss.");
         } finally {
             setLoading(false);
         }
@@ -108,9 +110,15 @@ export default function CreatePortfolioAssetForm() {
                         <div className="border-2 border-dashed border-gray-200 hover:border-[#1D1D7E] rounded-xl p-3.5 transition-all bg-slate-50/50 flex items-center gap-4 relative">
                             <FileImage className="text-gray-400 shrink-0" size={24} />
                             <span className="text-xs font-bold uppercase text-gray-400 truncate">{fileObj ? fileObj.name : "Upload binary canvas file"}</span>
-                            <input type="file" required className="absolute inset-0 opacity-0 cursor-pointer" onChange={e => setFileObj(e.target.files[0])} />
+                            <input type="file" required accept="image/png,image/jpeg,image/webp,image/gif,image/avif" className="absolute inset-0 opacity-0 cursor-pointer" onChange={e => { setFileObj(e.target.files[0] || null); setImageAlt(""); }} />
                         </div>
+                        <p className="text-[11px] text-gray-400 mt-1">JPG, PNG, WEBP, GIF or AVIF, up to {MAX_IMAGE_MB} MB.</p>
                     </div>
+                    {fileObj && (
+                        <div className="md:col-span-2">
+                            <ImageAltField id="portfolio-image-alt" value={imageAlt} onChange={setImageAlt} />
+                        </div>
+                    )}
                 </div>
 
                 <div>

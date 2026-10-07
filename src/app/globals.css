@@ -132,4 +132,7 @@
 }
 .tiptap-editor.resize-cursor { cursor: col-resize; }
 .tiptap-editor img.ProseMirror-selectednode { outline: 3px solid #2185f2; }
+/* Images still missing alt text */
+.tiptap-editor img:not([alt]),
+.tiptap-editor img[alt=""] { outline: 3px dashed #f59e0b; outline-offset: 2px; }
 }

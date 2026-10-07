@@ -7,7 +7,7 @@ import { ArrowLeft, ExternalLink, Loader2, RotateCcw, Save } from "lucide-react"
 import toast, { Toaster } from "react-hot-toast";
 import { SECTION_MAP, resolveSection } from "@/content/registry";
 import { adminFetch } from "@/lib/adminApi";
-import { FieldList } from "@/components/admin/content/SchemaForm";
+import { FieldList, findMissingAlt } from "@/components/admin/content/SchemaForm";
 
 const GROUP_URLS = {
     "Global": "/",
@@ -59,6 +59,11 @@ export default function EditContentSection() {
 
     const handleSave = async (e) => {
         e.preventDefault();
+        const missing = findMissingAlt(section.fields, value);
+        if (missing.length) {
+            toast.error(`Alt text is required before saving: ${missing.join(", ")}`, { duration: 6000 });
+            return;
+        }
         setSaving(true);
         try {
             const saved = await adminFetch(`/api/content/${key}`, { method: "PUT", body: value });

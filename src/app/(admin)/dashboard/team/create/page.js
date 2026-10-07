@@ -4,11 +4,13 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Loader2, Save, FileImage } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import Link from "next/link";
+import ImageAltField, { altError } from "@/components/admin/ImageAltField";
 
 export default function CreateTeamProfilePanel() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [fileObj, setFileObj] = useState(null);
+    const [imageAlt, setImageAlt] = useState("");
 
     // Controlled input state tracking parameters
     const [name, setName] = useState("");
@@ -23,6 +25,11 @@ export default function CreateTeamProfilePanel() {
 
         if (!name || !role || !description || !fileObj) {
             toast.error("Name, Role, Description and Image are required!");
+            return;
+        }
+        const missingAlt = altError(true, imageAlt);
+        if (missingAlt) {
+            toast.error(missingAlt);
             return;
         }
 
@@ -40,6 +47,7 @@ export default function CreateTeamProfilePanel() {
             formData.append("linkedin_link", linkedin);
 
             formData.append("image", fileObj);
+            formData.append("profile_image_alt", imageAlt.trim());
 
             const token = localStorage.getItem("token");
 
@@ -122,8 +130,13 @@ export default function CreateTeamProfilePanel() {
                     <div className="border-2 border-dashed border-gray-200 hover:border-[#1D1D7E] rounded-xl p-6 transition-all bg-slate-50/50 flex flex-col items-center text-center justify-center relative">
                         <FileImage className="w-8 h-8 text-gray-400 mb-2" />
                         <span className="text-xs font-bold uppercase tracking-wider text-gray-400">{fileObj ? fileObj.name : "Select binary chunk image format files"}</span>
-                        <input type="file" required className="absolute inset-0 opacity-0 cursor-pointer" onChange={(e) => setFileObj(e.target.files[0])} />
+                        <input type="file" required accept="image/png,image/jpeg,image/webp,image/gif,image/avif" className="absolute inset-0 opacity-0 cursor-pointer" onChange={(e) => { const f = e.target.files[0] || null; setFileObj(f); if (f) setImageAlt(name ? `Portrait of ${name}` : ""); }} />
                     </div>
+                    {fileObj && (
+                        <div className="mt-3">
+                            <ImageAltField id="team-image-alt" value={imageAlt} onChange={setImageAlt} />
+                        </div>
+                    )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-gray-100 pt-6">

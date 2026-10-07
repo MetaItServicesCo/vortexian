@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Star, Loader2, Upload } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import Link from "next/link";
+import ImageAltField, { altError } from "@/components/admin/ImageAltField";
 
 const API_BASE = "";
 
@@ -14,6 +15,7 @@ export default function CreateTestimonialPage() {
     const [rating, setRating] = useState(5);
     const [hoverRating, setHoverRating] = useState(0);
     const [fileObj, setFileObj] = useState(null);
+    const [imageAlt, setImageAlt] = useState("");
     const [previewUrl, setPreviewUrl] = useState(null);
 
     const [fields, setFields] = useState({
@@ -37,6 +39,7 @@ export default function CreateTestimonialPage() {
         if (!file) return;
         setFileObj(file);
         setPreviewUrl(URL.createObjectURL(file));
+        setImageAlt(fields.client_name ? `Photo of ${fields.client_name}` : "");
     }
 
     async function handleSubmit(e) {
@@ -44,6 +47,11 @@ export default function CreateTestimonialPage() {
 
         if (!fields.client_name.trim() || !fields.testimonial_text.trim()) {
             toast.error("Name and testimonial text are required");
+            return;
+        }
+        const missingAlt = altError(!!fileObj, imageAlt);
+        if (missingAlt) {
+            toast.error(missingAlt);
             return;
         }
 
@@ -59,6 +67,7 @@ export default function CreateTestimonialPage() {
 
             if (fileObj) {
                 formData.append("profile_image", fileObj);
+                formData.append("profile_image_alt", imageAlt.trim());
             }
 
             const res = await fetch(`${API_BASE}/api/testimonials/create`, {
@@ -152,15 +161,20 @@ export default function CreateTestimonialPage() {
                         <div className="flex-1">
                             <input
                                 type="file"
-                                accept="image/*"
+                                accept="image/png,image/jpeg,image/webp,image/gif,image/avif"
                                 onChange={handleFile}
                                 className="text-sm text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#1D1D7E]/10 file:text-[#1D1D7E] hover:file:bg-[#1D1D7E]/20 cursor-pointer"
                             />
                             <p className="text-[11px] text-gray-400 mt-1">
-                                Optional — JPG, PNG under 2MB
+                                Optional — JPG, PNG or WEBP, up to 10 MB
                             </p>
                         </div>
                     </div>
+                    {fileObj && (
+                        <div className="mt-3">
+                            <ImageAltField id="testimonial-image-alt" value={imageAlt} onChange={setImageAlt} />
+                        </div>
+                    )}
                 </div>
 
                 <div className="h-px bg-gray-100" />

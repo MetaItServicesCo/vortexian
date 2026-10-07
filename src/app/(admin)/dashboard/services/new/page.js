@@ -3,6 +3,8 @@
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { slugify, slugifyTyping } from "@/lib/slugify";
+import ImageAltField, { altError } from "@/components/admin/ImageAltField";
+import { richTextAltError } from "@/lib/richText";
 import dynamic from "next/dynamic";
 import axios from "axios";
 import {
@@ -44,6 +46,7 @@ export default function CreateNewService() {
         shortDesc: "",
         icon: "Share2",
         image: "",
+        image_alt: "",
         longDesc: "",
         features: ["", "", "", ""],
 
@@ -114,6 +117,12 @@ export default function CreateNewService() {
             return;
         }
 
+        const altProblem = altError(true, formData.image_alt) || richTextAltError(formData.longDesc, "long description");
+        if (altProblem) {
+            toast.error(altProblem);
+            return;
+        }
+
         setLoading(true);
 
         try {
@@ -158,6 +167,8 @@ export default function CreateNewService() {
                 "image_source_type",
                 uploadType
             );
+
+            submitData.append("image_alt", formData.image_alt.trim());
 
             // IMAGE URL OR FILE
             if (uploadType === "url") {
@@ -515,12 +526,18 @@ export default function CreateNewService() {
 
                                 <img
                                     src={previewUrl}
-                                    alt="Preview"
+                                    alt={formData.image_alt || "Preview"}
                                     className="w-full h-full object-cover"
                                 />
                             </div>
                         </div>
                     )}
+
+                    <ImageAltField
+                        id="service-image-alt"
+                        value={formData.image_alt}
+                        onChange={(value) => setFormData((prev) => ({ ...prev, image_alt: value }))}
+                    />
 
                     {/* SHORT DESC */}
                     <div>

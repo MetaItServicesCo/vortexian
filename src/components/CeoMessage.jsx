@@ -25,7 +25,7 @@ const CeoMessage = () => {
             {/* eslint-disable-next-line @next/next/no-img-element -- admin-uploaded photo */}
             <img
               src={mediaUrl(ceo.image)}
-              alt={ceo.name}
+              alt={ceo.image_alt || ceo.name}
               className="w-full h-auto transition-all duration-700 ease-in-out rounded-sm shadow-"
             />
           </div>

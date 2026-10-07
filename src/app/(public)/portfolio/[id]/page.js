@@ -128,7 +128,7 @@ export default async function PortfolioDetailPage({ params }) {
                     {project.primary_image ? (
                         <img
                             src={`${API_BASE}${project.primary_image}`}
-                            alt={`${project.project_title} — project visual`}
+                            alt={project.primary_image_alt || `${project.project_title} — project visual`}
                             className="w-full h-full object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-105"
                         />
                     ) : (

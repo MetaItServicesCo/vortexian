@@ -22,7 +22,7 @@ export default function TrustedBy() {
             >
               {logo.image ? (
                 // eslint-disable-next-line @next/next/no-img-element -- admin-uploaded logo
-                <img src={mediaUrl(logo.image)} alt={logo.name || ""} className="max-h-12 object-contain" />
+                <img src={mediaUrl(logo.image)} alt={logo.image_alt || logo.name || ""} className="max-h-12 object-contain" />
               ) : (
                 logo.name
               )}

@@ -82,7 +82,7 @@ const StatsSection = () => {
               // eslint-disable-next-line @next/next/no-img-element -- admin-uploaded image
               <img
                 src={mediaUrl(section.cta_image)}
-                alt=""
+                alt={section.cta_image_alt || ""}
                 className="h-[220px] lg:h-[400px] w-full  object-contain position-absolute top-[-100px] left-0 transform hover:scale-105 transition-transform duration-700"
               />
               )}

@@ -60,7 +60,7 @@ const Navbar = () => {
             {/* eslint-disable-next-line @next/next/no-img-element -- logo is admin-uploaded */}
             <img
               src={mediaUrl(settings.logo, "/assets/images/logo-f.png")}
-              alt={`${settings.site_name} Logo`}
+              alt={settings.logo_alt || `${settings.site_name} logo`}
               width={200}
               height={90}
               className="object-contain w-[200px] h-[90px]"

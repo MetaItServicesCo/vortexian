@@ -6,7 +6,7 @@ from app import models
 from app.schema import NewsFeedResponse
 from app.routes.admin import get_current_admin_dependence
 from app.sanitize import clean_html
-from app.uploads import IMAGE_EXTENSIONS, MAX_VIDEO_BYTES, VIDEO_EXTENSIONS, delete_upload, has_file, save_upload
+from app.uploads import IMAGE_EXTENSIONS, MAX_VIDEO_BYTES, VIDEO_EXTENSIONS, clean_alt, delete_upload, has_file, is_image, require_alt, save_upload
 
 router = APIRouter()
 
@@ -22,9 +22,11 @@ def create_news_feed(
     author: str = Form(...),
     event_date: str = Form(None),
     file: UploadFile = File(None),
+    media_alt: str = Form(None),
     db: Session = Depends(get_db),
     admin=Depends(get_current_admin_dependence)
 ):
+    media_alt = require_alt(has_file(file) and is_image(file.filename), media_alt)
     media_path = None
 
     if has_file(file):
@@ -37,6 +39,7 @@ def create_news_feed(
         author=author,
         event_date=event_date,
         media_url=media_path,
+        media_alt=media_alt,
         is_published=True
     )
 
@@ -78,6 +81,7 @@ def update_news_feed(
     author: str = Form(...),
     event_date: str = Form(None),
     file: UploadFile = File(None),
+    media_alt: str = Form(None),
     db: Session = Depends(get_db),
     admin=Depends(get_current_admin_dependence)
 ):
@@ -98,6 +102,9 @@ def update_news_feed(
     news.description = clean_html(description)
     news.author = author
     news.event_date = event_date
+    if media_alt is not None:
+        news.media_alt = clean_alt(media_alt)
+    news.media_alt = require_alt(is_image(news.media_url), news.media_alt)
 
     db.commit()
     db.refresh(news)

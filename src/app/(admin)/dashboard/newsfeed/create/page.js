@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
+import { richTextAltError } from "@/lib/richText";
 const RichTextEditor = dynamic(() => import("@/components/editor/RichTextEditor"), { ssr: false });
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
@@ -22,6 +23,10 @@ export default function CreateNewsFeed() {
 
     if (!title || !description) {
       return alert("Title and Description are required!");
+    }
+    const altProblem = richTextAltError(description, "description");
+    if (altProblem) {
+      return alert(altProblem);
     }
 
     try {

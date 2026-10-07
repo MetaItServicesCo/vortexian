@@ -104,7 +104,7 @@ export default async function ServiceDetailPage({ params }) {
                         <div className="absolute inset-0 bg-gradient-to-t from-[#060613]/60 via-transparent to-transparent z-10 pointer-events-none" />
                         <img
                             src={getImageUrl(service.image_showcase_url)}
-                            alt={`${service.service_title || "Capability"} showcase`}
+                            alt={service.image_alt || `${service.service_title || "Capability"} showcase`}
                             className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700 ease-out"
                         />
                     </div>

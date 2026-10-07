@@ -78,7 +78,7 @@ export default function ServicesClient({ servicesData }) {
                 <div className="relative w-full h-44 rounded-2xl overflow-hidden mb-6">
                   <img
                     src={getImageUrl(service.image_showcase_url)}
-                    alt={service.service_title}
+                    alt={service.image_alt || service.service_title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                 </div>

@@ -56,7 +56,7 @@ const AboutSection = () => {
               // eslint-disable-next-line @next/next/no-img-element -- admin-uploaded image
               <img
                 src={mediaUrl(about.image)}
-                alt={about.heading}
+                alt={about.image_alt || about.heading}
                 className="w-full h-full object-cover transform hover:scale-103 transition-transform duration-700 object-center"
               />
             )}
