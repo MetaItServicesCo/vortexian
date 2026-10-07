@@ -28,6 +28,7 @@ const QuoteForm = () => {
 
   const form = useContent("contact.form");
   const settings = useSettings();
+  const contactEmail = settings.enquiries_email || settings.email;
   const availableServices = (form.services || []).map((s) => s.name).filter(Boolean);
 
   const toggleService = (service) => {
@@ -393,9 +394,11 @@ const QuoteForm = () => {
               <h4 className="text-slate-400 text-xs font-black uppercase tracking-widest mt-2">
                 {form.phone_label}
               </h4>
-              <a href={`tel:${(settings.phone || "").replace(/[^\d+]/g, "")}`} className="text-[#1D1D7E] font-black text-xl hover:text-[#5DB4D1] transition-colors">
-                {settings.phone}
-              </a>
+              {[settings.phone, settings.phone_secondary].filter(Boolean).map((number) => (
+                <a key={number} href={`tel:${number.replace(/[^\d+]/g, "")}`} className="text-[#1D1D7E] font-black text-xl hover:text-[#5DB4D1] transition-colors">
+                  {number}
+                </a>
+              ))}
             </div>
 
             <div className="flex flex-col gap-3 group">
@@ -405,8 +408,8 @@ const QuoteForm = () => {
               <h4 className="text-slate-400 text-xs font-black uppercase tracking-widest mt-2">
                 {form.email_label}
               </h4>
-              <a href={`mailto:${settings.enquiries_email}`} className="text-[#1D1D7E] font-black text-xl hover:text-[#5DB4D1] transition-colors break-all">
-                {settings.enquiries_email}
+              <a href={`mailto:${contactEmail}`} className="text-[#1D1D7E] font-black text-xl hover:text-[#5DB4D1] transition-colors break-all">
+                {contactEmail}
               </a>
             </div>
           </div>

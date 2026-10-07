@@ -26,6 +26,8 @@ const SOCIALS = [
 
 const linkClass = "hover:text-[#5DB4D1] transition";
 
+const telHref = (number) => `tel:${number.replace(/[^\d+]/g, "")}`;
+
 const Footer = () => {
   const settings = useSettings();
   const footer = useContent("footer");
@@ -33,6 +35,8 @@ const Footer = () => {
   const socials = SOCIALS.filter((s) => settings[s.key]);
   const copyright = (footer.copyright || "").replace("{year}", new Date().getFullYear());
   const whatsappHref = settings.whatsapp ? `https://wa.me/${settings.whatsapp.replace(/\D/g, "")}` : null;
+  const phones = [settings.phone, settings.phone_secondary].filter(Boolean);
+  const iconClass = "p-3 border-2 border-[#5DB4D1] rounded-full text-[#5DB4D1] group-hover:bg-[#5DB4D1] group-hover:text-white transition-all duration-300";
 
   return (
     <footer className="bg-[#111111] text-white relative overflow-hidden">
@@ -40,13 +44,28 @@ const Footer = () => {
 
       {/* --- TOP CONTACT BAR --- */}
       <div className="border-b border-gray-800">
-        <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col md:flex-row justify-around items-center gap-6">
-          {settings.phone && (
-            <a href={whatsappHref || `tel:${settings.phone}`} target={whatsappHref ? "_blank" : undefined} rel="noopener noreferrer" className="flex items-center gap-4 group">
-              <div className="p-3 border-2 border-[#5DB4D1] rounded-full text-[#5DB4D1] group-hover:bg-[#5DB4D1] group-hover:text-white transition-all duration-300">
-                {whatsappHref ? <FaWhatsapp size={24} /> : <Phone size={24} />}
+        <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col md:flex-row md:flex-wrap justify-around items-center gap-6">
+          {phones.length > 0 && (
+            <div className="flex items-center gap-4 group">
+              <div className={iconClass}>
+                <Phone size={24} />
               </div>
-              <span className="text-lg font-medium">{settings.phone}</span>
+              <div className="flex flex-col">
+                {phones.map((number) => (
+                  <a key={number} href={telHref(number)} className="text-lg font-medium hover:text-[#5DB4D1] transition">
+                    {number}
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {whatsappHref && (
+            <a href={whatsappHref} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 group">
+              <div className={iconClass}>
+                <FaWhatsapp size={24} />
+              </div>
+              <span className="text-lg font-medium">WhatsApp</span>
             </a>
           )}
 

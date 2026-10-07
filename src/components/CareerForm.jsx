@@ -35,6 +35,8 @@ const CareerForm = () => {
   const [cv, setCv] = useState(null);
   const [image, setImage] = useState(null);
   const settings = useSettings();
+  // Career email first; fall back to the general contact addresses
+  const applyEmail = settings.career_email || settings.enquiries_email || settings.email;
   const [agree, setAgree] = useState(false);
 
   const [submitting, setSubmitting] = useState(false);
@@ -79,7 +81,7 @@ const CareerForm = () => {
         const data = await res.json().catch(() => ({}));
         if (res.status >= 500) {
           throw new Error(
-            `Something went wrong on our side and your application was not submitted. Please try again in a few minutes${settings.enquiries_email ? ` or email your CV to ${settings.enquiries_email}` : ""}.`
+            `Something went wrong on our side and your application was not submitted. Please try again in a few minutes${applyEmail ? ` or email your CV to ${applyEmail}` : ""}.`
           );
         }
         throw new Error(errorMessage(data, "Your application could not be submitted. Please check the form and try again."));
@@ -121,6 +123,15 @@ const CareerForm = () => {
           </h2>
 
           <RichText html={intro.text_html} className="text-gray-800 text-[15px] leading-relaxed max-w-6xl" />
+
+          {settings.career_email && (
+            <p className="text-gray-800 text-[15px]">
+              Prefer email? Send your CV to{" "}
+              <a href={`mailto:${settings.career_email}`} className="text-[#1D1D7E] font-semibold underline underline-offset-2 hover:text-[#5DB4D1]">
+                {settings.career_email}
+              </a>
+            </p>
+          )}
         </motion.div>
 
         {/* FORM */}
