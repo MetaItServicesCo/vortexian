@@ -1,4 +1,5 @@
 "use client";
+import { blogPath } from "@/lib/blog";
 
 import Link from "next/link";
 import Image from "next/image";
@@ -92,7 +93,7 @@ export default function BlogGrid({ blogs }) {
               transition={{ delay: index * 0.05 }}
             >
               <Link
-                href={`/blog/${blog.id}`}
+                href={blogPath(blog)}
                 className="block rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition"
               >
                 <div className="bg-white rounded-xl shadow hover:shadow-xl transition overflow-hidden">

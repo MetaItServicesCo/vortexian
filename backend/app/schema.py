@@ -209,6 +209,7 @@ class NewsletterResponse(BaseModel):
 # /////////blog/////////
 class BlogBase(BaseModel):
     title: str
+    slug: Optional[str] = None
     excerpt: str
     content: str
     category: str
@@ -223,6 +224,7 @@ class CreateBlog(BlogBase):
 
 
 class UpdateBlog(BaseModel):
+    slug: Optional[str] = None
     featured_image_alt: Optional[str] = None
     title: Optional[str] = None
     excerpt: Optional[str] = None

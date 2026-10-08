@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import Link from "next/link";
+import { blogPath } from "@/lib/blog";
 import { useContent } from "@/components/content/SiteContentProvider";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
@@ -128,7 +129,7 @@ const BlogSlider = ({ posts = [] }) => {
 
                     {/* Title */}
                     <h3 className="text-xl md:text-2xl font-black text-[#1D1D7E] leading-tight mb-4 hover:text-[#5DB4D1] transition-colors duration-300 line-clamp-3">
-                      <Link href={hasLivePosts ? `/blog/${post.id}` : "/blog"}>
+                      <Link href={hasLivePosts ? blogPath(post) : "/blog"}>
                         {post.title}
                       </Link>
                     </h3>
@@ -142,7 +143,7 @@ const BlogSlider = ({ posts = [] }) => {
                   {/* Footer Action Bars */}
                   <div className="bg-[#F8F9FA] px-8 py-5 flex justify-between items-center text-[10px] font-black tracking-widest uppercase border-t border-gray-50 mt-auto transition-colors duration-300 group-hover:bg-slate-50">
                     <Link
-                      href={hasLivePosts ? `/blog/${post.id}` : "/blog"}
+                      href={hasLivePosts ? blogPath(post) : "/blog"}
                       className="flex items-center gap-2 text-[#5DB4D1] font-black transition-colors duration-300 group-hover:text-[#1D1D7E]"
                     >
                       <ArrowRight

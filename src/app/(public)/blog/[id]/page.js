@@ -2,14 +2,19 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import BreadcrumbHero from "@/components/BreadcrumbHero";
 import HeroBanner from "@/components/blog/HeroBanner";
 import { serverApiUrl } from "@/lib/api";
 import RichText from "@/components/content/RichText";
+import { blogPath } from "@/lib/blog";
 
-async function getBlog(id) {
-    const res = await fetch(serverApiUrl(`/api/blog/${encodeURIComponent(id)}`), {
+// The segment is a slug (/blog/my-post) or, for old links, a numeric id (/blog/3)
+async function getBlog(param) {
+    let key = param;
+    try { key = decodeURIComponent(param); } catch {}
+    const path = /^\d+$/.test(key) ? `/api/blog/${key}` : `/api/blog/slug/${encodeURIComponent(key)}`;
+    const res = await fetch(serverApiUrl(path), {
         cache: "no-store",
     });
     if (res.status === 404) return null;
@@ -30,10 +35,10 @@ export async function generateMetadata({ params }) {
     return {
         title: blog.meta_title || blog.title,
         description: blog.meta_description || blog.excerpt,
-        alternates: { canonical: `/blog/${blog.id}` },
+        alternates: { canonical: blogPath(blog) },
         openGraph: {
             type: "article",
-            url: `/blog/${blog.id}`,
+            url: blogPath(blog),
             title: blog.meta_title || blog.title,
             description: blog.meta_description || blog.excerpt,
             images: blog.featured_image ? [getImageUrl(blog.featured_image)] : [],
@@ -45,6 +50,8 @@ export default async function BlogDetailPage({ params }) {
     const { id } = await params;
     const blog = await getBlog(id);
     if (!blog) notFound();
+    // Old numeric URLs move permanently to the slug URL (keeps links and ranking)
+    if (blog.slug && id !== blog.slug) permanentRedirect(blogPath(blog));
 
     return (
         <>

@@ -2,6 +2,7 @@
 "use client";
 
 import Link from "next/link";
+import { blogPath } from "@/lib/blog";
 import { useState, useEffect } from "react";
 import axios from "axios";
 
@@ -107,7 +108,10 @@ export default function BlogList() {
                     <tbody>
                         {blogs.map((blog) => (
                             <tr key={blog.id} className="border-b hover:bg-gray-50">
-                                <td className="p-4">{blog.title}</td>
+                                <td className="p-4">
+                                    <div>{blog.title}</div>
+                                    <div className="text-xs text-gray-400">{blogPath(blog)}</div>
+                                </td>
                                 <td className="p-4">{blog.category}</td>
 
                                 <td className="p-4 flex gap-3">
@@ -117,6 +121,15 @@ export default function BlogList() {
                                     >
                                         Edit
                                     </Link>
+
+                                    <a
+                                        href={blogPath(blog)}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-gray-600 hover:underline"
+                                    >
+                                        View
+                                    </a>
 
                                     <button
                                         onClick={() =>

@@ -136,6 +136,8 @@ class Blog(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
 
     title: Mapped[str] = mapped_column(String(200), nullable=False)
+    # Public URL: /blog/<slug>. Index name matches the existing migration.
+    slug: Mapped[str | None] = mapped_column(String(220), nullable=True, unique=True, index=True)
     excerpt: Mapped[str] = mapped_column(Text, nullable=False)
 
     content: Mapped[str] = mapped_column(Text, nullable=False)  # HTML or Markdown
