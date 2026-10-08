@@ -257,7 +257,8 @@ class NewsFeedResponse(CreateNewsFeed):
     id: int
     media_url: Optional[str] = None
     media_alt: Optional[str] = None
-    is_published: bool
+    is_published: Optional[bool] = True
+    created_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True

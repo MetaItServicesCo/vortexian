@@ -173,6 +173,7 @@ class NewsFeed(Base):
     media_alt: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     is_published: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at = mapped_column(DateTime(timezone=True), server_default=func.now())
     
 
 # ///////// career form //////////

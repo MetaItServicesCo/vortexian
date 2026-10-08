@@ -34,7 +34,7 @@ const linkFields = [
     { name: "href", label: "Link", type: "url", placeholder: "/contact or https://…" },
 ];
 
-export const CONTENT_GROUPS = ["Global", "Home Page", "About Page", "Contact Page", "Career Page", "Services Page", "Portfolio Page", "Blog Page"];
+export const CONTENT_GROUPS = ["Global", "Home Page", "About Page", "Contact Page", "Career Page", "Services Page", "Portfolio Page", "Blog Page", "News Page"];
 
 export const CONTENT_SECTIONS = [
     // ------------------------------------------------------------------ GLOBAL
@@ -169,6 +169,7 @@ export const CONTENT_SECTIONS = [
             explore_links: [
                 { label: "Careers", href: "/career" },
                 { label: "About Us", href: "/about" },
+                { label: "News & Updates", href: "/news" },
                 { label: "Contact", href: "/contact" },
             ],
             pages_heading: "Legal",
@@ -679,6 +680,20 @@ export const CONTENT_SECTIONS = [
             secondary_label: "Find Job Now",
             secondary_link: "/career",
         },
+    },
+    // --------------------------------------------------------------- NEWS PAGE
+    {
+        key: "page.news",
+        group: "News Page",
+        title: "Page Title & SEO",
+        ...pageMeta("News & Updates", "News & Updates | Vortexian Tech", "The latest announcements, events and company news from Vortexian Tech."),
+    },
+    {
+        key: "news.intro",
+        group: "News Page",
+        title: "Intro",
+        fields: [{ name: "text", label: "Intro text", type: "textarea" }],
+        defaults: { text: "The latest announcements, events and news from the Vortexian Tech team." },
     },
 ];
 
