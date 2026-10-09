@@ -1,3 +1,6 @@
+import re
+from types import SimpleNamespace
+
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Response, status
 from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
@@ -7,6 +10,7 @@ from app import newsletter as nl
 from app.database import get_db
 from app.routes.admin import get_current_admin_dependence
 from app.sanitize import clean_html
+from app.uploads import require_alt
 from app.schema import CampaignInput, CampaignResponse, CreateNewsletter, NewsletterResponse, TestSendInput
 from app.trash import move_to_trash
 
@@ -97,11 +101,28 @@ def _editable(campaign: models.NewsletterIssue) -> None:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="This newsletter has already been sent and can't be changed. Duplicate it to send a new version.")
 
 
+# Formats every email client shows (WebP/AVIF break in Outlook and some Gmail apps)
+EMAIL_IMAGE = re.compile(r"\.(png|jpe?g|gif)(\?.*)?$", re.I)
+
+
 def _clean(data: CampaignInput) -> dict:
     subject = data.subject.strip()
     if not subject:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Subject is required.")
-    return {"subject": subject, "preheader": (data.preheader or "").strip() or None, "body_html": clean_html(data.body_html) or ""}
+    cover = (data.cover_image or "").strip() or None
+    if cover:
+        if not (cover.startswith("/uploads/") or re.match(r"^https://", cover, re.I)):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cover image must be an uploaded image or an https:// address.")
+        if not EMAIL_IMAGE.search(cover):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Use a PNG, JPG or GIF cover image: WebP and AVIF don't show in Outlook and some Gmail apps.")
+    return {
+        "subject": subject,
+        "preheader": (data.preheader or "").strip() or None,
+        "cover_image": cover,
+        "cover_image_alt": require_alt(bool(cover), data.cover_image_alt) if cover else None,
+        "show_headline": data.show_headline,
+        "body_html": clean_html(data.body_html) or "",
+    }
 
 
 @router.get("/campaigns", response_model=list[CampaignResponse])
@@ -137,7 +158,8 @@ def update_campaign(campaign_id: int, data: CampaignInput, db: Session = Depends
 @router.post("/campaigns/{campaign_id}/duplicate", response_model=CampaignResponse, status_code=201)
 def duplicate_campaign(campaign_id: int, db: Session = Depends(get_db), admin=Depends(get_current_admin_dependence)):
     source = _campaign_or_404(campaign_id, db)
-    copy = models.NewsletterIssue(subject=source.subject, preheader=source.preheader, body_html=source.body_html, created_by=getattr(admin, "username", None))
+    copy = models.NewsletterIssue(subject=source.subject, preheader=source.preheader, body_html=source.body_html, cover_image=source.cover_image,
+                                   cover_image_alt=source.cover_image_alt, show_headline=source.show_headline, created_by=getattr(admin, "username", None))
     db.add(copy)
     db.commit()
     db.refresh(copy)
@@ -158,7 +180,7 @@ def delete_campaign(campaign_id: int, db: Session = Depends(get_db), admin=Depen
 def preview_draft(data: CampaignInput, db: Session = Depends(get_db), admin=Depends(get_current_admin_dependence)):
     """Exactly what subscribers will receive (unsaved changes included)."""
     cleaned = _clean(data)
-    page, _ = nl.render_email(nl.newsletter_settings(db), subject=cleaned["subject"], body_html=cleaned["body_html"], preheader=cleaned["preheader"] or "")
+    page, _ = nl.render_email(nl.newsletter_settings(db), **nl.issue_parts(SimpleNamespace(**cleaned)))
     return HTMLResponse(page)
 
 
@@ -167,7 +189,7 @@ def send_test(campaign_id: int, data: TestSendInput, db: Session = Depends(get_d
     campaign = _campaign_or_404(campaign_id, db)
     cfg = nl.newsletter_settings(db)
     to = str(data.email or admin.email)
-    page, text = nl.render_email(cfg, subject=campaign.subject, body_html=campaign.body_html, preheader=campaign.preheader or "", token="test")
+    page, text = nl.render_email(cfg, token="test", **nl.issue_parts(campaign))
     try:
         mailer.send_email(sender=nl.sender(cfg), to=to, subject=f"[Test] {campaign.subject}", html=page, text=text, reply_to=cfg["reply_to"] or None)
     except mailer.MailError as err:

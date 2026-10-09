@@ -159,6 +159,10 @@ class NewsletterIssue(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     subject: Mapped[str] = mapped_column(String(200), nullable=False)
     preheader: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    # Optional banner under the logo; the subject can be shown as the headline
+    cover_image: Mapped[str | None] = mapped_column(Text, nullable=True)
+    cover_image_alt: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    show_headline: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default="true")
     body_html: Mapped[str] = mapped_column(Text, nullable=False, default="")
     # draft -> sending -> sent | partial | failed
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="draft")

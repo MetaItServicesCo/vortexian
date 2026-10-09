@@ -113,8 +113,9 @@ def unsubscribe_headers(token: str) -> dict:
     return {"List-Unsubscribe": f"<{unsubscribe_one_click(token)}>", "List-Unsubscribe-Post": "List-Unsubscribe=One-Click"}
 
 
-def render_email(cfg: dict, *, subject: str, body_html: str, preheader: str = "", token: str = "preview") -> tuple[str, str]:
-    """Returns (html, text) for one recipient."""
+def render_email(cfg: dict, *, subject: str, body_html: str, preheader: str = "", token: str = "preview",
+                 cover_image: str | None = None, cover_alt: str | None = None, headline: str | None = None) -> tuple[str, str]:
+    """Returns (html, text) for one recipient. headline: shown above the content (usually the subject)."""
     company = cfg["company"]
     name = html.escape(company.get("site_name") or "Vortexian Tech")
     address = html.escape(company.get("address") or "").replace("\n", ", ")
@@ -125,6 +126,15 @@ def render_email(cfg: dict, *, subject: str, body_html: str, preheader: str = ""
         f'<img src="{html.escape(logo)}" alt="{name}" height="40" style="height:40px;max-width:220px;border:0;display:block;">'
         if logo else f'<span style="font-size:20px;font-weight:bold;color:#1D1D7E;">{name}</span>'
     )
+    cover_html = (
+        f'<tr><td style="padding:0;"><img src="{html.escape(absolute(cover_image))}" alt="{html.escape(cover_alt or "")}" width="600" '
+        f'style="display:block;width:100%;max-width:600px;height:auto;border:0;"></td></tr>'
+        if cover_image else ""
+    )
+    headline_html = (
+        f'<h1 style="margin:0 0 20px;font-family:Arial,Helvetica,sans-serif;font-size:26px;line-height:1.3;color:#1D1D7E;">{html.escape(headline)}</h1>'
+        if headline else ""
+    )
     page = f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{html.escape(subject)}</title></head>
 <body style="margin:0;padding:0;background:#f4f5fb;">
@@ -132,13 +142,14 @@ def render_email(cfg: dict, *, subject: str, body_html: str, preheader: str = ""
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f5fb;"><tr><td align="center" style="padding:24px 12px;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:#ffffff;border-radius:12px;">
 <tr><td style="padding:24px 32px;border-bottom:3px solid #1D1D7E;"><a href="{site_url()}" style="text-decoration:none;">{logo_html}</a></td></tr>
-<tr><td style="padding:32px;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.6;color:#1f2937;">{body}</td></tr>
+{cover_html}<tr><td style="padding:32px;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.6;color:#1f2937;">{headline_html}{body}</td></tr>
 <tr><td style="padding:20px 32px;background:#f8fafc;border-radius:0 0 12px 12px;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;color:#64748b;">
 {html.escape(cfg.get("footer_note") or "")}<br>
 {name}{f" · {address}" if address else ""}<br>
 <a href="{html.escape(unsubscribe)}" style="color:#1D1D7E;">Unsubscribe</a> · <a href="{site_url()}" style="color:#1D1D7E;">{html.escape(site_url().split("://")[-1])}</a>
 </td></tr></table></td></tr></table></body></html>"""
     text = "\n\n".join(filter(None, [
+        headline or "",
         html_to_text(absolutize_html(body_html)),
         "--",
         cfg.get("footer_note") or "",
@@ -169,6 +180,17 @@ def send_welcome(subscriber_id: int) -> None:
 
 
 # ---------------------------------------------------------------- campaigns
+def issue_parts(issue) -> dict:
+    """render_email() arguments for a newsletter (saved row or unsaved input)."""
+    return {
+        "subject": issue.subject,
+        "body_html": issue.body_html,
+        "preheader": issue.preheader or "",
+        "cover_image": issue.cover_image or None,
+        "cover_alt": issue.cover_image_alt or "",
+        "headline": issue.subject if issue.show_headline else None,
+    }
+
 def claim_for_sending(db: Session, campaign_id: int) -> bool:
     """Atomically move draft/failed -> sending, so a campaign can't be sent twice."""
     result = db.execute(
@@ -196,7 +218,7 @@ def send_campaign(campaign_id: int) -> None:
             chunk = subscribers[start:start + mailer.BATCH_SIZE]
             emails = []
             for sub in chunk:
-                page, text = render_email(cfg, subject=campaign.subject, body_html=campaign.body_html, preheader=campaign.preheader or "", token=sub.unsubscribe_token)
+                page, text = render_email(cfg, token=sub.unsubscribe_token, **issue_parts(campaign))
                 email = {"from": sender(cfg), "to": [sub.email], "subject": campaign.subject, "html": page, "text": text,
                          "headers": unsubscribe_headers(sub.unsubscribe_token)}
                 if cfg["reply_to"]:

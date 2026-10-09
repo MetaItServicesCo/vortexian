@@ -4,9 +4,11 @@ import { use, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Copy, Eye, Loader2, Monitor, Save, Send, Smartphone, X, FlaskConical } from "lucide-react";
+import { ArrowLeft, Copy, Eye, Loader2, Monitor, Save, Send, Smartphone, X, FlaskConical, ImagePlus, Trash2 } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
-import { adminFetch, errorMessage, getToken } from "@/lib/adminApi";
+import { adminFetch, errorMessage, getToken, uploadMedia } from "@/lib/adminApi";
+import { mediaUrl } from "@/lib/api";
+import ImageAltField from "@/components/admin/ImageAltField";
 import NewsletterHeader, { useNewsletterStatus } from "@/components/admin/newsletter/NewsletterHeader";
 import { CampaignStatus, formatWhen } from "@/components/admin/newsletter/CampaignStatus";
 
@@ -25,7 +27,24 @@ async function renderPreview(fields) {
     return res.text();
 }
 
-function PreviewModal({ html, onClose }) {
+// How the newsletter appears in an inbox list, then the email itself
+function InboxRow({ sender, subject, preheader }) {
+    const name = (sender || "Vortexian Tech").replace(/\s*<.*>$/, "");
+    return (
+        <div className="mx-auto mb-4 max-w-[720px] rounded-lg bg-white shadow px-4 py-3 text-sm" data-testid="inbox-row">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">In the inbox</p>
+            <div className="flex gap-3 min-w-0">
+                <span className="font-bold text-slate-900 shrink-0">{name}</span>
+                <span className="truncate text-slate-700">
+                    <span className="font-semibold text-slate-900">{subject || "(no subject)"}</span>
+                    {preheader ? <span className="text-slate-500"> – {preheader}</span> : null}
+                </span>
+            </div>
+        </div>
+    );
+}
+
+function PreviewModal({ html, onClose, inbox }) {
     const [width, setWidth] = useState("desktop");
     useEffect(() => {
         const onKey = (e) => e.key === "Escape" && onClose();
@@ -42,6 +61,7 @@ function PreviewModal({ html, onClose }) {
                     <button type="button" onClick={onClose} aria-label="Close preview" className="p-2 rounded-lg text-slate-500 hover:bg-slate-100"><X size={18} /></button>
                 </div>
                 <div className="flex-1 min-h-0 overflow-auto bg-slate-100 p-4">
+                    {inbox && <InboxRow {...inbox} />}
                     <iframe title="Email preview" srcDoc={html} sandbox="" className="mx-auto block bg-white h-full min-h-[600px] rounded-lg shadow" style={{ width: width === "mobile" ? 375 : "100%", maxWidth: 720 }} />
                 </div>
             </div>
@@ -54,7 +74,8 @@ export default function NewsletterComposer({ params }) {
     const router = useRouter();
     const status = useNewsletterStatus();
     const [campaign, setCampaign] = useState(null);
-    const [form, setForm] = useState({ subject: "", preheader: "", body_html: "" });
+    const [form, setForm] = useState({ subject: "", preheader: "", body_html: "", cover_image: "", cover_image_alt: "", show_headline: true });
+    const [uploadingCover, setUploadingCover] = useState(false);
     const [loaded, setLoaded] = useState(routeId === "new");
     const [dirty, setDirty] = useState(false);
     const [busy, setBusy] = useState(null);
@@ -66,7 +87,11 @@ export default function NewsletterComposer({ params }) {
     useEffect(() => {
         if (routeId === "new") return;
         load(routeId).then(
-            (c) => { setCampaign(c); setForm({ subject: c.subject, preheader: c.preheader || "", body_html: c.body_html }); setLoaded(true); },
+            (c) => {
+                setCampaign(c);
+                setForm({ subject: c.subject, preheader: c.preheader || "", body_html: c.body_html, cover_image: c.cover_image || "", cover_image_alt: c.cover_image_alt || "", show_headline: c.show_headline !== false });
+                setLoaded(true);
+            },
             (err) => { toast.error(err.message); setLoaded(true); }
         );
     }, [routeId]);
@@ -90,7 +115,8 @@ export default function NewsletterComposer({ params }) {
 
     const save = async ({ quiet = false } = {}) => {
         if (!form.subject.trim()) throw new Error("Add a subject first.");
-        const body = { subject: form.subject, preheader: form.preheader, body_html: form.body_html };
+        if (form.cover_image && !form.cover_image_alt.trim()) throw new Error("Add alt text for the cover image (describe what it shows).");
+        const body = { ...form, cover_image: form.cover_image || null, cover_image_alt: form.cover_image_alt || null };
         const saved = campaignId
             ? await adminFetch(`/api/newsletter/campaigns/${campaignId}`, { method: "PUT", body })
             : await adminFetch("/api/newsletter/campaigns", { method: "POST", body });
@@ -113,7 +139,28 @@ export default function NewsletterComposer({ params }) {
         }
     };
 
-    const doPreview = run("preview", async () => setPreview(await renderPreview(form)));
+    const doPreview = run("preview", async () => {
+        if (form.cover_image && !form.cover_image_alt.trim()) throw new Error("Add alt text for the cover image first.");
+        setPreview(await renderPreview({ ...form, cover_image: form.cover_image || null, cover_image_alt: form.cover_image_alt || null }));
+    });
+
+    const pickCover = async (file) => {
+        if (!file) return;
+        if (!/\.(png|jpe?g|gif)$/i.test(file.name)) {
+            toast.error("Use a PNG, JPG or GIF image: WebP and AVIF don't show in Outlook and some Gmail apps.", { duration: 7000 });
+            return;
+        }
+        setUploadingCover(true);
+        try {
+            const url = await uploadMedia(file);
+            setForm((f) => ({ ...f, cover_image: url }));
+            setDirty(true);
+        } catch (err) {
+            toast.error(`Upload failed: ${err.message}`);
+        } finally {
+            setUploadingCover(false);
+        }
+    };
 
     const doTest = run("test", async () => {
         if (!hasText(form.body_html)) throw new Error("Write some content first.");
@@ -193,9 +240,33 @@ export default function NewsletterComposer({ params }) {
                             <input id="nl-preheader" value={form.preheader} maxLength={200} onChange={(e) => set("preheader")(e.target.value)} placeholder="Shown after the subject in most inboxes" className="w-full p-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-[#1D1D7E]/40" />
                         </div>
                         <div>
+                            <span className="block text-xs font-black uppercase tracking-wider text-slate-500 mb-1.5">Cover image (optional)</span>
+                            {form.cover_image ? (
+                                <div className="space-y-3">
+                                    {/* eslint-disable-next-line @next/next/no-img-element -- uploaded preview */}
+                                    <img src={mediaUrl(form.cover_image)} alt={form.cover_image_alt || "Cover image preview"} className="w-full max-w-xl rounded-xl border border-gray-100" data-testid="cover-preview" />
+                                    <ImageAltField id="nl-cover-alt" label="Cover image alt text" value={form.cover_image_alt} onChange={set("cover_image_alt")} />
+                                    <button type="button" onClick={() => { setForm((f) => ({ ...f, cover_image: "", cover_image_alt: "" })); setDirty(true); }} className="inline-flex items-center gap-1.5 text-sm text-red-600 hover:underline">
+                                        <Trash2 size={14} /> Remove cover image
+                                    </button>
+                                </div>
+                            ) : (
+                                <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-200 py-6 text-sm font-semibold text-slate-500 hover:border-[#1D1D7E] hover:text-[#1D1D7E]">
+                                    {uploadingCover ? <Loader2 size={16} className="animate-spin" /> : <ImagePlus size={16} />}
+                                    {uploadingCover ? "Uploading…" : "Upload a cover image (PNG, JPG or GIF, about 1200px wide)"}
+                                    <input id="nl-cover" type="file" accept="image/png,image/jpeg,image/gif" className="sr-only" onChange={(e) => { pickCover(e.target.files?.[0]); e.target.value = ""; }} />
+                                </label>
+                            )}
+                            <p className="mt-1.5 text-xs text-slate-400">Shown full-width under your logo, above the headline.</p>
+                        </div>
+                        <label className="flex items-center gap-3 cursor-pointer select-none">
+                            <input id="nl-headline" type="checkbox" checked={form.show_headline} onChange={(e) => set("show_headline")(e.target.checked)} className="h-4 w-4 accent-[#1D1D7E]" />
+                            <span className="text-sm font-semibold text-slate-700">Show the subject as the headline at the top of the email</span>
+                        </label>
+                        <div>
                             <span className="block text-xs font-black uppercase tracking-wider text-slate-500 mb-1.5">Content *</span>
                             <RichTextEditor value={form.body_html} onChange={set("body_html")} placeholder="Write your newsletter…" minHeight={320} />
-                            <p className="mt-1.5 text-xs text-slate-400">Your logo, the footer and an Unsubscribe link are added automatically. Links to pages on this site work in the email.</p>
+                            <p className="mt-1.5 text-xs text-slate-400">To add images inside the text, use the image button in the toolbar (PNG, JPG or GIF work in every inbox). Your logo, the footer and an Unsubscribe link are added automatically, and links to pages on this site work in the email.</p>
                         </div>
                     </div>
 
@@ -225,7 +296,7 @@ export default function NewsletterComposer({ params }) {
                 </div>
             )}
 
-            {preview && <PreviewModal html={preview} onClose={() => setPreview(null)} />}
+            {preview && <PreviewModal html={preview} onClose={() => setPreview(null)} inbox={{ sender: status?.sender, subject: form.subject, preheader: form.preheader }} />}
         </div>
     );
 }

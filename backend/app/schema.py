@@ -223,6 +223,9 @@ class NewsletterResponse(BaseModel):
 class CampaignInput(BaseModel):
     subject: str = Field(min_length=1, max_length=200)
     preheader: Optional[str] = Field(default=None, max_length=200)
+    cover_image: Optional[str] = None
+    cover_image_alt: Optional[str] = Field(default=None, max_length=255)
+    show_headline: bool = True
     body_html: str = ""
 
 
@@ -230,6 +233,9 @@ class CampaignResponse(BaseModel):
     id: int
     subject: str
     preheader: Optional[str] = None
+    cover_image: Optional[str] = None
+    cover_image_alt: Optional[str] = None
+    show_headline: bool = True
     body_html: str
     status: str
     recipients_count: int
