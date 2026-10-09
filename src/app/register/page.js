@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
+import BackToSite from "@/components/admin/BackToSite";
 import { useRouter } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast";
 import { Loader2, Eye, EyeOff } from "lucide-react";
@@ -58,6 +59,7 @@ export default function RegisterPage() {
       <Toaster position="top-center" />
 
       <div className="w-full max-w-md bg-white p-10 rounded-2xl shadow-2xl border border-gray-100">
+        <BackToSite className="mb-6" />
         <div className="text-center mb-8">
           <h2 className="text-3xl font-black text-[#1D1D7E] uppercase tracking-tighter">
             Create Account

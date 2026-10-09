@@ -69,3 +69,20 @@ export function dashboardHrefFor(sitePath) {
     const hit = SITE_SECTIONS.find(([site]) => matches(sitePath, site));
     return hit ? hit[1] : "/dashboard/pages"; // anything else is a custom page (e.g. /privacy-policy)
 }
+
+// "Back to site" on the login/register screens: the website page you came
+// from, else the last website page viewed as admin, else the home page.
+export function backToSiteHref() {
+    const isSitePath = (p) => p && p.startsWith("/") && !/^\/(dashboard|login|register)(\/|$|\?)/.test(p);
+    try {
+        if (document.referrer) {
+            const ref = new URL(document.referrer);
+            const path = ref.pathname + ref.search;
+            if (ref.origin === window.location.origin && isSitePath(path)) return path;
+        }
+    } catch {
+        // malformed referrer: fall through
+    }
+    const last = read(LAST_SITE);
+    return isSitePath(last) ? last : "/";
+}
