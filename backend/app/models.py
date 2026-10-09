@@ -1,4 +1,6 @@
 
+from datetime import datetime, timezone
+
 from sqlalchemy import JSON, Column, Integer, String, Boolean, DateTime, Text, func
 from sqlalchemy.orm import mapped_column,Mapped
 from app.database import Base
@@ -95,6 +97,9 @@ class Contact(Base):
 
     message: Mapped[str] = mapped_column(Text, nullable=False)
 
+    # When it was received (NULL for requests from before this was recorded)
+    created_at = mapped_column(DateTime(timezone=True), nullable=True, default=lambda: datetime.now(timezone.utc))
+
 # ///////////contact us static form ////////////
 
 
@@ -116,6 +121,9 @@ class ContactUs(Base):
     subject: Mapped[str] = mapped_column(String(200), nullable=False)
 
     message: Mapped[str] = mapped_column(Text, nullable=False)
+
+    # When it was received (NULL for enquiries from before this was recorded)
+    created_at = mapped_column(DateTime(timezone=True), nullable=True, default=lambda: datetime.now(timezone.utc))
 
 #//////////////News letter//////////
 

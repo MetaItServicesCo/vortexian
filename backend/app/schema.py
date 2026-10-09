@@ -178,6 +178,7 @@ class CreateContact(BaseModel):
 class ContactResponse(CreateContact):
     id: int
     project_file: Optional[str] = None
+    created_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
@@ -198,6 +199,7 @@ class CreateContactUs(BaseModel):
 
 class ContactUsResponse(CreateContactUs):
     id: int
+    created_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
