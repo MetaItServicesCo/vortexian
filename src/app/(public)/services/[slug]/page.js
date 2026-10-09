@@ -8,6 +8,7 @@ import { CheckCircle2, Shield, Zap, Target } from "lucide-react";
 import BreadcrumbHero from "@/components/BreadcrumbHero";
 import { serverApiUrl } from "@/lib/api";
 import RichText from "@/components/content/RichText";
+import SchemaMarkup from "@/components/seo/SchemaMarkup";
 
 // Next.js passes the segment still percent-encoded ("web%20dev"); decode before
 // re-encoding or the backend receives "web%2520dev" and returns 404.
@@ -91,6 +92,7 @@ export default async function ServiceDetailPage({ params }) {
             <div className="absolute top-[-5%] left-[-10%] w-[60%] h-[40%] rounded-full bg-[#1D1D7E]/15 blur-[140px] pointer-events-none -z-10" />
             <div className="absolute bottom-[10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-[#5DB4D1]/5 blur-[160px] pointer-events-none -z-10" />
 
+            <SchemaMarkup kind="service" item={service} path={`/services/${encodeURIComponent(service.url_slug)}`} custom={service.schema_json} />
             <BreadcrumbHero
                 title={service.service_title?.toUpperCase() || "CAPABILITY OVERVIEW"} // ✅
                 currentPage={service.service_title || "Detail View"}

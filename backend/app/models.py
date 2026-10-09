@@ -36,6 +36,8 @@ class Service(Base):
     why_choose_3:Mapped[str| None]=mapped_column(Text,nullable=True)
     meta_title:Mapped[str]=mapped_column(String(200),nullable=False)
     keywords:Mapped[str]=mapped_column(Text,nullable=False)
+    # Own schema markup (JSON-LD) for this item's page; replaces the automatic one
+    schema_json:Mapped[str | None]=mapped_column(Text,nullable=True)
     # Listed in the website's Services dropdown (the page stays live either way)
     show_in_menu:Mapped[bool]=mapped_column(Boolean,nullable=False,default=True,server_default="true")
 
@@ -72,6 +74,8 @@ class Portfolio(Base):
     meta_title = mapped_column(String(200), nullable=True)
     meta_description = mapped_column(Text, nullable=True)
     meta_keywords = mapped_column(Text, nullable=True)
+    # Own schema markup (JSON-LD) for this item's page; replaces the automatic one
+    schema_json = mapped_column(Text, nullable=True)
 
 
 # //////////////contact //////////////
@@ -197,6 +201,8 @@ class Blog(Base):
 
     meta_title: Mapped[str] = mapped_column(String(60), nullable=False)
     meta_description: Mapped[str] = mapped_column(String(160), nullable=False)
+    # Own schema markup (JSON-LD) for this item's page; replaces the automatic one
+    schema_json: Mapped[str | None] = mapped_column(Text, nullable=True)
 
 
 # /////////News feeds ///////////
@@ -285,6 +291,8 @@ class Page(Base):
 
     meta_title: Mapped[str | None] = mapped_column(String(200), nullable=True)
     meta_description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # Own schema markup (JSON-LD) for this item's page; replaces the automatic one
+    schema_json: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     is_published: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     show_in_footer: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)

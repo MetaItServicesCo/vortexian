@@ -7,6 +7,7 @@ from app import models
 from app.schema import CreateService, ServiceMenuItem, ServiceResponse, UpdateService
 from app.routes.admin import get_current_admin_dependence
 from app.sanitize import clean_html, slugify
+from app.schema_markup import clean_schema_json
 from app.uploads import IMAGE_EXTENSIONS, MAX_IMAGE_BYTES, delete_upload, has_file, require_alt, save_upload
 from app.trash import move_to_trash
 
@@ -35,6 +36,7 @@ def create_service(
     image_file: UploadFile = File(None),
     image_alt: str = Form(None),
     show_in_menu: bool = Form(True),
+    schema_json: str = Form(None),
     db: Session = Depends(get_db),
     admin: models.Admin = Depends(get_current_admin_dependence)
 ):
@@ -86,6 +88,7 @@ def create_service(
         keywords=keywords,
         meta_description=meta_description,
         show_in_menu=show_in_menu,
+        schema_json=clean_schema_json(schema_json),
     )
 
     db.add(new_service)
@@ -147,6 +150,8 @@ def update_service(
     update_data = data.model_dump(exclude_unset=True)
     if "show_in_menu" in update_data and update_data["show_in_menu"] is None:
         del update_data["show_in_menu"]  # never store NULL
+    if "schema_json" in update_data:
+        update_data["schema_json"] = clean_schema_json(update_data["schema_json"])
     if update_data.get("long_description") is not None:
         update_data["long_description"] = clean_html(update_data["long_description"])
     old_image = service.image_showcase_url

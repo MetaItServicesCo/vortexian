@@ -8,6 +8,7 @@ import { ArrowLeft, ExternalLink, Loader2, Save } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import { adminFetch } from "@/lib/adminApi";
 import { richTextAltError } from "@/lib/richText";
+import SchemaMarkupField, { schemaJsonError } from "@/components/admin/SchemaMarkupField";
 
 const RichTextEditor = dynamic(() => import("@/components/editor/RichTextEditor"), { ssr: false });
 
@@ -48,6 +49,7 @@ export default function PageForm({ initial }) {
         show_in_footer: true,
         footer_order: 0,
         ...initial,
+        schema_json: initial?.schema_json || "",
     });
     // Auto-generate the URL from the title until the admin edits it
     const [slugTouched, setSlugTouched] = useState(!isNew);
@@ -76,6 +78,11 @@ export default function PageForm({ initial }) {
             toast.error(altProblem, { duration: 6000 });
             return;
         }
+        const schemaProblem = schemaJsonError(page.schema_json);
+        if (schemaProblem) {
+            toast.error(`Schema markup is not valid JSON: ${schemaProblem}`, { duration: 6000 });
+            return;
+        }
 
         setSaving(true);
         try {
@@ -88,6 +95,7 @@ export default function PageForm({ initial }) {
                 is_published: page.is_published,
                 show_in_footer: page.show_in_footer,
                 footer_order: Number(page.footer_order) || 0,
+                schema_json: (page.schema_json || "").trim(),
             };
             const saved = isNew
                 ? await adminFetch("/api/pages/", { method: "POST", body })
@@ -171,6 +179,7 @@ export default function PageForm({ initial }) {
                         </div>
                         <RichTextEditor value={page.content} onChange={(html) => set("content", html)} minHeight={420} />
                     </div>
+                    <SchemaMarkupField kind="page" id="page-schema-json" value={page.schema_json} onChange={(value) => set("schema_json", value)} />
                 </div>
 
                 {/* -------- side column -------- */}

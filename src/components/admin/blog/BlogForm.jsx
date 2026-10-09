@@ -10,6 +10,7 @@ import { ExternalLink } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import ImageAltField, { altError } from "@/components/admin/ImageAltField";
 import { adminFetch } from "@/lib/adminApi";
+import SchemaMarkupField, { schemaJsonError } from "@/components/admin/SchemaMarkupField";
 import { mediaUrl } from "@/lib/api";
 import { richTextAltError } from "@/lib/richText";
 import { slugify, slugifyTyping } from "@/lib/slugify";
@@ -45,6 +46,7 @@ export default function BlogForm({ initial }) {
         meta_description: initial?.meta_description || "",
         content: initial?.content || "",
         image_alt: initial?.featured_image_alt || "",
+        schema_json: initial?.schema_json || "",
     });
     const [imageFile, setImageFile] = useState(null);
     const [preview, setPreview] = useState(initial?.featured_image ? mediaUrl(initial.featured_image) : "");
@@ -75,6 +77,8 @@ export default function BlogForm({ initial }) {
             if ((form[key] || "").length > limit) return `${key.replace("_", " ")} is too long (max ${limit} characters).`;
         }
         if (imageFile && imageFile.size > MAX_IMAGE_MB * 1024 * 1024) return `The image is too large (max ${MAX_IMAGE_MB} MB).`;
+        const schemaProblem = schemaJsonError(form.schema_json);
+        if (schemaProblem) return `Schema markup is not valid JSON: ${schemaProblem}`;
         return altError(Boolean(preview), form.image_alt) || richTextAltError(form.content);
     };
 
@@ -96,6 +100,7 @@ export default function BlogForm({ initial }) {
             meta_title: form.meta_title.trim(),
             meta_description: form.meta_description.trim(),
             content: form.content,
+            schema_json: form.schema_json.trim(),
         };
 
         try {
@@ -227,6 +232,8 @@ export default function BlogForm({ initial }) {
                     <label className={labelClass}>Content *</label>
                     <RichTextEditor value={form.content} onChange={(value) => set("content", value)} minHeight={400} />
                 </div>
+
+                <SchemaMarkupField kind="blog" id="blog-schema-json" value={form.schema_json} onChange={(value) => set("schema_json", value)} />
 
                 <div className="flex gap-3">
                     <button

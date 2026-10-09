@@ -1,6 +1,7 @@
 import BreadcrumbHero from "@/components/BreadcrumbHero";
 import NewsFeed from "@/components/NewsFeed";
 import { getSection, pageMetadata } from "@/lib/content";
+import SchemaMarkup from "@/components/seo/SchemaMarkup";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +14,7 @@ export default async function NewsPage({ searchParams }) {
 
     return (
         <main>
+            <SchemaMarkup sectionKey="page.news" path="/news" />
             <BreadcrumbHero title={page.hero_title} currentPage={page.hero_title} />
             <section className="bg-slate-50 py-14 md:py-20 px-5 md:px-10">
                 <div className="max-w-7xl mx-auto">

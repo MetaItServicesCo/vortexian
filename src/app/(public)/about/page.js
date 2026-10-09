@@ -7,6 +7,7 @@ import WhoWeAre from "@/components/WhoWeAre";
 import WhyChooseUs from "@/components/WhyChooseUs";
 import TeamSlider from "@/components/TeamSlider";
 import { getSection, pageMetadata } from "@/lib/content";
+import SchemaMarkup from "@/components/seo/SchemaMarkup";
 
 // SEO Metadata
 export function generateMetadata() {
@@ -18,6 +19,7 @@ export default async function AboutPage() {
     return (
         <main>
             {/* 1. Hero Section (Same as Career but with About Title) */}
+            <SchemaMarkup sectionKey="page.about" path="/about" />
             <BreadcrumbHero
                 title={page.hero_title}
                 currentPage={page.hero_title}

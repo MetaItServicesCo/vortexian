@@ -5,6 +5,7 @@ from app import models
 from app.schema import CreateBlog, UpdateBlog, BlogResponse
 from app.routes.admin import get_current_admin_dependence
 from app.sanitize import clean_html, slugify
+from app.schema_markup import clean_schema_json
 from app.uploads import IMAGE_EXTENSIONS, MAX_IMAGE_BYTES, delete_upload, has_file, require_alt, save_upload
 from app.trash import move_to_trash
 
@@ -60,10 +61,12 @@ def create_blog(
     image: UploadFile = File(None),
     featured_image_alt: str = Form(None),
     slug: str = Form(None),
+    schema_json: str = Form(None),
     db: Session = Depends(get_db),
     admin: models.Admin = Depends(get_current_admin_dependence)
 ):
     title = title.strip()
+    schema_json = clean_schema_json(schema_json)
     _check_lengths({"title": title, "category": category, "author": author,
                     "meta_title": meta_title, "meta_description": meta_description})
     alt = require_alt(has_file(image), featured_image_alt)
@@ -83,7 +86,8 @@ def create_blog(
         featured_image=image_path,
         featured_image_alt=alt,
         meta_title=meta_title,
-        meta_description=meta_description
+        meta_description=meta_description,
+        schema_json=schema_json,
     )
 
     db.add(blog)
@@ -143,6 +147,8 @@ def update_blog(
         updates["slug"] = _resolve_slug(db, updates["slug"], updates.get("title") or blog.title, exclude_id=blog.id)
     if updates.get("content") is not None:
         updates["content"] = clean_html(updates["content"])
+    if "schema_json" in updates:
+        updates["schema_json"] = clean_schema_json(updates["schema_json"])
 
     if "featured_image_alt" in updates:
         updates["featured_image_alt"] = require_alt(bool(blog.featured_image), updates["featured_image_alt"])

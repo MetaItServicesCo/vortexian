@@ -8,6 +8,7 @@ import { richTextAltError } from "@/lib/richText";
 import dynamic from "next/dynamic";
 import axios from "axios";
 import MenuToggle from "@/components/admin/services/MenuToggle";
+import SchemaMarkupField, { schemaJsonError } from "@/components/admin/SchemaMarkupField";
 import {
     ArrowLeft,
     Loader2,
@@ -51,6 +52,7 @@ export default function CreateNewService() {
         longDesc: "",
         features: ["", "", "", ""],
         showInMenu: true,
+        schemaJson: "",
 
         whyChoose: {
             expertise: "",
@@ -122,6 +124,11 @@ export default function CreateNewService() {
         const altProblem = altError(true, formData.image_alt) || richTextAltError(formData.longDesc, "long description");
         if (altProblem) {
             toast.error(altProblem);
+            return;
+        }
+        const schemaProblem = schemaJsonError(formData.schemaJson);
+        if (schemaProblem) {
+            toast.error(`Schema markup is not valid JSON: ${schemaProblem}`);
             return;
         }
 
@@ -207,6 +214,7 @@ export default function CreateNewService() {
             );
 
             submitData.append("show_in_menu", formData.showInMenu ? "true" : "false");
+            submitData.append("schema_json", formData.schemaJson.trim());
 
             // WHY CHOOSE
             submitData.append(
@@ -726,6 +734,8 @@ export default function CreateNewService() {
                         }
                     />
                 </div>
+
+                <SchemaMarkupField kind="service" id="service-schema-json" value={formData.schemaJson} onChange={(value) => setFormData((prev) => ({ ...prev, schemaJson: value }))} />
 
                 {/* SUBMIT */}
                 <button

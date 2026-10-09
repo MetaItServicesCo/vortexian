@@ -8,6 +8,7 @@ import HeroBanner from "@/components/blog/HeroBanner";
 import { serverApiUrl } from "@/lib/api";
 import RichText from "@/components/content/RichText";
 import { blogPath } from "@/lib/blog";
+import SchemaMarkup from "@/components/seo/SchemaMarkup";
 
 // The segment is a slug (/blog/my-post) or, for old links, a numeric id (/blog/3)
 async function getBlog(param) {
@@ -55,6 +56,7 @@ export default async function BlogDetailPage({ params }) {
 
     return (
         <>
+            <SchemaMarkup kind="blog" item={blog} path={blogPath(blog)} custom={blog.schema_json} />
             <BreadcrumbHero title="Blog" currentPage={blog.title} headingAs="p" />
 
             <main className="max-w-5xl mx-auto px-5 py-10">

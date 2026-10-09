@@ -5,6 +5,7 @@ import { ArrowLeft, Loader2, Save, FileImage } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import Link from "next/link";
 import ImageAltField, { altError } from "@/components/admin/ImageAltField";
+import SchemaMarkupField, { schemaJsonError } from "@/components/admin/SchemaMarkupField";
 import { adminFetch } from "@/lib/adminApi";
 import { mediaUrl } from "@/lib/api";
 
@@ -25,7 +26,8 @@ export default function EditPortfolioAssetForm() {
         solution_node: "",
         meta_title: "",
         meta_description: "",
-        meta_keywords: ""
+        meta_keywords: "",
+        schema_json: ""
     });
 
     useEffect(() => {
@@ -49,7 +51,8 @@ export default function EditPortfolioAssetForm() {
                     solution_node: data.solution_node || "",
                     meta_title: data.meta_title || "",
                     meta_description: data.meta_description || "",
-                    meta_keywords: data.meta_keywords || ""
+                    meta_keywords: data.meta_keywords || "",
+                    schema_json: data.schema_json || ""
                 });
 
                 setPreview(data.primary_image ? mediaUrl(data.primary_image) : "");
@@ -83,6 +86,11 @@ export default function EditPortfolioAssetForm() {
             toast.error(missingAlt);
             return;
         }
+        const schemaProblem = schemaJsonError(form.schema_json);
+        if (schemaProblem) {
+            toast.error(`Schema markup is not valid JSON: ${schemaProblem}`);
+            return;
+        }
         setLoading(true);
 
         try {
@@ -97,6 +105,7 @@ export default function EditPortfolioAssetForm() {
             formData.append("meta_title", form.meta_title || "");
             formData.append("meta_description", form.meta_description || "");
             formData.append("meta_keywords", form.meta_keywords || "");
+            formData.append("schema_json", (form.schema_json || "").trim());
 
             formData.append("primary_image_alt", imageAlt.trim());
             // The API expects the new file as "image_file" (it was sent as "primary_image", so changes were ignored)
@@ -204,6 +213,8 @@ export default function EditPortfolioAssetForm() {
                         </div>
                     </div>
                 </div>
+
+                <SchemaMarkupField kind="portfolio" id="portfolio-schema-json" value={form.schema_json} onChange={(value) => setForm((prev) => ({ ...prev, schema_json: value }))} />
 
                 <button type="submit" disabled={loading} className="w-full bg-[#1D1D7E] text-white py-4 rounded-xl font-black uppercase tracking-widest hover:bg-neutral-900 transition-all flex items-center justify-center gap-2 text-xs cursor-pointer shadow-md">
                     {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Committing Changes...</> : <><Save size={16} /> Re-Deploy Frame Node</>}

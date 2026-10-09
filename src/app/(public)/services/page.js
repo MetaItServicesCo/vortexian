@@ -5,6 +5,7 @@ import BreadcrumbHero from "@/components/BreadcrumbHero";
 import ServicesClient from "@/components/servicepage/ServicesClient";
 import { serverApiUrl } from "@/lib/api";
 import { getSection } from "@/lib/content";
+import SchemaMarkup from "@/components/seo/SchemaMarkup";
 
 async function fetchServicesData() {
     try {
@@ -61,6 +62,8 @@ export default async function ServicesPage() {
     return (
         /* --- INDUSTRY LEVEL PREMIUM LINEAR GRADIENT --- */
         <div className="bg-gradient-to-tr from-[#a5a5e1] via-[#1a2b31] to-[#151b5b] min-h-screen text-white font-sans selection:bg-[#5DB4D1]/30 relative overflow-hidden">
+
+            <SchemaMarkup sectionKey="page.services" path="/services" />
 
             {/* Ambient Lights Backdrop Meshes */}
             <div className="absolute top-[-5%] left-[-10%] w-[60%] h-[50%] rounded-full bg-[#1D1D7E]/20 blur-[140px] pointer-events-none -z-10 animate-pulse duration-[6000ms]" />

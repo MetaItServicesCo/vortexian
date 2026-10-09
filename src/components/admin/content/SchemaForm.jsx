@@ -84,6 +84,15 @@ function CodeField({ field, value, onChange }) {
 
     return (
         <div className="space-y-2">
+            {field.template && !(value || "").trim() && (
+                <button
+                    type="button"
+                    onClick={() => onChange(field.template)}
+                    className="inline-flex items-center gap-2 rounded-lg border border-[#1D1D7E]/20 bg-[#EEF0FF] px-3 py-1.5 text-xs font-bold text-[#1D1D7E] hover:bg-[#e2e5ff]"
+                >
+                    <Wand2 size={14} /> Insert recommended template
+                </button>
+            )}
             {field.startFrom && !(value || "").trim() && (
                 <button
                     type="button"

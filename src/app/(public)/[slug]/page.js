@@ -7,6 +7,7 @@ import { notFound } from "next/navigation";
 import BreadcrumbHero from "@/components/BreadcrumbHero";
 import RichText from "@/components/content/RichText";
 import { serverApiUrl } from "@/lib/api";
+import SchemaMarkup from "@/components/seo/SchemaMarkup";
 
 const getPage = cache(async (slug) => {
     if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) return null;
@@ -48,6 +49,7 @@ export default async function CustomPage({ params }) {
 
     return (
         <>
+            <SchemaMarkup kind="page" item={page} path={`/${page.slug}`} custom={page.schema_json} />
             <BreadcrumbHero title={page.title} currentPage={page.title} />
             <section className="bg-white py-16 md:py-20 px-6">
                 <div className="max-w-4xl mx-auto">

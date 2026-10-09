@@ -15,7 +15,7 @@
 
 const visible = { name: "visible", label: "Show this section", type: "boolean" };
 
-const pageMeta = (heroTitle, metaTitle, metaDescription) => ({
+const pageMeta = (heroTitle, metaTitle, metaDescription, schemaType = "WebPage") => ({
     fields: [
         {
             name: "hero_title",
@@ -25,9 +25,23 @@ const pageMeta = (heroTitle, metaTitle, metaDescription) => ({
         },
         { name: "meta_title", label: "SEO title", type: "text", help: "Shown in browser tabs and Google results (≈60 characters)." },
         { name: "meta_description", label: "SEO description", type: "textarea", help: "Shown under the title in Google results (≈160 characters)." },
+        pageSchemaField(webPageTemplate(schemaType)),
     ],
-    defaults: { hero_title: heroTitle, meta_title: metaTitle, meta_description: metaDescription },
+    defaults: { hero_title: heroTitle, meta_title: metaTitle, meta_description: metaDescription, schema_json: "" },
 });
+
+// Schema markup box for built-in pages (rendered by components/seo/SchemaMarkup.jsx)
+const pageSchemaField = (template) => ({
+    name: "schema_json",
+    label: "Schema markup (JSON-LD) for this page",
+    type: "code",
+    format: "json",
+    rows: 10,
+    template,
+    help: "Paste JSON-LD only (no <script> tags). Placeholders: {{title}} {{description}} {{url}} for this page, plus {{site_name}} {{site_url}} {{logo}} {{email}} {{phone}} {{address}} from Basic Info. Leave empty for none.",
+});
+const webPageTemplate = (type = "WebPage") =>
+    JSON.stringify({ "@context": "https://schema.org", "@type": type, name: "{{title}}", description: "{{description}}", url: "{{url}}", isPartOf: { "@type": "WebSite", name: "{{site_name}}", url: "{{site_url}}" } }, null, 2);
 
 const linkFields = [
     { name: "label", label: "Label", type: "text" },
@@ -438,7 +452,7 @@ export const CONTENT_SECTIONS = [
         key: "page.about",
         group: "About Page",
         title: "Page Title & SEO",
-        ...pageMeta("ABOUT US", "About Us | Vortexian Tech - Our Story & Mission", "Learn more about Vortexian Tech. We are a team of expert developers and strategists dedicated to providing innovative business solutions."),
+        ...pageMeta("ABOUT US", "About Us | Vortexian Tech - Our Story & Mission", "Learn more about Vortexian Tech. We are a team of expert developers and strategists dedicated to providing innovative business solutions.", "AboutPage"),
     },
     {
         key: "about.ceo",
@@ -519,7 +533,7 @@ export const CONTENT_SECTIONS = [
         key: "page.contact",
         group: "Contact Page",
         title: "Page Title & SEO",
-        ...pageMeta("CONTACT US", "Contact Us | Vortexian Tech - Get A Quote", "Reach out to Vortexian Tech for advanced IT solutions and expert consultancy. Request a quote for your project today."),
+        ...pageMeta("CONTACT US", "Contact Us | Vortexian Tech - Get A Quote", "Reach out to Vortexian Tech for advanced IT solutions and expert consultancy. Request a quote for your project today.", "ContactPage"),
     },
     {
         key: "contact.form",
@@ -573,7 +587,7 @@ export const CONTENT_SECTIONS = [
         key: "page.services",
         group: "Services Page",
         title: "Page Title & SEO",
-        ...pageMeta("Our Services", "Enterprise Solutions & IT Capabilities | Vortexian Tech", "Explore our technical and creative digital capabilities. From cutting-edge UX/UI system models to server-side web development configurations."),
+        ...pageMeta("Our Services", "Enterprise Solutions & IT Capabilities | Vortexian Tech", "Explore our technical and creative digital capabilities. From cutting-edge UX/UI system models to server-side web development configurations.", "CollectionPage"),
     },
     {
         key: "services.intro",
@@ -598,7 +612,7 @@ export const CONTENT_SECTIONS = [
         key: "page.portfolio",
         group: "Portfolio Page",
         title: "Page Title & SEO",
-        ...pageMeta("PORTFOLIO", "Portfolio | Vortexian Tech - Showcasing Digital Excellence", "Explore our elite range of projects in web development, serverless applications, enterprise platforms, and custom digital architectures."),
+        ...pageMeta("PORTFOLIO", "Portfolio | Vortexian Tech - Showcasing Digital Excellence", "Explore our elite range of projects in web development, serverless applications, enterprise platforms, and custom digital architectures.", "CollectionPage"),
     },
 
     // --------------------------------------------------------------- BLOG PAGE
@@ -609,10 +623,12 @@ export const CONTENT_SECTIONS = [
         fields: [
             { name: "meta_title", label: "SEO title", type: "text" },
             { name: "meta_description", label: "SEO description", type: "textarea" },
+            pageSchemaField(JSON.stringify({ "@context": "https://schema.org", "@type": "Blog", name: "{{site_name}} Blog", description: "{{description}}", url: "{{url}}", publisher: { "@type": "Organization", name: "{{site_name}}", logo: "{{logo}}" } }, null, 2)),
         ],
         defaults: {
             meta_title: "Blog | Latest Insights & Articles — Vortexian Tech",
             meta_description: "Read the latest articles from Vortexian Tech. Insights on software development, digital marketing, recruitment, and IT strategy.",
+            schema_json: JSON.stringify({ "@context": "https://schema.org", "@type": "Blog", name: "{{site_name}} Blog", description: "{{description}}", url: "{{url}}", publisher: { "@type": "Organization", name: "{{site_name}}", logo: "{{logo}}" } }, null, 2),
         },
     },
     {
@@ -900,9 +916,20 @@ export const CONTENT_SECTIONS = [
         key: "seo.schema",
         group: "SEO & Tracking",
         title: "Schema markup (JSON-LD)",
-        description: "Structured data added to every page of the website. Paste JSON-LD from your SEO tools; each block is checked before saving. Test with Google's Rich Results Test.",
+        description: "Structured data for search engines. Site-wide blocks go on every page; each blog post, service, page and project also has its own Schema markup box in its editor, and built-in pages have one in Site Content. Test with Google's Rich Results Test.",
         fields: [
-            { name: "enabled", label: "Add schema markup to the website", type: "boolean" },
+            { name: "auto_blog", label: "Automatic BlogPosting markup on every blog post", type: "boolean", help: "Built from the post's title, description, image and author. A post's own schema markup replaces it." },
+            { name: "auto_service", label: "Automatic Service markup on every service page", type: "boolean", help: "Built from the service's name, description, image and category. A service's own schema markup replaces it." },
+            {
+                name: "home_schema_json",
+                label: "Home page schema markup (JSON-LD)",
+                type: "code",
+                format: "json",
+                rows: 8,
+                template: webPageTemplate("WebPage"),
+                help: "Only on the home page. Paste JSON-LD only (no <script> tags). Placeholders: {{title}} {{description}} {{url}} for this page, plus {{site_name}} {{site_url}} {{logo}} {{email}} {{phone}} {{address}} from Basic Info. Leave empty for none.",
+            },
+            { name: "enabled", label: "Add the site-wide blocks below to every page", type: "boolean" },
             {
                 name: "blocks",
                 label: "Schema blocks",
@@ -923,6 +950,9 @@ export const CONTENT_SECTIONS = [
             },
         ],
         defaults: {
+            auto_blog: true,
+            auto_service: true,
+            home_schema_json: "",
             enabled: true,
             blocks: [
                 {

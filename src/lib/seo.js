@@ -9,53 +9,8 @@ export const safeGaId = (id) => (/^G-[A-Z0-9]{4,20}$/.test(String(id || "").trim
 export const safeClarityId = (id) => (/^[a-z0-9]{6,20}$/.test(String(id || "").trim().toLowerCase()) ? String(id).trim().toLowerCase() : null);
 
 // ---------------------------------------------------------------- schema
-// Schema blocks may use {{placeholders}} filled from Basic Info, so contact
-// details stay in sync when they change there. Values that end up empty are
-// dropped (e.g. an unused social link in "sameAs").
-export const SCHEMA_PLACEHOLDERS = ["site_name", "site_url", "logo", "email", "phone", "phone_secondary", "address", "facebook", "linkedin", "instagram", "twitter", "youtube", "pinterest"];
-
-const absoluteUrl = (path) => (!path ? "" : /^https?:\/\//i.test(path) ? path : `${SITE_URL}/${String(path).replace(/^\/+/, "")}`);
-
-function placeholderValues(settings = {}) {
-    return {
-        ...Object.fromEntries(SCHEMA_PLACEHOLDERS.map((k) => [k, settings[k] || ""])),
-        site_url: SITE_URL,
-        logo: absoluteUrl(settings.logo),
-        email: settings.enquiries_email || settings.email || "",
-    };
-}
-
-function fillPlaceholders(node, values) {
-    if (typeof node === "string") return node.replace(/\{\{\s*([a-z_]+)\s*\}\}/g, (match, key) => (key in values ? String(values[key]).trim() : match));
-    if (Array.isArray(node)) return node.map((item) => fillPlaceholders(item, values)).filter((item) => item !== "");
-    if (node && typeof node === "object") {
-        const out = {};
-        for (const [key, value] of Object.entries(node)) {
-            const filled = fillPlaceholders(value, values);
-            if (filled !== "" && !(Array.isArray(filled) && filled.length === 0 && Array.isArray(value) && value.length > 0)) out[key] = filled;
-        }
-        return out;
-    }
-    return node;
-}
-
-// Valid blocks only (a broken block is skipped, never breaks the page);
-// "<" is escaped so the JSON can't close the <script> tag.
-export function schemaScripts(seoSchema, settings) {
-    if (!seoSchema?.enabled) return [];
-    const values = placeholderValues(settings);
-    return (seoSchema.blocks || [])
-        .map((block) => {
-            try {
-                const parsed = JSON.parse(block?.json || "");
-                if (!parsed || typeof parsed !== "object") return null;
-                return JSON.stringify(fillPlaceholders(parsed, values)).replace(/</g, "\\u003c");
-            } catch {
-                return null;
-            }
-        })
-        .filter(Boolean);
-}
+// Site-wide schema blocks (see lib/schema.js, shared with per-page markup)
+export { siteSchemas as schemaScripts, SCHEMA_PLACEHOLDERS } from "@/lib/schema";
 
 // ---------------------------------------------------------------- sitemap
 const STATIC_PAGES = [

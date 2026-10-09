@@ -9,6 +9,7 @@ import ImageAltField, { altError } from "@/components/admin/ImageAltField";
 import { richTextAltError } from "@/lib/richText";
 import dynamic from "next/dynamic";
 import MenuToggle from "@/components/admin/services/MenuToggle";
+import SchemaMarkupField, { schemaJsonError } from "@/components/admin/SchemaMarkupField";
 
 const RichTextEditor = dynamic(() => import("@/components/editor/RichTextEditor"), { ssr: false });
 
@@ -36,6 +37,7 @@ export default function EditServicePage({ params }) {
         longDesc: "",
         features: ["", "", "", ""],
         showInMenu: true,
+        schemaJson: "",
         whyChoose: { expertise: "", scalability: "", quality: "" },
         seo: { title: "", description: "", keywords: "" }
     });
@@ -63,6 +65,7 @@ export default function EditServicePage({ params }) {
                     image_alt: data.image_alt || "",
                     longDesc: data.long_description || "",
                     showInMenu: data.show_in_menu !== false,
+                    schemaJson: data.schema_json || "",
                     features: [
                         data.feature_1 || "",
                         data.feature_2 || "",
@@ -120,6 +123,11 @@ export default function EditServicePage({ params }) {
             toast.error(altProblem);
             return;
         }
+        const schemaProblem = schemaJsonError(formData.schemaJson);
+        if (schemaProblem) {
+            toast.error(`Schema markup is not valid JSON: ${schemaProblem}`);
+            return;
+        }
         setLoading(true);
 
         try {
@@ -146,6 +154,7 @@ export default function EditServicePage({ params }) {
                 meta_description: formData.seo.description,
                 keywords: formData.seo.keywords,
                 show_in_menu: formData.showInMenu,
+                schema_json: formData.schemaJson.trim(),
             };
 
             const res = await fetch(`${BASE_URL}/update-service/${id}`, {
@@ -382,6 +391,8 @@ export default function EditServicePage({ params }) {
                             onChange={(e) => handleNestedChange("seo", "description", e.target.value)} />
                     </div>
                 </div>
+
+                <SchemaMarkupField kind="service" id="service-schema-json" value={formData.schemaJson} onChange={(value) => setFormData((prev) => ({ ...prev, schemaJson: value }))} />
 
                 {/* SUBMIT */}
                 <button type="submit" disabled={loading} className="w-full bg-[#1D1D7E] text-white py-4 rounded-xl font-black uppercase tracking-widest hover:bg-[#5DB4D1] hover:text-black transition-all shadow-xl shadow-blue-900/10 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 text-sm">

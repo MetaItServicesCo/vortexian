@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import BreadcrumbHero from "@/components/BreadcrumbHero";
 import { serverApiUrl } from "@/lib/api";
+import SchemaMarkup from "@/components/seo/SchemaMarkup";
 
 const API_BASE = "";
 
@@ -73,6 +74,7 @@ export default async function PortfolioDetailPage({ params }) {
             <div className="absolute bottom-1/4 right-10 w-[400px] h-[400px] bg-[#5DB4D1]/5 rounded-full blur-[120px] pointer-events-none -z-10" aria-hidden="true" />
             <div className="absolute top-1/3 left-[-10%] w-[350px] h-[350px] bg-purple-950/10 rounded-full blur-[100px] pointer-events-none -z-10" aria-hidden="true" />
 
+            <SchemaMarkup kind="portfolio" item={project} path={`/portfolio/${project.id}`} custom={project.schema_json} />
             {/* Breadcrumb */}
             <BreadcrumbHero
                 headingAs="p"

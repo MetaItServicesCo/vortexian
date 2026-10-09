@@ -5,6 +5,7 @@ from app.schema import PortfolioResponse, UpdatePortfolio
 from app.database import get_db
 from app import models
 from app.routes.admin import get_current_admin_dependence
+from app.schema_markup import clean_schema_json
 from app.uploads import IMAGE_EXTENSIONS, MAX_IMAGE_BYTES, delete_upload, has_file, require_alt, save_upload
 from app.trash import move_to_trash
 
@@ -28,11 +29,13 @@ def create_portfolio(
 
     image_file: UploadFile = File(...),
     primary_image_alt: str = Form(None),
+    schema_json: Optional[str] = Form(None),
 
     db: Session = Depends(get_db),
     admin=Depends(get_current_admin_dependence)
 ):
     alt = require_alt(True, primary_image_alt)
+    schema_json = clean_schema_json(schema_json)
     image_url = save_upload(image_file, "portfolio", IMAGE_EXTENSIONS, MAX_IMAGE_BYTES)
 
     new_portfolio = models.Portfolio(
@@ -45,7 +48,8 @@ def create_portfolio(
         solution_node=solution_node,
         meta_title=meta_title,
         meta_description=meta_description,
-        meta_keywords=meta_keywords
+        meta_keywords=meta_keywords,
+        schema_json=schema_json,
     )
 
     db.add(new_portfolio)
@@ -87,6 +91,7 @@ def update_portfolio(
     meta_keywords: Optional[str] = Form(""),
     image_file: Optional[UploadFile] = File(None),  # 🔴 Sync with frontend and Create route name
     primary_image_alt: Optional[str] = Form(None),
+    schema_json: Optional[str] = Form(None),  # full replace like the other fields: empty removes it
     db: Session = Depends(get_db),
     admin = Depends(get_current_admin_dependence)
 ):
@@ -103,6 +108,7 @@ def update_portfolio(
     item.meta_title = meta_title
     item.meta_description = meta_description
     item.meta_keywords = meta_keywords
+    item.schema_json = clean_schema_json(schema_json)
 
     # Replace the image only when a new one is uploaded
     # Every portfolio item has an image, so alt text is always required

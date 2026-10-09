@@ -5,8 +5,9 @@ import BlogHero from "@/components/blog/BlogHero";
 import TrustedBy from "@/components/blog/TrustedBy";
 import HeroBanner from "@/components/blog/HeroBanner";
 import BlogGrid from "@/components/blog/BlogGrid";
-import { serverApiUrl, SITE_URL } from "@/lib/api";
+import { serverApiUrl } from "@/lib/api";
 import { getSection } from "@/lib/content";
+import SchemaMarkup from "@/components/seo/SchemaMarkup";
 
 export async function generateMetadata() {
     const page = await getSection("page.blog");
@@ -56,24 +57,10 @@ export default async function BlogPage() {
         blogs = [];
     }
 
-    // ✅ STRUCTURED DATA (SEO)
-    const structuredData = {
-        "@context": "https://schema.org",
-        "@type": "Blog",
-        name: "Vortexian Tech Blog",
-        description: "Expert HR insights and hiring advice.",
-        url: `${SITE_URL}/blog`,
-    };
-
     return (
         <>
-            {/* SEO JSON-LD */}
-            <script
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{
-                    __html: JSON.stringify(structuredData),
-                }}
-            />
+            {/* Schema markup: Site Content → Blog Page → Page SEO */}
+            <SchemaMarkup sectionKey="page.blog" path="/blog" />
 
             {/* HERO SECTION */}
             <BlogHero />

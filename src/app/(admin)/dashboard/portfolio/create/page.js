@@ -5,6 +5,7 @@ import { ArrowLeft, Loader2, Save, FileImage, Globe } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import Link from "next/link";
 import ImageAltField, { altError } from "@/components/admin/ImageAltField";
+import SchemaMarkupField, { schemaJsonError } from "@/components/admin/SchemaMarkupField";
 import { adminFetch } from "@/lib/adminApi";
 
 const MAX_IMAGE_MB = 10;
@@ -24,7 +25,8 @@ export default function CreatePortfolioAssetForm() {
         solution_node: "",
         meta_title: "",
         meta_description: "",
-        meta_keywords: ""
+        meta_keywords: "",
+        schema_json: ""
     });
 
     const dispatchSubmission = async (e) => {
@@ -40,6 +42,11 @@ export default function CreatePortfolioAssetForm() {
         const missingAlt = altError(true, imageAlt);
         if (missingAlt) {
             toast.error(missingAlt);
+            return;
+        }
+        const schemaProblem = schemaJsonError(form.schema_json);
+        if (schemaProblem) {
+            toast.error(`Schema markup is not valid JSON: ${schemaProblem}`);
             return;
         }
 
@@ -157,6 +164,8 @@ export default function CreatePortfolioAssetForm() {
                         </div>
                     </div>
                 </div>
+
+                <SchemaMarkupField kind="portfolio" id="portfolio-schema-json" value={form.schema_json} onChange={(value) => setForm((prev) => ({ ...prev, schema_json: value }))} />
 
                 <button type="submit" disabled={loading} className="w-full bg-[#1D1D7E] text-white py-4 rounded-xl font-black uppercase tracking-widest hover:bg-neutral-900 transition-all flex items-center justify-center gap-2 disabled:opacity-50 text-xs cursor-pointer shadow-md">
                     {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Provisioning Cluster...</> : <><Save size={16} /> Deploy Portfolio Unit</>}

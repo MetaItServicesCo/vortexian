@@ -7,6 +7,7 @@ from app.schema import CreatePage, UpdatePage, PageResponse, PageLink, PageSitem
 from app.routes.admin import get_current_admin_dependence
 from app.trash import move_to_trash
 from app.sanitize import clean_html
+from app.schema_markup import clean_schema_json
 
 router = APIRouter()
 
@@ -91,7 +92,7 @@ def create_page(
 ):
     _check_slug(data.slug, db)
 
-    page = models.Page(**{**data.model_dump(), "content": clean_html(data.content) or ""})
+    page = models.Page(**{**data.model_dump(), "content": clean_html(data.content) or "", "schema_json": clean_schema_json(data.schema_json)})
     db.add(page)
     db.commit()
     db.refresh(page)
@@ -112,6 +113,8 @@ def update_page(
         _check_slug(updates["slug"], db, exclude_id=page_id)
     if "content" in updates:
         updates["content"] = clean_html(updates["content"]) or ""
+    if "schema_json" in updates:
+        updates["schema_json"] = clean_schema_json(updates["schema_json"])
 
     for key, value in updates.items():
         setattr(page, key, value)

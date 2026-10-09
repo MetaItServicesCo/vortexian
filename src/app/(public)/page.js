@@ -11,6 +11,7 @@ import ServicesSection from "@/components/ServicesSection";
 import StatsSection from "@/components/StatsSection";
 import TestimonialSlider from "@/components/TestimonialSlider";
 import { serverApiUrl } from "@/lib/api";
+import SchemaMarkup from "@/components/seo/SchemaMarkup";
 
 export const dynamic = "force-dynamic";
 
@@ -37,6 +38,7 @@ export default async function Home() {
     ]);
     return (
         <>
+            <SchemaMarkup sectionKey="seo.schema" field="home_schema_json" path="/" />
             <Hero />
             <RecruitmentBanner />
             <ImageOnlySection />

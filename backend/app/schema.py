@@ -37,6 +37,7 @@ class BaseService(BaseModel):
     keywords:str
     meta_description:str
     show_in_menu:bool=True
+    schema_json:Optional[str]=None
 
 
 class CreateService(BaseService):
@@ -84,6 +85,7 @@ class UpdateService(BaseModel):
     meta_title: Optional[str] = None
     keywords: Optional[str] = None
     show_in_menu: Optional[bool] = None
+    schema_json: Optional[str] = None
 
     meta_description: Optional[str] = None
 
@@ -138,6 +140,7 @@ class BasePortfolio(BaseModel):
     meta_title: Optional[str] = None
     meta_description: Optional[str] = None
     meta_keywords: Optional[str] = None
+    schema_json: Optional[str] = None
 
 
 class CreatePortfolio(BasePortfolio):
@@ -266,6 +269,7 @@ class BlogBase(BaseModel):
 
     meta_title: str
     meta_description: str
+    schema_json: Optional[str] = None
 
 
 class CreateBlog(BlogBase):
@@ -282,6 +286,7 @@ class UpdateBlog(BaseModel):
     author: Optional[str] = None
     meta_title: Optional[str] = None
     meta_description: Optional[str] = None
+    schema_json: Optional[str] = None
 
 
 class BlogResponse(BlogBase):
@@ -360,6 +365,7 @@ class PageBase(BaseModel):
     is_published: bool = True
     show_in_footer: bool = True
     footer_order: int = 0
+    schema_json: Optional[str] = None
 
 
 class CreatePage(PageBase):
@@ -375,6 +381,7 @@ class UpdatePage(BaseModel):
     is_published: Optional[bool] = None
     show_in_footer: Optional[bool] = None
     footer_order: Optional[int] = None
+    schema_json: Optional[str] = None
 
 
 class PageResponse(PageBase):

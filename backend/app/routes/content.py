@@ -9,6 +9,7 @@ from app.database import get_db
 from app import models
 from app.routes.admin import get_current_admin_dependence
 from app.sanitize import clean_html_fields
+from app.schema_markup import clean_schema_json
 
 router = APIRouter()
 
@@ -43,6 +44,10 @@ def _bad(detail: str):
 
 
 def _validate_seo(key: str, data: dict) -> dict:
+    # Schema markup boxes on built-in pages (page.*) and the home page (seo.schema)
+    for field in ("schema_json", "home_schema_json"):
+        if field in data:
+            data = {**data, field: clean_schema_json(data.get(field), "Page schema markup") or ""}
     if key == "seo.tracking":
         ga = str(data.get("ga_measurement_id") or "").strip().upper()
         clarity = str(data.get("clarity_project_id") or "").strip().lower()

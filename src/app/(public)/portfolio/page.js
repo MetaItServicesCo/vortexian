@@ -3,6 +3,7 @@ import CtaBanner from "@/components/CtaBanner";
 import PortfolioGrid from "@/components/portfolio/PortfolioGrid";
 import { serverApiUrl } from "@/lib/api";
 import { getSection } from "@/lib/content";
+import SchemaMarkup from "@/components/seo/SchemaMarkup";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -81,6 +82,7 @@ export default async function PortfolioPage() {
 
     return (
         <main>
+            <SchemaMarkup sectionKey="page.portfolio" path="/portfolio" />
             {/* Structural Breadcrumb */}
             <BreadcrumbHero
                 title={page.hero_title}
