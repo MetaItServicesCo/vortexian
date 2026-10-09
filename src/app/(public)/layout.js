@@ -1,6 +1,7 @@
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import SocialFloatingButton from "@/components/SocialFloatingButton";
+import AdminSiteBar from "@/components/admin/AdminSiteBar";
 import SiteContentProvider from "@/components/content/SiteContentProvider";
 import { getFooterPages, getSiteContent } from "@/lib/content";
 
@@ -14,6 +15,7 @@ export default async function PublicLayout({ children }) {
                 {children}
             </main>
             <SocialFloatingButton />
+            <AdminSiteBar />
 
             <Footer />
         </SiteContentProvider>

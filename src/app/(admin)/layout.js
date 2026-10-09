@@ -1,13 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { FiMenu, FiX } from "react-icons/fi";
 import Sidebar from "@/components/admin/Sidebar";
 import AdminGuard from "@/components/admin/AdminGuard";
+import ModeToggle from "@/components/admin/ModeToggle";
+import { rememberDashboardPath, siteHrefFor } from "@/lib/adminMode";
 
 export default function AdminLayout({ children }) {
     // Phones/tablets: the sidebar slides in from the left behind a menu button
     const [menuOpen, setMenuOpen] = useState(false);
+    const pathname = usePathname();
+
+    // The Website | Dashboard switch brings the admin back to this page
+    useEffect(() => {
+        rememberDashboardPath(pathname + window.location.search);
+    }, [pathname]);
 
     useEffect(() => {
         if (!menuOpen) return;
@@ -26,7 +35,7 @@ export default function AdminLayout({ children }) {
                     )}
 
                     <div className="flex-1 flex flex-col min-w-0">
-                        <header className="h-16 bg-white border-b flex items-center px-4 md:px-8 justify-between md:justify-end gap-4">
+                        <header className="h-16 bg-white border-b flex items-center px-4 md:px-8 justify-between gap-3">
                             <button
                                 type="button"
                                 onClick={() => setMenuOpen((v) => !v)}
@@ -37,7 +46,8 @@ export default function AdminLayout({ children }) {
                             >
                                 {menuOpen ? <FiX size={22} /> : <FiMenu size={22} />}
                             </button>
-                            <span className="text-sm font-bold text-[#1D1D7E] truncate">Welcome, {admin.username}</span>
+                            <ModeToggle active="dashboard" siteHref={siteHrefFor(pathname)} dashboardHref={pathname} className="md:mr-auto" />
+                            <span className="hidden sm:block text-sm font-bold text-[#1D1D7E] truncate">Welcome, {admin.username}</span>
                         </header>
 
                         <main className="p-4 md:p-8">
