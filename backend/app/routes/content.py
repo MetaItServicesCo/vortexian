@@ -61,6 +61,20 @@ def _validate_seo(key: str, data: dict) -> dict:
             if not VERIFICATION.match(code):
                 _bad(f"{label} verification: paste only the code from the content=\"…\" part of the tag.")
             data = {**data, field: code}
+    elif key == "newsletter.settings":
+        email_re = re.compile(r"^[^\s@<>\"]+@[^\s@<>\"]+\.[A-Za-z]{2,}$")
+        from_email = str(data.get("from_email") or "").strip()
+        reply_to = str(data.get("reply_to") or "").strip()
+        from_name = str(data.get("from_name") or "").strip()
+        if from_email and not email_re.match(from_email):
+            _bad("Sender email address is not valid.")
+        if reply_to and not email_re.match(reply_to):
+            _bad("Reply-to email address is not valid.")
+        if re.search(r'[<>"]', from_name) or len(from_name) > 100:
+            _bad("Sender name can't contain < > or quotes (max 100 characters).")
+        if len(str(data.get("welcome_subject") or "")) > 200:
+            _bad("Welcome email subject is too long (max 200 characters).")
+        data = {**data, "from_email": from_email, "reply_to": reply_to, "from_name": from_name}
     elif key == "seo.schema":
         blocks = data.get("blocks") or []
         if not isinstance(blocks, list):

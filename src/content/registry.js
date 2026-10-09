@@ -34,7 +34,7 @@ const linkFields = [
     { name: "href", label: "Link", type: "url", placeholder: "/contact or https://…" },
 ];
 
-export const CONTENT_GROUPS = ["Global", "Home Page", "About Page", "Contact Page", "Career Page", "Services Page", "Portfolio Page", "Blog Page", "News Page", "SEO & Tracking"];
+export const CONTENT_GROUPS = ["Global", "Home Page", "About Page", "Contact Page", "Career Page", "Services Page", "Portfolio Page", "Blog Page", "News Page", "SEO & Tracking", "Newsletter"];
 
 export const CONTENT_SECTIONS = [
     // ------------------------------------------------------------------ GLOBAL
@@ -701,6 +701,54 @@ export const CONTENT_SECTIONS = [
         title: "Intro",
         fields: [{ name: "text", label: "Intro text", type: "textarea" }],
         defaults: { text: "The latest announcements, events and news from the Vortexian Tech team." },
+    },
+
+    // ------------------------------------------------------------------ NEWSLETTER
+    // Edited at Dashboard → Newsletter → Settings. Defaults must match
+    // NEWSLETTER_DEFAULTS in backend/app/newsletter.py.
+    {
+        key: "newsletter.settings",
+        group: "Newsletter",
+        title: "Newsletter settings",
+        description: "Who newsletters come from, where replies go, and the welcome email new subscribers receive.",
+        fields: [
+            { name: "from_name", label: "Sender name", type: "text", help: "Shown as the sender in inboxes, e.g. Vortexian Tech." },
+            {
+                name: "from_email",
+                label: "Sender email",
+                type: "text",
+                pattern: "^[^\\s@<>\"]+@[^\\s@<>\"]+\\.[A-Za-z]{2,}$",
+                patternMessage: "Enter a valid email address.",
+                help: "Must be on a domain verified in Resend (vortexiantech.com).",
+            },
+            {
+                name: "reply_to",
+                label: "Reply-to email (optional)",
+                type: "text",
+                pattern: "^([^\\s@<>\"]+@[^\\s@<>\"]+\\.[A-Za-z]{2,})?$",
+                patternMessage: "Enter a valid email address or leave empty.",
+                help: "Where replies go, e.g. info@vortexiantech.com. Leave empty to use the sender email.",
+            },
+            { name: "welcome_enabled", label: "Send a welcome email to new subscribers", type: "boolean" },
+            { name: "welcome_subject", label: "Welcome email subject", type: "text", requiredIf: "welcome_enabled", showIf: { field: "welcome_enabled", equals: true } },
+            { name: "welcome_html", label: "Welcome email message", type: "richtext", showIf: { field: "welcome_enabled", equals: true } },
+            {
+                name: "footer_note",
+                label: "Footer note",
+                type: "textarea",
+                help: "Shown at the bottom of every email, above the company name, address (from Basic Info) and the Unsubscribe link.",
+            },
+        ],
+        defaults: {
+            from_name: "Vortexian Tech",
+            from_email: "newsletter@vortexiantech.com",
+            reply_to: "",
+            welcome_enabled: true,
+            welcome_subject: "Welcome to the Vortexian Tech newsletter",
+            welcome_html:
+                "<p>Hi there,</p><p>Thanks for subscribing to the Vortexian Tech newsletter. We'll share our latest insights on software, digital marketing and IT hiring. No spam, and you can unsubscribe at any time.</p><p>The Vortexian Tech team</p>",
+            footer_note: "You're receiving this email because you subscribed to the newsletter on vortexiantech.com.",
+        },
     },
 
     // ------------------------------------------------------------------ SEO & TRACKING

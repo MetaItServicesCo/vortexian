@@ -133,6 +133,7 @@ export function recommendedRobots(sitemapEnabled) {
         "Disallow: /login",
         "Disallow: /register",
         "Disallow: /api/",
+        "Disallow: /newsletter/",
         ...(sitemapEnabled ? ["", `Sitemap: ${SITE_URL}/sitemap.xml`] : []),
         "",
     ].join("\n");

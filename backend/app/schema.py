@@ -214,9 +214,39 @@ class CreateNewsletter(BaseModel):
 class NewsletterResponse(BaseModel):
     id: int
     email: EmailStr
+    created_at: Optional[datetime] = None  # never expose unsubscribe_token
 
     class Config:
-        from_attributes = True 
+        from_attributes = True
+
+
+class CampaignInput(BaseModel):
+    subject: str = Field(min_length=1, max_length=200)
+    preheader: Optional[str] = Field(default=None, max_length=200)
+    body_html: str = ""
+
+
+class CampaignResponse(BaseModel):
+    id: int
+    subject: str
+    preheader: Optional[str] = None
+    body_html: str
+    status: str
+    recipients_count: int
+    sent_count: int
+    failed_count: int
+    last_error: Optional[str] = None
+    created_by: Optional[str] = None
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    sent_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+
+class TestSendInput(BaseModel):
+    email: Optional[EmailStr] = None
 
 
 # /////////blog/////////

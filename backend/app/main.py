@@ -10,7 +10,6 @@ from app.routes.news_feed import router as newsfeed_router
 from app.routes.newsletter import router as newsletter_router
 from app.routes.blog import router as blog_router
 from fastapi.middleware.cors import CORSMiddleware
-from app.scheduler import start_scheduler
 from app.routes.career import router as career_router
 from app.routes.testimonial import router as testimonial_router
 from app.routes.content import router as content_router
@@ -30,7 +29,6 @@ app = FastAPI()
 
 @app.on_event("startup")
 def startup():
-    start_scheduler()
     # Drop Recently deleted items older than the retention period
     try:
         with sessionlocal() as db:

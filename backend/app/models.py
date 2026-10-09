@@ -127,6 +127,11 @@ class ContactUs(Base):
 
 #//////////////News letter//////////
 
+def _unsubscribe_token() -> str:
+    import secrets
+    return secrets.token_urlsafe(24)
+
+
 class Newsletter(Base):
     __tablename__ = "Newsletter"
 
@@ -136,7 +141,31 @@ class Newsletter(Base):
         String(255),
         unique=True,
         nullable=False
-    ) 
+    )
+    # Secret in every email's unsubscribe link
+    unsubscribe_token: Mapped[str] = mapped_column(String(64), unique=True, index=True, nullable=False, default=_unsubscribe_token)
+    # NULL for subscribers from before this was recorded
+    created_at = mapped_column(DateTime(timezone=True), nullable=True, default=lambda: datetime.now(timezone.utc))
+
+
+class NewsletterCampaign(Base):
+    """A newsletter written in the dashboard and sent to all subscribers once."""
+    __tablename__ = "NewsletterCampaign"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    subject: Mapped[str] = mapped_column(String(200), nullable=False)
+    preheader: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    body_html: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    # draft -> sending -> sent | partial | failed
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="draft")
+    recipients_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    sent_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    failed_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    last_error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_by: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    created_at = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
+    updated_at = mapped_column(DateTime(timezone=True), nullable=True, onupdate=lambda: datetime.now(timezone.utc))
+    sent_at = mapped_column(DateTime(timezone=True), nullable=True)
 
 # /////////blog//////////
 

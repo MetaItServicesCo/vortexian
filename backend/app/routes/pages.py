@@ -14,7 +14,7 @@ router = APIRouter()
 RESERVED_SLUGS = {
     "about", "blog", "career", "contact", "portfolio", "services",
     "dashboard", "login", "register", "api", "uploads", "assets",
-    "admin", "pages", "sitemap", "robots", "favicon", "news",
+    "admin", "pages", "sitemap", "robots", "favicon", "news", "newsletter", "llms",
 }
 
 

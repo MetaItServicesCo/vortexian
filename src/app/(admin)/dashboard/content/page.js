@@ -17,7 +17,7 @@ export default function SiteContentIndex() {
                 </p>
             </div>
 
-            {CONTENT_GROUPS.filter((group) => group !== "SEO & Tracking").map((group) => {
+            {CONTENT_GROUPS.filter((group) => group !== "SEO & Tracking" && group !== "Newsletter").map((group) => {
                 const sections = CONTENT_SECTIONS.filter((s) => s.group === group);
                 if (!sections.length) return null;
                 return (
