@@ -2,10 +2,14 @@
 import { useState, useEffect } from "react";
 import { Trash2, Mail, Users, Loader2, Calendar } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
+import { useSelection } from "@/lib/useSelection";
+import BulkActions from "@/components/admin/bulk/BulkActions";
+import { SelectAllCheckbox, SelectRowCheckbox } from "@/components/admin/bulk/SelectCheckbox";
 
 export default function AdminNewsletterDashboard() {
     const [subscribers, setSubscribers] = useState([]);
     const [loading, setLoading] = useState(true);
+    const selection = useSelection(subscribers);
 
     // 🔐 TOKEN
     const token =
@@ -98,13 +102,24 @@ export default function AdminNewsletterDashboard() {
                 </div>
             </div>
 
+            <div className="max-w-2xl">
+                <BulkActions
+                    resource="newsletter"
+                    selection={selection}
+                    noun={["subscriber", "subscribers"]}
+                    deleteWarning="They will stop receiving the newsletter."
+                    onDeleted={(ids) => setSubscribers((prev) => prev.filter((s) => !ids.includes(s.id)))}
+                />
+            </div>
+
             {/* TABLE */}
             <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden max-w-2xl">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-slate-100/70 border-b text-[11px] font-black uppercase tracking-widest text-slate-400">
-                                <th className="p-4 pl-6">Email</th>
+                                <th className="p-4 pl-6 w-10"><SelectAllCheckbox selection={selection} label="Select all subscribers" /></th>
+                                <th className="p-4">Email</th>
                                 <th className="p-4">Date</th>
                                 <th className="p-4 text-center pr-6">Action</th>
                             </tr>
@@ -113,7 +128,7 @@ export default function AdminNewsletterDashboard() {
                         <tbody className="divide-y divide-gray-100 text-sm font-medium">
                             {loading ? (
                                 <tr>
-                                    <td colSpan="3" className="text-center py-16">
+                                    <td colSpan="4" className="text-center py-16">
                                         <div className="flex justify-center items-center gap-2 text-gray-400 font-bold uppercase">
                                             <Loader2 className="animate-spin w-5 h-5 text-[#1D1D7E]" />
                                             Loading subscribers...
@@ -122,15 +137,16 @@ export default function AdminNewsletterDashboard() {
                                 </tr>
                             ) : subscribers.length === 0 ? (
                                 <tr>
-                                    <td colSpan="3" className="text-center py-12 text-gray-400 font-bold uppercase">
+                                    <td colSpan="4" className="text-center py-12 text-gray-400 font-bold uppercase">
                                         No subscribers found
                                     </td>
                                 </tr>
                             ) : (
                                 subscribers.map((item) => (
-                                    <tr key={item.id} className="hover:bg-slate-50/40">
+                                    <tr key={item.id} className={`${selection.isSelected(item.id) ? "bg-indigo-50/60" : "hover:bg-slate-50/40"}`}>
+                                        <td className="p-4 pl-6"><SelectRowCheckbox selection={selection} id={item.id} label={`Select ${item.email}`} /></td>
                                         {/* EMAIL */}
-                                        <td className="p-4 pl-6 font-bold text-slate-800 flex items-center gap-2">
+                                        <td className="p-4 font-bold text-slate-800 flex items-center gap-2">
                                             <Mail size={16} className="text-[#5DB4D1]" />
                                             {item.email}
                                         </td>

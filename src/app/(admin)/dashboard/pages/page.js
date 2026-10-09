@@ -5,9 +5,15 @@ import Link from "next/link";
 import { Plus, Edit3, Trash2, Loader2, ExternalLink, EyeOff } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import { adminFetch } from "@/lib/adminApi";
+import { useSelection } from "@/lib/useSelection";
+import BulkActions from "@/components/admin/bulk/BulkActions";
+import { SelectAllCheckbox, SelectRowCheckbox } from "@/components/admin/bulk/SelectCheckbox";
+
+const NO_PAGES = [];
 
 export default function PagesList() {
     const [pages, setPages] = useState(null);
+    const selection = useSelection(pages || NO_PAGES);
 
     useEffect(() => {
         adminFetch("/api/pages/")
@@ -43,6 +49,15 @@ export default function PagesList() {
                 </Link>
             </div>
 
+            <BulkActions
+                resource="pages"
+                selection={selection}
+                noun={["page", "pages"]}
+                deleteWarning="Their URLs will stop working and they will be removed from the footer."
+                onDeleted={(ids) => setPages((prev) => prev.filter((p) => !ids.includes(p.id)))}
+                onPublished={(ids, value) => setPages((prev) => prev.map((p) => (ids.includes(p.id) ? { ...p, is_published: value } : p)))}
+            />
+
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                 {pages === null ? (
                     <div className="py-20 flex justify-center"><Loader2 className="w-6 h-6 animate-spin text-[#1D1D7E]" /></div>
@@ -55,6 +70,7 @@ export default function PagesList() {
                     <table className="w-full text-left">
                         <thead className="bg-slate-50 text-xs font-black uppercase tracking-wider text-slate-400">
                             <tr>
+                                <th className="pl-6 pr-2 py-3 w-10"><SelectAllCheckbox selection={selection} label="Select all pages" /></th>
                                 <th className="px-6 py-3">Title</th>
                                 <th className="px-6 py-3 hidden md:table-cell">URL</th>
                                 <th className="px-6 py-3">Status</th>
@@ -63,7 +79,8 @@ export default function PagesList() {
                         </thead>
                         <tbody className="divide-y divide-gray-100">
                             {pages.map((page) => (
-                                <tr key={page.id} className="hover:bg-slate-50/60">
+                                <tr key={page.id} className={`${selection.isSelected(page.id) ? "bg-indigo-50/60" : "hover:bg-slate-50/40"}`}>
+                                    <td className="pl-6 pr-2 py-4"><SelectRowCheckbox selection={selection} id={page.id} label={`Select “${page.title}”`} /></td>
                                     <td className="px-6 py-4 font-bold text-slate-800">{page.title}</td>
                                     <td className="px-6 py-4 text-sm text-slate-500 hidden md:table-cell">/{page.slug}</td>
                                     <td className="px-6 py-4">

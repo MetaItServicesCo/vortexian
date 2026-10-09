@@ -4,10 +4,14 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { Trash2, Loader2 } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
+import { useSelection } from "@/lib/useSelection";
+import BulkActions from "@/components/admin/bulk/BulkActions";
+import { SelectAllCheckbox, SelectRowCheckbox } from "@/components/admin/bulk/SelectCheckbox";
 
 export default function ContactsPage() {
     const [contacts, setContacts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const selection = useSelection(contacts);
 
     const fetchContacts = async () => {
         try {
@@ -71,10 +75,19 @@ export default function ContactsPage() {
                 Contact Requests
             </h1>
 
+            <BulkActions
+                resource="contacts"
+                selection={selection}
+                noun={["quote request", "quote requests"]}
+                deleteWarning="Any attached files will be removed too."
+                onDeleted={(ids) => setContacts((prev) => prev.filter((c) => !ids.includes(c.id)))}
+            />
+
             <div className="bg-white rounded-xl shadow overflow-x-auto">
                 <table className="w-full">
                     <thead className="bg-gray-100">
                         <tr>
+                            <th className="p-3 w-10"><SelectAllCheckbox selection={selection} label="Select all quote requests" /></th>
                             <th className="p-3">Name</th>
                             <th className="p-3">Email</th>
                             <th className="p-3">Phone</th>
@@ -88,19 +101,20 @@ export default function ContactsPage() {
                     <tbody>
                         {loading ? (
                             <tr>
-                                <td colSpan="7" className="text-center p-10">
+                                <td colSpan="8" className="text-center p-10">
                                     <Loader2 className="animate-spin mx-auto" />
                                 </td>
                             </tr>
                         ) : contacts.length === 0 ? (
                             <tr>
-                                <td colSpan="7" className="text-center p-10">
+                                <td colSpan="8" className="text-center p-10">
                                     No Contacts Found
                                 </td>
                             </tr>
                         ) : (
                             contacts.map((contact) => (
-                                <tr key={contact.id} className="border-b">
+                                <tr key={contact.id} className={`border-b ${selection.isSelected(contact.id) ? "bg-indigo-50/60" : ""}`}>
+                                    <td className="p-3"><SelectRowCheckbox selection={selection} id={contact.id} label={`Select ${contact.first_name} ${contact.last_name}`} /></td>
                                     <td className="p-3">
                                         {contact.first_name}{" "}
                                         {contact.last_name}

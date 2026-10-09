@@ -39,7 +39,8 @@ const menuItems = [
   { label: "Career", icon: FiUserCheck, href: "/dashboard/career" },
 ];
 
-const Sidebar = () => {
+// On phones/tablets the sidebar is an off-canvas drawer (open/onClose from the layout)
+const Sidebar = ({ open = false, onClose = () => {} }) => {
   const pathname = usePathname();
   // Longest matching prefix wins, so /dashboard/blog/edit/3 highlights "Blog"
   const activeHref = menuItems
@@ -53,7 +54,10 @@ const Sidebar = () => {
     router.push("/login");
   };
   return (
-    <aside className="w-[280px] min-h-screen h-screen sticky top-0 flex flex-col bg-gradient-to-b from-[#0f0f2d] via-[#1a1a4e] to-[#0e1a3a] border-r border-[#5DB4D1]/10 overflow-hidden">
+    <aside
+      id="admin-sidebar"
+      className={`fixed inset-y-0 left-0 z-40 w-[280px] h-screen flex flex-col transition-transform duration-200 md:sticky md:top-0 md:translate-x-0 ${open ? "translate-x-0" : "-translate-x-full"} bg-gradient-to-b from-[#0f0f2d] via-[#1a1a4e] to-[#0e1a3a] border-r border-[#5DB4D1]/10 overflow-hidden`}
+    >
       {/* Top glow */}
       <div className="absolute -top-14 -left-14 w-52 h-52 bg-[#5DB4D1]/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -97,6 +101,7 @@ const Sidebar = () => {
             <Link
               key={item.label}
               href={item.href}
+              onClick={onClose}
               className={`relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl border transition-all duration-200 group
                 ${
                   isActive

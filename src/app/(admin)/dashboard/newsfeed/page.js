@@ -5,12 +5,16 @@ import toast, { Toaster } from "react-hot-toast";
 import { adminFetch } from "@/lib/adminApi";
 import { mediaUrl } from "@/lib/api";
 import { formatNewsDate, isVideo, newsType } from "@/lib/news";
+import { useSelection } from "@/lib/useSelection";
+import BulkActions from "@/components/admin/bulk/BulkActions";
+import { SelectAllCheckbox, SelectRowCheckbox } from "@/components/admin/bulk/SelectCheckbox";
 
 export default function NewsList() {
     const [news, setNews] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [deletingId, setDeletingId] = useState(null);
+    const selection = useSelection(news);
 
     // Admin list includes drafts
     const load = () =>
@@ -62,6 +66,15 @@ export default function NewsList() {
                 </div>
             )}
 
+            <BulkActions
+                resource="newsfeed"
+                selection={selection}
+                noun={["update", "updates"]}
+                deleteWarning="Their images and videos will be removed too."
+                onDeleted={(ids) => setNews((prev) => prev.filter((n) => !ids.includes(n.id)))}
+                onPublished={(ids, value) => setNews((prev) => prev.map((n) => (ids.includes(n.id) ? { ...n, is_published: value } : n)))}
+            />
+
             {loading ? (
                 <div className="text-center py-10">Loading...</div>
             ) : error ? null : news.length === 0 ? (
@@ -71,6 +84,7 @@ export default function NewsList() {
                     <table className="w-full border-collapse">
                         <thead className="bg-gray-100 text-left text-sm">
                             <tr>
+                                <th className="p-3 w-10"><SelectAllCheckbox selection={selection} label="Select all updates" /></th>
                                 <th className="p-3">Media</th>
                                 <th className="p-3">Title</th>
                                 <th className="p-3">Type</th>
@@ -85,7 +99,8 @@ export default function NewsList() {
                                 const type = newsType(item.feed_type);
                                 const published = item.is_published !== false;
                                 return (
-                                    <tr key={item.id} className="border-b hover:bg-gray-50 align-middle">
+                                    <tr key={item.id} className={`border-b align-middle ${selection.isSelected(item.id) ? "bg-indigo-50/60" : "hover:bg-gray-50"}`}>
+                                        <td className="p-3"><SelectRowCheckbox selection={selection} id={item.id} label={`Select “${item.title}”`} /></td>
                                         <td className="p-3">
                                             {item.media_url ? (
                                                 isVideo(item.media_url) ? (

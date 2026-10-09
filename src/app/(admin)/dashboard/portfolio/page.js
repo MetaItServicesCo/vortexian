@@ -3,10 +3,14 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Plus, Trash2, Edit3, Loader2, FolderHeart } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
+import { useSelection } from "@/lib/useSelection";
+import BulkActions from "@/components/admin/bulk/BulkActions";
+import { SelectAllCheckbox, SelectRowCheckbox } from "@/components/admin/bulk/SelectCheckbox";
 
 export default function DashboardPortfolioList() {
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
+    const selection = useSelection(items);
 
     const fetchRecords = async () => {
         try {
@@ -71,6 +75,14 @@ export default function DashboardPortfolioList() {
                 </Link>
             </div>
 
+            <BulkActions
+                resource="portfolio"
+                selection={selection}
+                noun={["project", "projects"]}
+                deleteWarning="Their images will be removed too."
+                onDeleted={(ids) => setItems((prev) => prev.filter((i) => !ids.includes(i.id)))}
+            />
+
             {loading ? (
                 <div className="flex justify-center py-20"><Loader2 className="animate-spin text-[#1D1D7E]" size={36} /></div>
             ) : items.length === 0 ? (
@@ -84,6 +96,7 @@ export default function DashboardPortfolioList() {
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-slate-50/70 border-b border-gray-100 text-[10px] font-black uppercase tracking-2xl text-slate-400">
+                                    <th className="pl-6 pr-2 py-6 w-10"><SelectAllCheckbox selection={selection} label="Select all projects" /></th>
                                     <th className="p-6">Thumbnail</th>
                                     <th className="p-6">Project Metadata</th>
                                     <th className="p-6">Category</th>
@@ -93,7 +106,8 @@ export default function DashboardPortfolioList() {
                             </thead>
                             <tbody className="divide-y divide-gray-50 text-sm font-semibold text-slate-700">
                                 {items.map((item) => (
-                                    <tr key={item.id} className="hover:bg-slate-50/30 transition-colors">
+                                    <tr key={item.id} className={`transition-colors ${selection.isSelected(item.id) ? "bg-indigo-50/60" : "hover:bg-slate-50/40"}`}>
+                                        <td className="pl-6 pr-2 py-6"><SelectRowCheckbox selection={selection} id={item.id} label={`Select “${item.project_title}”`} /></td>
                                         <td className="p-6">
                                             {item.primary_image ? (
                                                 <img

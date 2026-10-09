@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import { Loader2, Plus, Trash2, Quote, Star } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import Link from "next/link";
+import { useSelection } from "@/lib/useSelection";
+import BulkActions from "@/components/admin/bulk/BulkActions";
+import { SelectRowCheckbox } from "@/components/admin/bulk/SelectCheckbox";
 
 const API_BASE = "";
 
@@ -12,6 +15,7 @@ export default function TestimonialsListPage() {
     const router = useRouter();
     const [testimonials, setTestimonials] = useState([]);
     const [fetching, setFetching] = useState(true);
+    const selection = useSelection(testimonials);
 
     const token =
         typeof window !== "undefined"
@@ -166,11 +170,21 @@ export default function TestimonialsListPage() {
                 </div>
             ) : (
                 <div className="flex flex-col gap-3">
+                    <BulkActions
+                        resource="testimonials"
+                        selection={selection}
+                        noun={["testimonial", "testimonials"]}
+                        deleteWarning="Their photos will be removed too."
+                        onDeleted={(ids) => setTestimonials((prev) => prev.filter((t) => !ids.includes(t.id)))}
+                    />
                     {testimonials.map((t) => (
                         <div
                             key={t.id}
-                            className="bg-white border border-gray-100 rounded-2xl p-5 flex items-start gap-4 hover:border-gray-200 hover:shadow-sm transition-all"
+                            className={`border rounded-2xl p-5 flex items-start gap-4 hover:shadow-sm transition-all ${selection.isSelected(t.id) ? "bg-indigo-50/60 border-indigo-200" : "bg-white border-gray-100 hover:border-gray-200"}`}
                         >
+                            <div className="pt-4">
+                                <SelectRowCheckbox selection={selection} id={t.id} label={`Select testimonial from ${t.client_name}`} />
+                            </div>
                             {/* Diamond Avatar */}
                             <div className="shrink-0 mt-1">
                                 {t.profile_image ? (

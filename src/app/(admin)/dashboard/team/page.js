@@ -4,10 +4,14 @@ import { UserPlus, Edit3, Trash2, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { mediaUrl } from "@/lib/api";
 import toast, { Toaster } from "react-hot-toast";
+import { useSelection } from "@/lib/useSelection";
+import BulkActions from "@/components/admin/bulk/BulkActions";
+import { SelectAllCheckbox, SelectRowCheckbox } from "@/components/admin/bulk/SelectCheckbox";
 
 export default function AdminTeamDashboardManager() {
     const [members, setMembers] = useState([]);
     const [loading, setLoading] = useState(true);
+    const selection = useSelection(members);
 
     const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
@@ -84,11 +88,20 @@ export default function AdminTeamDashboardManager() {
                 </Link>
             </div>
 
+            <BulkActions
+                resource="team"
+                selection={selection}
+                noun={["team member", "team members"]}
+                deleteWarning="Their profile photos will be removed too."
+                onDeleted={(ids) => setMembers((prev) => prev.filter((m) => !ids.includes(m.id)))}
+            />
+
             <div className="bg-white rounded-2xl shadow border overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
                         <thead>
                             <tr className="bg-gray-100 text-xs uppercase">
+                                <th className="p-4 w-10"><SelectAllCheckbox selection={selection} label="Select all team members" /></th>
                                 <th className="p-4">Profile</th>
                                 <th className="p-4">Role</th>
                                 <th className="p-4">Links</th>
@@ -99,19 +112,20 @@ export default function AdminTeamDashboardManager() {
                         <tbody>
                             {loading ? (
                                 <tr>
-                                    <td colSpan="4" className="text-center py-10">
+                                    <td colSpan="5" className="text-center py-10">
                                         <Loader2 className="animate-spin inline" /> Loading...
                                     </td>
                                 </tr>
                             ) : members.length === 0 ? (
                                 <tr>
-                                    <td colSpan="4" className="text-center py-10">
+                                    <td colSpan="5" className="text-center py-10">
                                         No team members found
                                     </td>
                                 </tr>
                             ) : (
                                 members.map((member) => (
-                                    <tr key={member.id} className="border-t">
+                                    <tr key={member.id} className={`border-t ${selection.isSelected(member.id) ? "bg-indigo-50/60" : ""}`}>
+                                        <td className="p-4"><SelectRowCheckbox selection={selection} id={member.id} label={`Select ${member.full_name}`} /></td>
                                         <td className="p-4 flex items-center gap-3">
                                             <img
                                                 src={mediaUrl(member.profile_image)}

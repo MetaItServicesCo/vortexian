@@ -16,6 +16,7 @@ from app.routes.testimonial import router as testimonial_router
 from app.routes.content import router as content_router
 from app.routes.pages import router as pages_router
 from app.routes.media import router as media_router
+from app.routes.bulk import router as bulk_router
 from fastapi.staticfiles import StaticFiles
 import os
 
@@ -58,3 +59,4 @@ app.include_router(testimonial_router, prefix="/api/testimonials", tags=["Testim
 app.include_router(content_router, prefix="/api/content", tags=["Content"])
 app.include_router(pages_router, prefix="/api/pages", tags=["Pages"])
 app.include_router(media_router, prefix="/api/media", tags=["Media"])
+app.include_router(bulk_router, prefix="/api/bulk", tags=["Bulk actions"])

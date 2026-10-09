@@ -1,15 +1,18 @@
 "use client";
-"use client";
 
 import Link from "next/link";
 import { blogPath } from "@/lib/blog";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { useSelection } from "@/lib/useSelection";
+import BulkActions from "@/components/admin/bulk/BulkActions";
+import { SelectAllCheckbox, SelectRowCheckbox } from "@/components/admin/bulk/SelectCheckbox";
 
 export default function BlogList() {
     const [blogs, setBlogs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const selection = useSelection(blogs);
 
     // ---------------- FETCH BLOGS ----------------
     useEffect(() => {
@@ -86,6 +89,14 @@ export default function BlogList() {
                 </div>
             )}
 
+            <BulkActions
+                resource="blog"
+                selection={selection}
+                noun={["blog post", "blog posts"]}
+                deleteWarning="Their pages will stop working and featured images will be removed."
+                onDeleted={(ids) => setBlogs((prev) => prev.filter((b) => !ids.includes(b.id)))}
+            />
+
             {/* LOADING */}
             {loading ? (
                 <div className="text-center py-10 text-gray-500">
@@ -99,6 +110,7 @@ export default function BlogList() {
                 <table className="w-full bg-white rounded-lg shadow overflow-hidden">
                     <thead className="bg-gray-100">
                         <tr>
+                            <th className="p-4 w-10"><SelectAllCheckbox selection={selection} label="Select all blog posts" /></th>
                             <th className="p-4 text-left">Title</th>
                             <th className="p-4 text-left">Category</th>
                             <th className="p-4 text-left">Actions</th>
@@ -107,7 +119,8 @@ export default function BlogList() {
 
                     <tbody>
                         {blogs.map((blog) => (
-                            <tr key={blog.id} className="border-b hover:bg-gray-50">
+                            <tr key={blog.id} className={`border-b ${selection.isSelected(blog.id) ? "bg-indigo-50/60" : "hover:bg-gray-50"}`}>
+                                <td className="p-4"><SelectRowCheckbox selection={selection} id={blog.id} label={`Select “${blog.title}”`} /></td>
                                 <td className="p-4">
                                     <div>{blog.title}</div>
                                     <div className="text-xs text-gray-400">{blogPath(blog)}</div>

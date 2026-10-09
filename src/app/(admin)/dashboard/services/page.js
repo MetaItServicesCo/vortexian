@@ -5,6 +5,9 @@ import Link from "next/link";
 import axios from "axios";
 import { Plus, Pencil, Trash2, Layers, Code, Share2 } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
+import { useSelection } from "@/lib/useSelection";
+import BulkActions from "@/components/admin/bulk/BulkActions";
+import { SelectAllCheckbox, SelectRowCheckbox } from "@/components/admin/bulk/SelectCheckbox";
 
 const iconMap = {
     Layers: <Layers className="w-4 h-4 text-[#5DB4D1]" />,
@@ -15,6 +18,7 @@ const iconMap = {
 export default function AdminServicesList() {
     const [services, setServices] = useState([]);
     const [loading, setLoading] = useState(true);
+    const selection = useSelection(services);
 
     // FastAPI Base URL
     const API_URL = "/api/services/"; // ✅ fix 1
@@ -81,13 +85,22 @@ export default function AdminServicesList() {
                 </Link>
             </div>
 
+            <BulkActions
+                resource="services"
+                selection={selection}
+                noun={["service", "services"]}
+                deleteWarning="Their pages will stop working and uploaded images will be removed."
+                onDeleted={(ids) => setServices((prev) => prev.filter((s) => !ids.includes(s.id)))}
+            />
+
             {/* TABLE */}
             <div className="bg-white rounded-2xl shadow-xl shadow-slate-100 border border-gray-100 overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-slate-100/70 border-b border-gray-200 text-slate-400 text-[10px] font-black uppercase tracking-widest">
-                                <th className="p-4 pl-6">
+                                <th className="p-4 pl-6 w-10"><SelectAllCheckbox selection={selection} label="Select all services" /></th>
+                                <th className="p-4">
                                     Service Overview
                                 </th>
 
@@ -107,7 +120,7 @@ export default function AdminServicesList() {
                             {loading ? (
                                 <tr>
                                     <td
-                                        colSpan="4"
+                                        colSpan="5"
                                         className="text-center py-10 text-xs font-bold text-gray-400 uppercase tracking-widest"
                                     >
                                         Loading core capabilities schema...
@@ -116,7 +129,7 @@ export default function AdminServicesList() {
                             ) : services.length === 0 ? (
                                 <tr>
                                     <td
-                                        colSpan="4"
+                                        colSpan="5"
                                         className="text-center py-10 text-xs font-bold text-gray-400 uppercase tracking-widest"
                                     >
                                         No active services registered inside
@@ -127,10 +140,11 @@ export default function AdminServicesList() {
                                 services.map((service) => (
                                     <tr
                                         key={service.id}
-                                        className="hover:bg-slate-50/50 transition-colors"
+                                        className={`transition-colors ${selection.isSelected(service.id) ? "bg-indigo-50/60" : "hover:bg-slate-50/50"}`}
                                     >
+                                        <td className="p-4 pl-6"><SelectRowCheckbox selection={selection} id={service.id} label={`Select “${service.service_title}”`} /></td>
                                         {/* SERVICE INFO */}
-                                        <td className="p-4 pl-6 max-w-xs">
+                                        <td className="p-4 max-w-xs">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
                                                     {iconMap[

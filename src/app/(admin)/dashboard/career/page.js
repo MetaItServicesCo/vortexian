@@ -2,12 +2,16 @@
 import { useEffect, useState } from "react";
 import { adminFetch } from "@/lib/adminApi";
 import { mediaUrl } from "@/lib/api";
+import { useSelection } from "@/lib/useSelection";
+import BulkActions from "@/components/admin/bulk/BulkActions";
+import { SelectAllCheckbox, SelectRowCheckbox } from "@/components/admin/bulk/SelectCheckbox";
 
 export default function CareerApplicationsList() {
     const [applications, setApplications] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [deletingId, setDeletingId] = useState(null);
+    const selection = useSelection(applications);
 
     const fetchApplications = async () => {
         try {
@@ -70,6 +74,14 @@ export default function CareerApplicationsList() {
                 </div>
             )}
 
+            <BulkActions
+                resource="career"
+                selection={selection}
+                noun={["application", "applications"]}
+                deleteWarning="Their CVs and photos will be removed too."
+                onDeleted={(ids) => setApplications((prev) => prev.filter((a) => !ids.includes(a.id)))}
+            />
+
             {/* Loading */}
             {loading ? (
                 <div className="text-center py-10">Loading...</div>
@@ -82,6 +94,7 @@ export default function CareerApplicationsList() {
                         {/* Table Head */}
                         <thead className="bg-gray-100 text-left text-sm">
                             <tr>
+                                <th className="p-3 w-10"><SelectAllCheckbox selection={selection} label="Select all applications" /></th>
                                 <th className="p-3">#</th>
                                 <th className="p-3">Photo</th>
                                 <th className="p-3">Name</th>
@@ -98,7 +111,8 @@ export default function CareerApplicationsList() {
                         {/* Table Body */}
                         <tbody>
                             {applications.map((item, index) => (
-                                <tr key={item.id} className="border-b hover:bg-gray-50">
+                                <tr key={item.id} className={`border-b ${selection.isSelected(item.id) ? "bg-indigo-50/60" : "hover:bg-gray-50"}`}>
+                                    <td className="p-3"><SelectRowCheckbox selection={selection} id={item.id} label={`Select ${item.first_name} ${item.last_name}`} /></td>
 
                                     {/* Index */}
                                     <td className="p-3">{index + 1}</td>

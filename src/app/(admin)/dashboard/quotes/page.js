@@ -2,10 +2,14 @@
 import { useState, useEffect } from "react";
 import { Trash2, Mail, Phone, Calendar } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
+import { useSelection } from "@/lib/useSelection";
+import BulkActions from "@/components/admin/bulk/BulkActions";
+import { SelectAllCheckbox, SelectRowCheckbox } from "@/components/admin/bulk/SelectCheckbox";
 
 export default function AdminQuotesDashboard() {
     const [quotes, setQuotes] = useState([]);
     const [loading, setLoading] = useState(true);
+    const selection = useSelection(quotes);
 
     const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
@@ -71,10 +75,18 @@ export default function AdminQuotesDashboard() {
                 Contact Leads Dashboard
             </h1>
 
+            <BulkActions
+                resource="quotes"
+                selection={selection}
+                noun={["enquiry", "enquiries"]}
+                onDeleted={(ids) => setQuotes((prev) => prev.filter((q) => !ids.includes(q.id)))}
+            />
+
             <div className="bg-white rounded-xl shadow overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                     <thead className="bg-gray-100 text-xs uppercase text-gray-600">
                         <tr>
+                            <th className="p-4 w-10"><SelectAllCheckbox selection={selection} label="Select all enquiries" /></th>
                             <th className="p-4">Name</th>
                             <th className="p-4">Email</th>
                             <th className="p-4">Phone</th>
@@ -85,12 +97,13 @@ export default function AdminQuotesDashboard() {
 
                     <tbody>
                         {loading ? (
-                            <tr><td colSpan="5" className="p-6 text-center">Loading...</td></tr>
+                            <tr><td colSpan="6" className="p-6 text-center">Loading...</td></tr>
                         ) : quotes.length === 0 ? (
-                            <tr><td colSpan="5" className="p-6 text-center">No records found</td></tr>
+                            <tr><td colSpan="6" className="p-6 text-center">No records found</td></tr>
                         ) : (
                             quotes.map((q) => (
-                                <tr key={q.id} className="border-b hover:bg-gray-50">
+                                <tr key={q.id} className={`border-b ${selection.isSelected(q.id) ? "bg-indigo-50/60" : "hover:bg-slate-50/40"}`}>
+                                    <td className="p-4"><SelectRowCheckbox selection={selection} id={q.id} label={`Select ${q.full_name}`} /></td>
                                     {/* Name Column */}
                                     <td className="p-4 font-bold text-slate-800">{q.full_name}</td>
 
