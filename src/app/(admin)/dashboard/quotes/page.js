@@ -46,7 +46,7 @@ export default function AdminQuotesDashboard() {
 
     // 🗑 DELETE API
     const handlePurge = async (id) => {
-        if (!confirm("Delete this contact permanently?")) return;
+        if (!confirm("Delete this enquiry?\n\nYou can restore it from Recently deleted for 7 days.")) return;
 
         try {
             const res = await fetch(`/api/contact-us/contact-us/${id}`, {

@@ -7,6 +7,7 @@ from app import models
 from app.schema import ContactResponse
 from app.routes.admin import get_current_admin_dependence
 from app.uploads import ATTACHMENT_EXTENSIONS, MAX_DOCUMENT_BYTES, delete_upload, has_file, save_upload
+from app.trash import move_to_trash
 
 router = APIRouter()
 
@@ -77,9 +78,6 @@ def delete_contact(
     if not contact:
         raise HTTPException(status_code=404, detail="Contact not found")
 
-    file_path = contact.project_file
-    db.delete(contact)
-    db.commit()
-    delete_upload(file_path)
+    move_to_trash(db, "contacts", [contact], admin)
 
     return {"message": "Contact deleted successfully"}

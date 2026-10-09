@@ -32,7 +32,7 @@ export default function CareerApplicationsList() {
     }, []);
 
     const handleDelete = async (id) => {
-        if (!confirm("Delete this application? Its CV and photo will be removed too.")) return;
+        if (!confirm("Delete this application?\n\nYou can restore it from Recently deleted for 7 days.")) return;
 
         try {
             setDeletingId(id);
@@ -78,7 +78,6 @@ export default function CareerApplicationsList() {
                 resource="career"
                 selection={selection}
                 noun={["application", "applications"]}
-                deleteWarning="Their CVs and photos will be removed too."
                 onDeleted={(ids) => setApplications((prev) => prev.filter((a) => !ids.includes(a.id)))}
             />
 

@@ -5,6 +5,7 @@ from app.database import get_db
 from app import models
 from app.schema import CreatePage, UpdatePage, PageResponse, PageLink
 from app.routes.admin import get_current_admin_dependence
+from app.trash import move_to_trash
 from app.sanitize import clean_html
 
 router = APIRouter()
@@ -121,6 +122,5 @@ def delete_page(
     admin=Depends(get_current_admin_dependence),
 ):
     page = _get_or_404(page_id, db)
-    db.delete(page)
-    db.commit()
+    move_to_trash(db, "pages", [page], admin)
     return {"message": "Page deleted successfully"}

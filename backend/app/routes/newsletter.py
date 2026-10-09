@@ -5,6 +5,7 @@ from app.database import get_db
 from app import models
 from app.schema import CreateNewsletter, NewsletterResponse
 from app.routes.admin import get_current_admin_dependence
+from app.trash import move_to_trash
 from app.email_service import send_newsletter_email
 
 router = APIRouter()
@@ -48,7 +49,7 @@ def get_subscribers(
     )
 
 
-def delete_subscriber_by_id(subscriber_id: int, db: Session):
+def delete_subscriber_by_id(subscriber_id: int, db: Session, admin=None):
     subscriber = (
         db.query(models.Newsletter)
         .filter(models.Newsletter.id == subscriber_id)
@@ -61,8 +62,7 @@ def delete_subscriber_by_id(subscriber_id: int, db: Session):
             detail="Subscriber not found",
         )
 
-    db.delete(subscriber)
-    db.commit()
+    move_to_trash(db, "newsletter", [subscriber], admin)
 
     return {"message": "Subscriber removed"}
 
@@ -73,7 +73,7 @@ def delete_subscriber_from_admin_page(
     db: Session = Depends(get_db),
     admin: models.Admin = Depends(get_current_admin_dependence),
 ):
-    return delete_subscriber_by_id(subscriber_id, db)
+    return delete_subscriber_by_id(subscriber_id, db, admin)
 
 
 @router.delete("/{subscriber_id}")
@@ -82,7 +82,7 @@ def delete_subscriber(
     db: Session = Depends(get_db),
     admin: models.Admin = Depends(get_current_admin_dependence),
 ):
-    return delete_subscriber_by_id(subscriber_id, db)
+    return delete_subscriber_by_id(subscriber_id, db, admin)
 
 
 @router.get("/test-email")

@@ -25,7 +25,7 @@ export default function PagesList() {
     }, []);
 
     const handleDelete = async (page) => {
-        if (!confirm(`Delete “${page.title}”? Its URL /${page.slug} will stop working.`)) return;
+        if (!confirm(`Delete “${page.title}”? Its URL /${page.slug} will stop working.\n\nYou can restore it from Recently deleted for 7 days.`)) return;
         try {
             await adminFetch(`/api/pages/${page.id}`, { method: "DELETE" });
             setPages((prev) => prev.filter((p) => p.id !== page.id));
@@ -53,7 +53,7 @@ export default function PagesList() {
                 resource="pages"
                 selection={selection}
                 noun={["page", "pages"]}
-                deleteWarning="Their URLs will stop working and they will be removed from the footer."
+                deleteWarning="Their URLs will stop working and they leave the footer until restored."
                 onDeleted={(ids) => setPages((prev) => prev.filter((p) => !ids.includes(p.id)))}
                 onPublished={(ids, value) => setPages((prev) => prev.map((p) => (ids.includes(p.id) ? { ...p, is_published: value } : p)))}
             />

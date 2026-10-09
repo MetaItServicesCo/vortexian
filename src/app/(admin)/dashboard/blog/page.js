@@ -44,7 +44,7 @@ export default function BlogList() {
 
     // ---------------- DELETE BLOG ----------------
     const handleDelete = async (id) => {
-        const confirmDelete = confirm("Are you sure you want to delete this blog?");
+        const confirmDelete = confirm("Delete this blog post? Its page will stop working.\n\nYou can restore it from Recently deleted for 7 days.");
         if (!confirmDelete) return;
 
         try {
@@ -93,7 +93,7 @@ export default function BlogList() {
                 resource="blog"
                 selection={selection}
                 noun={["blog post", "blog posts"]}
-                deleteWarning="Their pages will stop working and featured images will be removed."
+                deleteWarning="Their pages will stop working until restored."
                 onDeleted={(ids) => setBlogs((prev) => prev.filter((b) => !ids.includes(b.id)))}
             />
 

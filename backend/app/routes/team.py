@@ -12,6 +12,7 @@ from app.schema import (
 
 from app.routes.admin import get_current_admin_dependence
 from app.uploads import IMAGE_EXTENSIONS, MAX_IMAGE_BYTES, delete_upload, has_file, require_alt, save_upload
+from app.trash import move_to_trash
 
 
 router = APIRouter()
@@ -148,10 +149,7 @@ def delete_team(
             detail="Team member not found"
         )
 
-    image_path = team.profile_image
-    db.delete(team)
-    db.commit()
-    delete_upload(image_path)
+    move_to_trash(db, "team", [team], admin)
 
     return {
         "message": "Team member deleted successfully"

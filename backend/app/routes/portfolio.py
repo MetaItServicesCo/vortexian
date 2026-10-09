@@ -6,6 +6,7 @@ from app.database import get_db
 from app import models
 from app.routes.admin import get_current_admin_dependence
 from app.uploads import IMAGE_EXTENSIONS, MAX_IMAGE_BYTES, delete_upload, has_file, require_alt, save_upload
+from app.trash import move_to_trash
 
 router = APIRouter()
 
@@ -129,9 +130,6 @@ def delete_portfolio(
     if not item:
         raise HTTPException(status_code=404, detail="Not found")
 
-    image_path = item.primary_image
-    db.delete(item)
-    db.commit()
-    delete_upload(image_path)
+    move_to_trash(db, "portfolio", [item], admin)
 
     return {"message": "Deleted successfully"}

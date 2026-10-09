@@ -7,6 +7,7 @@ from app import models
 from app.schema import CareerApplicationResponse
 from app.routes.admin import get_current_admin_dependence
 from app.uploads import DOCUMENT_EXTENSIONS, IMAGE_EXTENSIONS, MAX_DOCUMENT_BYTES, MAX_IMAGE_BYTES, delete_upload, has_file, save_upload
+from app.trash import move_to_trash
 
 router = APIRouter()
 
@@ -114,10 +115,6 @@ def delete_application(
     if not application:
         raise HTTPException(status_code=404, detail="Application not found")
 
-    cv_path, image_path = application.cv_url, application.image_url
-    db.delete(application)
-    db.commit()
-    delete_upload(cv_path)
-    delete_upload(image_path)
+    move_to_trash(db, "career", [application], admin)
 
     return {"message": "Application deleted successfully"}

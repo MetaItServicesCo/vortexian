@@ -6,6 +6,7 @@ from app.schema import CreateBlog, UpdateBlog, BlogResponse
 from app.routes.admin import get_current_admin_dependence
 from app.sanitize import clean_html, slugify
 from app.uploads import IMAGE_EXTENSIONS, MAX_IMAGE_BYTES, delete_upload, has_file, require_alt, save_upload
+from app.trash import move_to_trash
 
 
 router = APIRouter()
@@ -194,9 +195,6 @@ def delete_blog(
     if not blog:
         raise HTTPException(status_code=404, detail="Blog not found")
 
-    image_path = blog.featured_image
-    db.delete(blog)
-    db.commit()
-    delete_upload(image_path)
+    move_to_trash(db, "blog", [blog], admin)
 
     return {"message": "Blog deleted successfully"}

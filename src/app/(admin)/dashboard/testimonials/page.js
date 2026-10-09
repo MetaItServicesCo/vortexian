@@ -42,7 +42,7 @@ export default function TestimonialsListPage() {
     }
 
     async function handleDelete(id) {
-        if (!confirm("Are you sure you want to delete this testimonial?")) return;
+        if (!confirm("Delete this testimonial?\n\nYou can restore it from Recently deleted for 7 days.")) return;
         try {
             const res = await fetch(
                 `${API_BASE}/api/testimonials/delete/${id}`,
@@ -174,7 +174,6 @@ export default function TestimonialsListPage() {
                         resource="testimonials"
                         selection={selection}
                         noun={["testimonial", "testimonials"]}
-                        deleteWarning="Their photos will be removed too."
                         onDeleted={(ids) => setTestimonials((prev) => prev.filter((t) => !ids.includes(t.id)))}
                     />
                     {testimonials.map((t) => (

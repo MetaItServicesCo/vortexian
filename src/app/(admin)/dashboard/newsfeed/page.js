@@ -33,7 +33,7 @@ export default function NewsList() {
     }, []);
 
     const handleDelete = async (item) => {
-        if (!confirm(`Delete "${item.title}"? This cannot be undone.`)) return;
+        if (!confirm(`Delete "${item.title}"?\n\nYou can restore it from Recently deleted for 7 days.`)) return;
         try {
             setDeletingId(item.id);
             await adminFetch(`/api/newsfeed/${item.id}`, { method: "DELETE" });
@@ -70,7 +70,7 @@ export default function NewsList() {
                 resource="newsfeed"
                 selection={selection}
                 noun={["update", "updates"]}
-                deleteWarning="Their images and videos will be removed too."
+                deleteWarning="They will disappear from the website until restored."
                 onDeleted={(ids) => setNews((prev) => prev.filter((n) => !ids.includes(n.id)))}
                 onPublished={(ids, value) => setNews((prev) => prev.map((n) => (ids.includes(n.id) ? { ...n, is_published: value } : n)))}
             />

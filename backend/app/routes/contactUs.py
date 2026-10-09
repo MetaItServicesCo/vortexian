@@ -5,6 +5,7 @@ from app.database import get_db
 from app import models 
 from app.schema import CreateContactUs ,ContactUsResponse
 from app.routes.admin import get_current_admin_dependence
+from app.trash import move_to_trash
 
 
 router = APIRouter()
@@ -57,8 +58,7 @@ def delete_contact_message(
             detail="Message not found"
         )
 
-    db.delete(message)
-    db.commit()
+    move_to_trash(db, "quotes", [message], admin)
 
     return {
         "message": "Deleted successfully"

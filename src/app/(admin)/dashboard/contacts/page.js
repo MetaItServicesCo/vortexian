@@ -43,7 +43,7 @@ export default function ContactsPage() {
     }, []);
 
     const deleteContact = async (id) => {
-        if (!confirm("Delete this contact?")) return;
+        if (!confirm("Delete this quote request?\n\nYou can restore it from Recently deleted for 7 days.")) return;
 
         try {
             const token = localStorage.getItem("token");
@@ -79,7 +79,6 @@ export default function ContactsPage() {
                 resource="contacts"
                 selection={selection}
                 noun={["quote request", "quote requests"]}
-                deleteWarning="Any attached files will be removed too."
                 onDeleted={(ids) => setContacts((prev) => prev.filter((c) => !ids.includes(c.id)))}
             />
 

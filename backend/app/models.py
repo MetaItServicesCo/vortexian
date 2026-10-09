@@ -1,5 +1,5 @@
 
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, func
+from sqlalchemy import JSON, Column, Integer, String, Boolean, DateTime, Text, func
 from sqlalchemy.orm import mapped_column,Mapped
 from app.database import Base
 
@@ -245,3 +245,20 @@ class Page(Base):
 
     created_at = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+
+# ///////// Recently deleted (restorable for 7 days) //////////
+
+class DeletedItem(Base):
+    """Snapshot of a deleted record; restoring re-creates it with the same id."""
+    __tablename__ = "DeletedItem"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    resource: Mapped[str] = mapped_column(String(30), nullable=False, index=True)
+    record_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    title: Mapped[str] = mapped_column(String(255), nullable=False, default="")
+    data = mapped_column(JSON, nullable=False)
+    # [{"field": ..., "original": "/uploads/...", "trash": "/uploads/_trash/..."}]
+    files = mapped_column(JSON, nullable=False, default=list)
+    deleted_by: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    deleted_at = mapped_column(DateTime(timezone=True), nullable=False, index=True)

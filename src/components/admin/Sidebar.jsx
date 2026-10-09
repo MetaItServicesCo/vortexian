@@ -19,6 +19,7 @@ import {
   FiFile,
   FiChevronRight,
   FiLogOut,
+  FiTrash2,
 } from "react-icons/fi";
 
 const menuItems = [
@@ -37,6 +38,7 @@ const menuItems = [
   // { label: "Media Library", icon: FiImage, href: "/dashboard/media" },
   { label: "Testimonials", icon: FiStar, href: "/dashboard/testimonials" },
   { label: "Career", icon: FiUserCheck, href: "/dashboard/career" },
+  { label: "Recently deleted", icon: FiTrash2, href: "/dashboard/trash" },
 ];
 
 // On phones/tablets the sidebar is an off-canvas drawer (open/onClose from the layout)

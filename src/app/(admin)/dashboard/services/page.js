@@ -44,7 +44,7 @@ export default function AdminServicesList() {
     }, []);
 
     const handleDelete = async (id) => {
-        if (!confirm("Are you sure you want to delete this capability?")) return;
+        if (!confirm("Delete this service? Its page will stop working.\n\nYou can restore it from Recently deleted for 7 days.")) return;
 
         try {
             const token = localStorage.getItem("token"); // ✅ fix 2
@@ -89,7 +89,7 @@ export default function AdminServicesList() {
                 resource="services"
                 selection={selection}
                 noun={["service", "services"]}
-                deleteWarning="Their pages will stop working and uploaded images will be removed."
+                deleteWarning="Their pages will stop working until restored."
                 onDeleted={(ids) => setServices((prev) => prev.filter((s) => !ids.includes(s.id)))}
             />
 

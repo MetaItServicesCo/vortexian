@@ -7,6 +7,7 @@ from app import models
 from app.schema import TestimonialResponse
 from app.routes.admin import get_current_admin_dependence
 from app.uploads import IMAGE_EXTENSIONS, MAX_IMAGE_BYTES, delete_upload, has_file, require_alt, save_upload
+from app.trash import move_to_trash
 
 router = APIRouter()
 
@@ -71,9 +72,6 @@ def delete_testimonial(
     if not testimonial:
         raise HTTPException(status_code=404, detail="Testimonial not found")
 
-    image_path = testimonial.profile_image
-    db.delete(testimonial)
-    db.commit()
-    delete_upload(image_path)
+    move_to_trash(db, "testimonials", [testimonial], admin)
 
     return {"message": "Testimonial deleted successfully"}

@@ -42,7 +42,7 @@ export default function AdminTeamDashboardManager() {
     }, [token]);
 
     const handlePurgeSequence = async (id) => {
-        if (!confirm("Delete this team member permanently?")) return;
+        if (!confirm("Delete this team member?\n\nYou can restore it from Recently deleted for 7 days.")) return;
 
         try {
             const res = await fetch(`/api/team/delete-team/${id}`, {
@@ -92,7 +92,6 @@ export default function AdminTeamDashboardManager() {
                 resource="team"
                 selection={selection}
                 noun={["team member", "team members"]}
-                deleteWarning="Their profile photos will be removed too."
                 onDeleted={(ids) => setMembers((prev) => prev.filter((m) => !ids.includes(m.id)))}
             />
 

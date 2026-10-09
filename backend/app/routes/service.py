@@ -8,6 +8,7 @@ from app.schema import CreateService, ServiceResponse, UpdateService
 from app.routes.admin import get_current_admin_dependence
 from app.sanitize import clean_html, slugify
 from app.uploads import IMAGE_EXTENSIONS, MAX_IMAGE_BYTES, delete_upload, has_file, require_alt, save_upload
+from app.trash import move_to_trash
 
 router = APIRouter()
 
@@ -188,8 +189,5 @@ def delete_service(
     if not service:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Service not found")
 
-    image_path = service.image_showcase_url
-    db.delete(service)
-    db.commit()
-    delete_upload(image_path)
+    move_to_trash(db, "services", [service], admin)
     return {"message": "Service deleted successfully"}

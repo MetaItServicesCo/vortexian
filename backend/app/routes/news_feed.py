@@ -10,6 +10,7 @@ from app.schema import NewsFeedResponse
 from app.routes.admin import get_current_admin_dependence
 from app.sanitize import clean_html
 from app.uploads import IMAGE_EXTENSIONS, MAX_VIDEO_BYTES, VIDEO_EXTENSIONS, clean_alt, delete_upload, has_file, is_image, require_alt, save_upload
+from app.trash import move_to_trash
 
 router = APIRouter()
 
@@ -163,9 +164,6 @@ def delete_news_feed(
     admin=Depends(get_current_admin_dependence)
 ):
     news = _get_or_404(news_id, db)
-    media_path = news.media_url
-    db.delete(news)
-    db.commit()
-    delete_upload(media_path)
+    move_to_trash(db, "newsfeed", [news], admin)
 
     return {"message": "News feed deleted successfully"}

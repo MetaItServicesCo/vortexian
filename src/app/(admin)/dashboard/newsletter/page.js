@@ -54,7 +54,7 @@ export default function AdminNewsletterDashboard() {
 
     // 🗑 DELETE SUBSCRIBER
     const handlePurge = async (id) => {
-        if (!confirm("Delete this subscriber permanently?")) return;
+        if (!confirm("Delete this subscriber? They will stop receiving the newsletter.\n\nYou can restore it from Recently deleted for 7 days.")) return;
 
         try {
             const res = await fetch(

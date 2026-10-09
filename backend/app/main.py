@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from app.database import engine , Base
 from app.routes.admin import router as admin_router
 from app.routes.service import router as service_router
@@ -17,6 +17,9 @@ from app.routes.content import router as content_router
 from app.routes.pages import router as pages_router
 from app.routes.media import router as media_router
 from app.routes.bulk import router as bulk_router
+from app.routes.trash import router as trash_router
+from app.database import sessionlocal
+from app.trash import TRASH_DIR, purge_expired
 from fastapi.staticfiles import StaticFiles
 import os
 
@@ -28,6 +31,12 @@ app = FastAPI()
 @app.on_event("startup")
 def startup():
     start_scheduler()
+    # Drop Recently deleted items older than the retention period
+    try:
+        with sessionlocal() as db:
+            purge_expired(db)
+    except Exception as err:  # never block startup on housekeeping
+        print(f"Recently deleted cleanup skipped: {err}")
 
 app.add_middleware(
     CORSMiddleware,
@@ -43,6 +52,14 @@ def root():
     return {"message": "Backend Running Successfully"}
 
 os.makedirs("uploads", exist_ok=True)
+
+
+# Files of deleted items wait in uploads/_trash for restore; never serve them
+@app.get(f"/uploads/{TRASH_DIR}/{{path:path}}", include_in_schema=False)
+def hide_deleted_files(path: str):
+    raise HTTPException(status_code=404, detail="Not Found")
+
+
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 app.include_router(admin_router,prefix="/api/admins",tags=["Admins"])
@@ -60,3 +77,4 @@ app.include_router(content_router, prefix="/api/content", tags=["Content"])
 app.include_router(pages_router, prefix="/api/pages", tags=["Pages"])
 app.include_router(media_router, prefix="/api/media", tags=["Media"])
 app.include_router(bulk_router, prefix="/api/bulk", tags=["Bulk actions"])
+app.include_router(trash_router, prefix="/api/trash", tags=["Recently deleted"])

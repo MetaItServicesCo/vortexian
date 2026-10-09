@@ -29,7 +29,7 @@ export default function DashboardPortfolioList() {
     }, []);
 
     const triggerDeletion = async (id) => {
-        if (!confirm("Are you absolutely sure you want to purge this record?")) return;
+        if (!confirm("Delete this project?\n\nYou can restore it from Recently deleted for 7 days.")) return;
 
         const token = localStorage.getItem("token");
 
@@ -79,7 +79,6 @@ export default function DashboardPortfolioList() {
                 resource="portfolio"
                 selection={selection}
                 noun={["project", "projects"]}
-                deleteWarning="Their images will be removed too."
                 onDeleted={(ids) => setItems((prev) => prev.filter((i) => !ids.includes(i.id)))}
             />
 
