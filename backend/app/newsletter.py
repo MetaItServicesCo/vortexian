@@ -172,8 +172,8 @@ def send_welcome(subscriber_id: int) -> None:
 def claim_for_sending(db: Session, campaign_id: int) -> bool:
     """Atomically move draft/failed -> sending, so a campaign can't be sent twice."""
     result = db.execute(
-        update(models.NewsletterCampaign)
-        .where(models.NewsletterCampaign.id == campaign_id, models.NewsletterCampaign.status.in_(SENDABLE))
+        update(models.NewsletterIssue)
+        .where(models.NewsletterIssue.id == campaign_id, models.NewsletterIssue.status.in_(SENDABLE))
         .values(status="sending", sent_count=0, failed_count=0, last_error=None)
     )
     db.commit()
@@ -184,7 +184,7 @@ def send_campaign(campaign_id: int) -> None:
     """Background task: send to every subscriber in batches and record the result."""
     db = sessionlocal()
     try:
-        campaign = db.get(models.NewsletterCampaign, campaign_id)
+        campaign = db.get(models.NewsletterIssue, campaign_id)
         cfg = newsletter_settings(db)
         subscribers = db.query(models.Newsletter).order_by(models.Newsletter.id).all()
         campaign.recipients_count = len(subscribers)
@@ -219,7 +219,7 @@ def send_campaign(campaign_id: int) -> None:
     except Exception as err:  # noqa: BLE001
         log.exception("Newsletter %s failed", campaign_id)
         db.rollback()
-        campaign = db.get(models.NewsletterCampaign, campaign_id)
+        campaign = db.get(models.NewsletterIssue, campaign_id)
         if campaign:
             campaign.status = "partial" if campaign.sent_count else "failed"
             campaign.last_error = str(err)

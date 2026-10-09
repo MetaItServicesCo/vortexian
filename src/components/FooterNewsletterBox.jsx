@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { FiLoader } from "react-icons/fi";
 import toast, { Toaster } from "react-hot-toast";
 
-const FooterNewsletterBox = ({ heading = "Newsletter", text = "" }) => {
+const FooterNewsletterBox = ({ heading = "Newsletter", text = "", buttonLabel = "Subscribe" }) => {
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -61,7 +61,8 @@ const FooterNewsletterBox = ({ heading = "Newsletter", text = "" }) => {
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="Email"
+          placeholder="Your email address"
+          aria-label="Email address for the newsletter"
           className="w-full px-4 py-4 bg-white text-black outline-none focus:ring-2 focus:ring-[#5DB4D1]"
         />
 
@@ -73,10 +74,10 @@ const FooterNewsletterBox = ({ heading = "Newsletter", text = "" }) => {
           {submitting ? (
             <>
               <FiLoader className="animate-spin text-sm" />
-              Processing...
+              Subscribing...
             </>
           ) : (
-            "Send"
+            buttonLabel || "Subscribe"
           )}
         </button>
       </form>

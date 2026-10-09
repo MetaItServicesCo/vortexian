@@ -164,7 +164,7 @@ const Footer = () => {
         )}
 
         {/* Newsletter Section */}
-        <FooterNewsletterBox heading={footer.newsletter_heading} text={footer.newsletter_text} />
+        <FooterNewsletterBox heading={footer.newsletter_heading} text={footer.newsletter_text} buttonLabel={footer.newsletter_button} />
       </div>
 
       {/* --- COPYRIGHT BAR --- */}

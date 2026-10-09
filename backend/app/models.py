@@ -148,9 +148,13 @@ class Newsletter(Base):
     created_at = mapped_column(DateTime(timezone=True), nullable=True, default=lambda: datetime.now(timezone.utc))
 
 
-class NewsletterCampaign(Base):
-    """A newsletter written in the dashboard and sent to all subscribers once."""
-    __tablename__ = "NewsletterCampaign"
+class NewsletterIssue(Base):
+    """A newsletter written in the dashboard and sent to all subscribers once.
+
+    Not "NewsletterCampaign": that table name is already used in production by
+    an older, unrelated schema (migration 2900e418b3e1), which is left untouched.
+    """
+    __tablename__ = "NewsletterIssue"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     subject: Mapped[str] = mapped_column(String(200), nullable=False)

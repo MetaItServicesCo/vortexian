@@ -85,14 +85,14 @@ def newsletter_status(db: Session = Depends(get_db), admin: models.Admin = Depen
 
 
 # ---------------- ADMIN: campaigns ----------------
-def _campaign_or_404(campaign_id: int, db: Session) -> models.NewsletterCampaign:
-    campaign = db.get(models.NewsletterCampaign, campaign_id)
+def _campaign_or_404(campaign_id: int, db: Session) -> models.NewsletterIssue:
+    campaign = db.get(models.NewsletterIssue, campaign_id)
     if not campaign:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Newsletter not found")
     return campaign
 
 
-def _editable(campaign: models.NewsletterCampaign) -> None:
+def _editable(campaign: models.NewsletterIssue) -> None:
     if campaign.status not in nl.SENDABLE:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="This newsletter has already been sent and can't be changed. Duplicate it to send a new version.")
 
@@ -106,12 +106,12 @@ def _clean(data: CampaignInput) -> dict:
 
 @router.get("/campaigns", response_model=list[CampaignResponse])
 def list_campaigns(db: Session = Depends(get_db), admin=Depends(get_current_admin_dependence)):
-    return db.query(models.NewsletterCampaign).order_by(models.NewsletterCampaign.id.desc()).all()
+    return db.query(models.NewsletterIssue).order_by(models.NewsletterIssue.id.desc()).all()
 
 
 @router.post("/campaigns", response_model=CampaignResponse, status_code=201)
 def create_campaign(data: CampaignInput, db: Session = Depends(get_db), admin=Depends(get_current_admin_dependence)):
-    campaign = models.NewsletterCampaign(**_clean(data), created_by=getattr(admin, "username", None))
+    campaign = models.NewsletterIssue(**_clean(data), created_by=getattr(admin, "username", None))
     db.add(campaign)
     db.commit()
     db.refresh(campaign)
@@ -137,7 +137,7 @@ def update_campaign(campaign_id: int, data: CampaignInput, db: Session = Depends
 @router.post("/campaigns/{campaign_id}/duplicate", response_model=CampaignResponse, status_code=201)
 def duplicate_campaign(campaign_id: int, db: Session = Depends(get_db), admin=Depends(get_current_admin_dependence)):
     source = _campaign_or_404(campaign_id, db)
-    copy = models.NewsletterCampaign(subject=source.subject, preheader=source.preheader, body_html=source.body_html, created_by=getattr(admin, "username", None))
+    copy = models.NewsletterIssue(subject=source.subject, preheader=source.preheader, body_html=source.body_html, created_by=getattr(admin, "username", None))
     db.add(copy)
     db.commit()
     db.refresh(copy)

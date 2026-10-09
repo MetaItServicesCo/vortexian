@@ -167,6 +167,7 @@ export const CONTENT_SECTIONS = [
             },
             { name: "newsletter_heading", label: "Newsletter heading", type: "text" },
             { name: "newsletter_text", label: "Newsletter text", type: "textarea" },
+            { name: "newsletter_button", label: "Newsletter button label", type: "text" },
             { name: "copyright", label: "Copyright line", type: "text", help: "{year} is replaced with the current year." },
         ],
         defaults: {
@@ -187,6 +188,7 @@ export const CONTENT_SECTIONS = [
             ],
             newsletter_heading: "Newsletter",
             newsletter_text: "Subscribe our newsletter to get our latest update & news",
+            newsletter_button: "Subscribe",
             copyright: "© {year} Vortexian Tech | Designed & Developed By Primemax Digital",
         },
     },

@@ -1,4 +1,4 @@
-"""newsletter: unsubscribe tokens, sign-up date, campaigns
+"""newsletter: unsubscribe tokens, sign-up date
 
 Revision ID: d7b9f1a3c5e4
 Revises: c6a8e0f2b4d3
@@ -40,31 +40,13 @@ def upgrade() -> None:
                 batch.alter_column('unsubscribe_token', existing_type=sa.String(length=64), nullable=False)
             op.create_index('ix_Newsletter_unsubscribe_token', 'Newsletter', ['unsubscribe_token'], unique=True)
 
-    if 'NewsletterCampaign' not in tables:
-        op.create_table(
-            'NewsletterCampaign',
-            sa.Column('id', sa.Integer(), primary_key=True),
-            sa.Column('subject', sa.String(length=200), nullable=False),
-            sa.Column('preheader', sa.String(length=200), nullable=True),
-            sa.Column('body_html', sa.Text(), nullable=False, server_default=''),
-            sa.Column('status', sa.String(length=20), nullable=False, server_default='draft'),
-            sa.Column('recipients_count', sa.Integer(), nullable=False, server_default='0'),
-            sa.Column('sent_count', sa.Integer(), nullable=False, server_default='0'),
-            sa.Column('failed_count', sa.Integer(), nullable=False, server_default='0'),
-            sa.Column('last_error', sa.Text(), nullable=True),
-            sa.Column('created_by', sa.String(length=100), nullable=True),
-            sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
-            sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
-            sa.Column('sent_at', sa.DateTime(timezone=True), nullable=True),
-        )
-        op.create_index('ix_NewsletterCampaign_id', 'NewsletterCampaign', ['id'])
+    # Newsletters are stored in NewsletterIssue (migration e1a3c5d7f9b2). The
+    # NewsletterCampaign table belongs to an older schema and is left alone.
 
 
 def downgrade() -> None:
     """Downgrade schema."""
     inspector = sa.inspect(op.get_bind())
-    if 'NewsletterCampaign' in inspector.get_table_names():
-        op.drop_table('NewsletterCampaign')
     if 'Newsletter' in inspector.get_table_names():
         columns = {c["name"] for c in inspector.get_columns('Newsletter')}
         if 'unsubscribe_token' in columns:
