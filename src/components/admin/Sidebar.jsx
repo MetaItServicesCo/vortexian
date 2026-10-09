@@ -20,6 +20,7 @@ import {
   FiChevronRight,
   FiLogOut,
   FiTrash2,
+  FiTrendingUp,
 } from "react-icons/fi";
 
 const menuItems = [
@@ -27,6 +28,7 @@ const menuItems = [
   { label: "Basic Info", icon: FiInfo, href: "/dashboard/content/settings" },
   { label: "Site Content", icon: FiEdit3, href: "/dashboard/content" },
   { label: "Pages", icon: FiFile, href: "/dashboard/pages" },
+  { label: "SEO & Tracking", icon: FiTrendingUp, href: "/dashboard/seo" },
   { label: "Manage Services", icon: FiLayers, href: "/dashboard/services" },
   { label: "Home Page Enquiries", icon: FiMail, href: "/dashboard/quotes" },
   { label: "Quote Requests", icon: FiInbox, href: "/dashboard/contacts" },

@@ -34,7 +34,7 @@ const linkFields = [
     { name: "href", label: "Link", type: "url", placeholder: "/contact or https://…" },
 ];
 
-export const CONTENT_GROUPS = ["Global", "Home Page", "About Page", "Contact Page", "Career Page", "Services Page", "Portfolio Page", "Blog Page", "News Page"];
+export const CONTENT_GROUPS = ["Global", "Home Page", "About Page", "Contact Page", "Career Page", "Services Page", "Portfolio Page", "Blog Page", "News Page", "SEO & Tracking"];
 
 export const CONTENT_SECTIONS = [
     // ------------------------------------------------------------------ GLOBAL
@@ -694,6 +694,203 @@ export const CONTENT_SECTIONS = [
         title: "Intro",
         fields: [{ name: "text", label: "Intro text", type: "textarea" }],
         defaults: { text: "The latest announcements, events and news from the Vortexian Tech team." },
+    },
+
+    // ------------------------------------------------------------------ SEO & TRACKING
+    // Rendered by src/components/seo/SiteSeo.jsx (public pages), the root
+    // layout metadata (verification) and the /sitemap.xml, /robots.txt and
+    // /llms.txt route handlers. The backend validates these keys on save.
+    {
+        key: "seo.verification",
+        group: "SEO & Tracking",
+        title: "Search engine verification",
+        description: "Proves to Google Search Console and Bing Webmaster Tools that you own the site.",
+        fields: [
+            {
+                name: "google_site_verification",
+                label: "Google verification code",
+                type: "text",
+                pattern: "^[A-Za-z0-9_-]*$",
+                patternMessage: "Paste only the code from content=\"…\" (letters, numbers, - and _).",
+                help: "From the Google tag <meta name=\"google-site-verification\" content=\"CODE\">, paste only CODE.",
+            },
+            {
+                name: "bing_site_verification",
+                label: "Bing verification code (optional)",
+                type: "text",
+                pattern: "^[A-Za-z0-9_-]*$",
+                patternMessage: "Paste only the code from content=\"…\" (letters, numbers, - and _).",
+                help: "From <meta name=\"msvalidate.01\" content=\"CODE\">, paste only CODE.",
+            },
+        ],
+        defaults: { google_site_verification: "2JCPqqsIx7AHjGD2lMEOmPtWFgnNX2yQZiiW06rzbqw", bing_site_verification: "" },
+    },
+    {
+        key: "seo.tracking",
+        group: "SEO & Tracking",
+        title: "Analytics & tracking",
+        description: "Google Analytics and Microsoft Clarity. They load on the public website only, never in the dashboard, so admin visits don't count as traffic.",
+        fields: [
+            { name: "ga_enabled", label: "Google Analytics (gtag.js) on", type: "boolean" },
+            {
+                name: "ga_measurement_id",
+                label: "Google Analytics measurement ID",
+                type: "text",
+                placeholder: "G-XXXXXXXXXX",
+                pattern: "^(G-[A-Za-z0-9]{4,20})?$",
+                patternMessage: "Should look like G-XXXXXXXXXX.",
+                requiredIf: "ga_enabled",
+                showIf: { field: "ga_enabled", equals: true },
+                help: "Google Analytics → Admin → Data streams → your web stream → Measurement ID.",
+            },
+            { name: "clarity_enabled", label: "Microsoft Clarity on", type: "boolean" },
+            {
+                name: "clarity_project_id",
+                label: "Clarity project ID",
+                type: "text",
+                placeholder: "e.g. yqxvfsfl71",
+                pattern: "^([A-Za-z0-9]{6,20})?$",
+                patternMessage: "The short project code from Clarity (letters and numbers).",
+                requiredIf: "clarity_enabled",
+                showIf: { field: "clarity_enabled", equals: true },
+                help: "Clarity → Settings → Overview → Project ID (the code at the end of the tracking script).",
+            },
+        ],
+        defaults: { ga_enabled: true, ga_measurement_id: "G-NDWSZ3J75E", clarity_enabled: true, clarity_project_id: "yqxvfsfl71" },
+    },
+    {
+        key: "seo.sitemap",
+        group: "SEO & Tracking",
+        title: "Sitemap (sitemap.xml)",
+        description: "Generated automatically from your published pages, services, blog posts and projects, so it is always up to date. Submit /sitemap.xml in Google Search Console.",
+        viewUrl: "/sitemap.xml",
+        fields: [
+            { name: "enabled", label: "Publish /sitemap.xml", type: "boolean" },
+            { name: "include_services", label: "Include service pages", type: "boolean", showIf: { field: "enabled", equals: true } },
+            { name: "include_blog", label: "Include blog posts", type: "boolean", showIf: { field: "enabled", equals: true } },
+            { name: "include_portfolio", label: "Include portfolio projects", type: "boolean", showIf: { field: "enabled", equals: true } },
+            { name: "include_pages", label: "Include custom pages (e.g. Privacy Policy)", type: "boolean", showIf: { field: "enabled", equals: true } },
+            {
+                name: "exclude_paths",
+                label: "Leave these out (one per line)",
+                type: "code",
+                rows: 4,
+                placeholder: "/terms-and-conditions\n/blog/old-post\n/portfolio/*",
+                showIf: { field: "enabled", equals: true },
+                help: "Exact addresses, or end with * to leave out everything below a path.",
+            },
+            {
+                name: "extra_urls",
+                label: "Extra addresses to add (one per line)",
+                type: "code",
+                rows: 4,
+                placeholder: "/landing/spring-offer\nhttps://vortexiantech.com/some-page",
+                showIf: { field: "enabled", equals: true },
+                help: "For pages the sitemap can't find on its own. Addresses on other domains are ignored.",
+            },
+        ],
+        defaults: {
+            enabled: true,
+            include_services: true,
+            include_blog: true,
+            include_portfolio: true,
+            include_pages: true,
+            exclude_paths: "",
+            extra_urls: "",
+        },
+    },
+    {
+        key: "seo.robots",
+        group: "SEO & Tracking",
+        title: "robots.txt",
+        description: "Tells search engines what they may crawl. The recommended rules allow the whole website, keep the dashboard and login out, and point to the sitemap.",
+        viewUrl: "/robots.txt",
+        fields: [
+            { name: "use_recommended", label: "Use the recommended robots.txt", type: "boolean" },
+            {
+                name: "custom",
+                label: "Custom robots.txt",
+                type: "code",
+                rows: 12,
+                startFrom: "/robots.txt?recommended=1",
+                showIf: { field: "use_recommended", equals: false },
+                help: "Served exactly as written at /robots.txt. A mistake here can remove the site from Google, so start from the recommended version.",
+            },
+        ],
+        defaults: { use_recommended: true, custom: "" },
+    },
+    {
+        key: "seo.llms",
+        group: "SEO & Tracking",
+        title: "llms.txt",
+        description: "A plain-text guide to the site for AI assistants (ChatGPT, Claude, Perplexity…). The recommended version is built automatically from your company info, services and latest posts.",
+        viewUrl: "/llms.txt",
+        fields: [
+            { name: "use_recommended", label: "Use the recommended llms.txt (updates itself)", type: "boolean" },
+            {
+                name: "custom",
+                label: "Custom llms.txt (Markdown)",
+                type: "code",
+                rows: 16,
+                startFrom: "/llms.txt?recommended=1",
+                showIf: { field: "use_recommended", equals: false },
+                help: "Served exactly as written at /llms.txt.",
+            },
+        ],
+        defaults: { use_recommended: true, custom: "" },
+    },
+    {
+        key: "seo.schema",
+        group: "SEO & Tracking",
+        title: "Schema markup (JSON-LD)",
+        description: "Structured data added to every page of the website. Paste JSON-LD from your SEO tools; each block is checked before saving. Test with Google's Rich Results Test.",
+        fields: [
+            { name: "enabled", label: "Add schema markup to the website", type: "boolean" },
+            {
+                name: "blocks",
+                label: "Schema blocks",
+                type: "list",
+                itemLabel: "name",
+                showIf: { field: "enabled", equals: true },
+                fields: [
+                    { name: "name", label: "Name (for your reference)", type: "text", placeholder: "e.g. Organization" },
+                    {
+                        name: "json",
+                        label: "JSON-LD",
+                        type: "code",
+                        format: "json",
+                        rows: 14,
+                        help: "Paste only the JSON, without <script> tags. Placeholders filled from Basic Info: {{site_name}} {{site_url}} {{logo}} {{email}} {{phone}} {{phone_secondary}} {{address}} {{facebook}} {{linkedin}} {{instagram}} {{twitter}} {{youtube}} {{pinterest}} — empty ones are left out.",
+                    },
+                ],
+            },
+        ],
+        defaults: {
+            enabled: true,
+            blocks: [
+                {
+                    name: "Organization",
+                    json: JSON.stringify(
+                        {
+                            "@context": "https://schema.org",
+                            "@type": "Organization",
+                            name: "{{site_name}}",
+                            url: "{{site_url}}",
+                            logo: "{{logo}}",
+                            email: "{{email}}",
+                            telephone: "{{phone}}",
+                            sameAs: ["{{facebook}}", "{{linkedin}}", "{{instagram}}", "{{twitter}}", "{{youtube}}", "{{pinterest}}"],
+                        },
+                        null,
+                        2
+                    ),
+                },
+                {
+                    name: "WebSite",
+                    json: JSON.stringify({ "@context": "https://schema.org", "@type": "WebSite", name: "{{site_name}}", url: "{{site_url}}" }, null, 2),
+                },
+            ],
+        },
     },
 ];
 

@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app import models
-from app.schema import CreatePage, UpdatePage, PageResponse, PageLink
+from app.schema import CreatePage, UpdatePage, PageResponse, PageLink, PageSitemapItem
 from app.routes.admin import get_current_admin_dependence
 from app.trash import move_to_trash
 from app.sanitize import clean_html
@@ -45,6 +45,12 @@ def get_footer_pages(db: Session = Depends(get_db)):
         .order_by(models.Page.footer_order, models.Page.title)
         .all()
     )
+
+
+# For sitemap.xml / llms.txt: every published page
+@router.get("/published", response_model=list[PageSitemapItem])
+def get_published_pages(db: Session = Depends(get_db)):
+    return db.query(models.Page).filter(models.Page.is_published.is_(True)).order_by(models.Page.title).all()
 
 
 @router.get("/slug/{slug}", response_model=PageResponse)

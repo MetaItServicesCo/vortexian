@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import dynamic from "next/dynamic";
-import { ChevronDown, ChevronUp, Plus, Trash2, Upload, Loader2, X, ArrowUp, ArrowDown } from "lucide-react";
+import { ChevronDown, ChevronUp, Plus, Trash2, Upload, Loader2, X, ArrowUp, ArrowDown, CheckCircle2, AlertCircle, Wand2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { uploadMedia } from "@/lib/adminApi";
 import { mediaUrl } from "@/lib/api";
@@ -27,6 +27,90 @@ export function findMissingAlt(fields, value, prefix = "") {
         }
     }
     return problems;
+}
+
+// Fields with `showIf: { field, equals }` only appear (and are only checked)
+// when a sibling field has that value, e.g. the GA ID only when GA is on.
+export const isShown = (field, value) => !field.showIf || Boolean(value?.[field.showIf.field]) === field.showIf.equals;
+
+export function jsonProblem(text) {
+    if (!(text || "").trim()) return null;
+    try {
+        const parsed = JSON.parse(text);
+        return parsed && typeof parsed === "object" ? null : "must be a JSON object or array";
+    } catch (err) {
+        return err.message;
+    }
+}
+
+// Format/required problems (pattern, requiredIf, JSON), including inside lists
+export function findInvalid(fields, value, prefix = "") {
+    const problems = [];
+    for (const field of fields) {
+        if (!isShown(field, value)) continue;
+        const v = value?.[field.name];
+        const label = prefix + field.label;
+        const text = typeof v === "string" ? v.trim() : v;
+        if (field.requiredIf && value?.[field.requiredIf] && !text) problems.push(`${label} is required`);
+        if (field.pattern && text && !new RegExp(field.pattern).test(text)) problems.push(`${label}: ${field.patternMessage || "invalid format"}`);
+        if (field.format === "json") {
+            const problem = jsonProblem(v);
+            if (problem) problems.push(`${label}: not valid JSON (${problem})`);
+        }
+        if (field.type === "list" && Array.isArray(v)) {
+            v.forEach((item, i) => problems.push(...findInvalid(field.fields, item, `${label} “${item?.[field.itemLabel] || `#${i + 1}`}” › `)));
+        }
+    }
+    return problems;
+}
+
+// Monospace editor for robots.txt, llms.txt, JSON-LD and URL lists
+function CodeField({ field, value, onChange }) {
+    const [loading, setLoading] = useState(false);
+    const problem = field.format === "json" ? jsonProblem(value) : null;
+
+    const startFrom = async () => {
+        setLoading(true);
+        try {
+            const res = await fetch(field.startFrom, { cache: "no-store" });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            onChange(await res.text());
+        } catch (err) {
+            toast.error(`Could not load the recommended version: ${err.message}`);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="space-y-2">
+            {field.startFrom && !(value || "").trim() && (
+                <button
+                    type="button"
+                    onClick={startFrom}
+                    disabled={loading}
+                    className="inline-flex items-center gap-2 rounded-lg border border-[#1D1D7E]/20 bg-[#EEF0FF] px-3 py-1.5 text-xs font-bold text-[#1D1D7E] hover:bg-[#e2e5ff] disabled:opacity-50"
+                >
+                    {loading ? <Loader2 size={14} className="animate-spin" /> : <Wand2 size={14} />} Start from the recommended version
+                </button>
+            )}
+            <textarea
+                rows={field.rows || 8}
+                value={value || ""}
+                onChange={(e) => onChange(e.target.value)}
+                placeholder={field.placeholder}
+                spellCheck={false}
+                aria-invalid={problem ? "true" : undefined}
+                className={`${inputClass} font-mono text-[13px] leading-relaxed resize-y ${problem ? "border-red-300 focus:ring-red-300" : ""}`}
+            />
+            {field.format === "json" && (value || "").trim() && (
+                <p className={`flex items-center gap-1.5 text-xs font-semibold ${problem ? "text-red-600" : "text-emerald-700"}`} role="status">
+                    {problem ? <AlertCircle size={13} /> : <CheckCircle2 size={13} />}
+                    {problem ? `Not valid JSON: ${problem}` : "Valid JSON"}
+                </p>
+            )}
+        </div>
+    );
 }
 
 const RichTextEditor = dynamic(() => import("@/components/editor/RichTextEditor"), { ssr: false });
@@ -224,6 +308,9 @@ function Field({ field, value, onChange }) {
         case "textarea":
             control = <textarea rows={4} value={value || ""} onChange={(e) => onChange(e.target.value)} placeholder={field.placeholder} className={`${inputClass} resize-y`} />;
             break;
+        case "code":
+            control = <CodeField field={field} value={value} onChange={onChange} />;
+            break;
         case "richtext":
             control = <RichTextEditor value={value || ""} onChange={onChange} minHeight={180} />;
             break;
@@ -250,8 +337,15 @@ function Field({ field, value, onChange }) {
         case "list":
             control = <ListField field={field} value={value} onChange={onChange} />;
             break;
-        default:
-            control = <input type="text" value={value || ""} onChange={(e) => onChange(e.target.value)} placeholder={field.placeholder} className={inputClass} />;
+        default: {
+            const bad = field.pattern && (value || "").trim() && !new RegExp(field.pattern).test(value.trim());
+            control = (
+                <>
+                    <input type="text" value={value || ""} onChange={(e) => onChange(e.target.value)} placeholder={field.placeholder} aria-invalid={bad ? "true" : undefined} className={`${inputClass} ${bad ? "border-red-300" : ""}`} />
+                    {bad && <p className="mt-1.5 text-xs font-semibold text-red-600">{field.patternMessage}</p>}
+                </>
+            );
+        }
     }
 
     return (
@@ -266,7 +360,7 @@ function Field({ field, value, onChange }) {
 export function FieldList({ fields, value, onChange }) {
     return (
         <div className="space-y-5 pt-3">
-            {fields.map((field) => (
+            {fields.filter((field) => isShown(field, value)).map((field) => (
                 <div key={field.name} className="space-y-3">
                     <Field
                         field={field}

@@ -2,7 +2,7 @@ import { cache } from "react";
 import { serverApiUrl } from "@/lib/api";
 import { resolveAll } from "@/content/registry";
 
-async function getJson(path, fallback) {
+export async function getJson(path, fallback) {
     try {
         const res = await fetch(serverApiUrl(path), { cache: "no-store" });
         if (!res.ok) return fallback;
@@ -20,6 +20,13 @@ export const getFooterPages = cache(async () => {
     const pages = await getJson("/api/pages/footer", []);
     return Array.isArray(pages) ? pages : [];
 });
+
+// Route handlers (sitemap.xml, robots.txt, llms.txt) must not use React's
+// cache(): it is meant for one render and kept serving settings from an
+// earlier request there. Always fetch fresh in route handlers.
+export async function getFreshSiteContent() {
+    return resolveAll(await getJson("/api/content/", {}));
+}
 
 export async function getSection(key) {
     return (await getSiteContent())[key];

@@ -12,10 +12,12 @@ export default function SiteContentIndex() {
                 <p className="text-slate-500 mt-2 max-w-2xl">
                     Edit the text, images and links on every page. Changes go live as soon as you save.
                     Lists like services, team, blog posts and testimonials are managed in their own sections.
+                    Sitemap, robots.txt, llms.txt, analytics and schema markup are under{" "}
+                    <Link href="/dashboard/seo" className="font-semibold text-[#1D1D7E] underline underline-offset-2">SEO &amp; Tracking</Link>.
                 </p>
             </div>
 
-            {CONTENT_GROUPS.map((group) => {
+            {CONTENT_GROUPS.filter((group) => group !== "SEO & Tracking").map((group) => {
                 const sections = CONTENT_SECTIONS.filter((s) => s.group === group);
                 if (!sections.length) return null;
                 return (

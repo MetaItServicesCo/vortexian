@@ -7,12 +7,17 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export async function generateMetadata() {
-  const settings = await getSection("settings");
+  const [settings, verify] = await Promise.all([getSection("settings"), getSection("seo.verification")]);
   const ogImage = mediaUrl(settings.og_image);
 
   return {
     metadataBase: new URL(SITE_URL),
     title: settings.meta_title,
+    // Dashboard → SEO & Tracking → Search engine verification
+    verification: {
+      ...(verify?.google_site_verification ? { google: verify.google_site_verification } : {}),
+      ...(verify?.bing_site_verification ? { other: { "msvalidate.01": verify.bing_site_verification } } : {}),
+    },
     description: settings.meta_description,
     openGraph: {
       siteName: settings.site_name,

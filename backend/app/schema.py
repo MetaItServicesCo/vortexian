@@ -336,6 +336,16 @@ class PageResponse(PageBase):
         from_attributes = True
 
 
+class PageSitemapItem(BaseModel):
+    title: str
+    slug: str
+    meta_description: Optional[str] = None
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+
 class PageLink(BaseModel):
     title: str
     slug: str

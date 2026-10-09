@@ -30,6 +30,55 @@ def _load(row: models.SiteContent) -> dict:
     return data if isinstance(data, dict) else {}
 
 
+# ---------------- SEO settings validation ----------------
+# Tracking IDs are inserted into <script> tags on every page, so only the
+# documented formats are accepted. Schema blocks must be valid JSON-LD.
+GA_ID = re.compile(r"^G-[A-Z0-9]{4,20}$")
+CLARITY_ID = re.compile(r"^[a-z0-9]{6,20}$")
+VERIFICATION = re.compile(r"^[A-Za-z0-9_\-]{0,100}$")
+
+
+def _bad(detail: str):
+    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=detail)
+
+
+def _validate_seo(key: str, data: dict) -> dict:
+    if key == "seo.tracking":
+        ga = str(data.get("ga_measurement_id") or "").strip().upper()
+        clarity = str(data.get("clarity_project_id") or "").strip().lower()
+        if ga and not GA_ID.match(ga):
+            _bad("Google Analytics ID should look like G-XXXXXXXXXX.")
+        if clarity and not CLARITY_ID.match(clarity):
+            _bad("Clarity project ID should be the short code from Clarity (letters and numbers, e.g. yqxvfsfl71).")
+        if data.get("ga_enabled") and not ga:
+            _bad("Enter the Google Analytics ID or turn Google Analytics off.")
+        if data.get("clarity_enabled") and not clarity:
+            _bad("Enter the Clarity project ID or turn Clarity off.")
+        data = {**data, "ga_measurement_id": ga, "clarity_project_id": clarity}
+    elif key == "seo.verification":
+        for field, label in (("google_site_verification", "Google"), ("bing_site_verification", "Bing")):
+            code = str(data.get(field) or "").strip()
+            if not VERIFICATION.match(code):
+                _bad(f"{label} verification: paste only the code from the content=\"…\" part of the tag.")
+            data = {**data, field: code}
+    elif key == "seo.schema":
+        blocks = data.get("blocks") or []
+        if not isinstance(blocks, list):
+            _bad("Schema blocks must be a list.")
+        for i, block in enumerate(blocks, start=1):
+            name = (block or {}).get("name") or f"Block {i}"
+            raw = str((block or {}).get("json") or "").strip()
+            if not raw:
+                continue
+            try:
+                parsed = json.loads(raw)
+            except ValueError as err:
+                _bad(f"Schema “{name}” is not valid JSON: {err}")
+            if not isinstance(parsed, (dict, list)):
+                _bad(f"Schema “{name}” must be a JSON object, e.g. {{\"@context\": \"https://schema.org\", …}}.")
+    return data
+
+
 # ---------------- ALL CONTENT (PUBLIC) ----------------
 # The public site loads everything in one request and merges it over its
 # built-in defaults, so keys that were never edited are simply absent.
@@ -54,7 +103,7 @@ def save_content(
 ) -> dict[str, Any]:
     _validate_key(key)
 
-    cleaned = clean_html_fields(data)
+    cleaned = _validate_seo(key, clean_html_fields(data))
     serialized = json.dumps(cleaned, ensure_ascii=False)
     if len(serialized.encode("utf-8")) > MAX_DOCUMENT_BYTES:
         raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail="Content too large")
