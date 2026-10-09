@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import Link from "next/link";
 import { motion } from "framer-motion"; // Animation library
 import { Users, Megaphone, Paintbrush, Cpu, Headset } from "lucide-react";
 import { useContent } from "@/components/content/SiteContentProvider";
@@ -49,6 +50,7 @@ const ServicesSection = ({ services: apiServices = [] }) => {
     ? apiServices.map((item, index) => ({
         id: String(index + 1).padStart(2, "0"),
         title: item.service_title,
+        href: item.url_slug ? `/services/${encodeURIComponent(item.url_slug)}` : "/services",
         icon: <DynamicIcon name={ICONS[item.lucide_icon] ? item.lucide_icon : "Headset"} size={32} />,
         hoverBg: index % 2 === 0 ? "hover:bg-[#17147B]" : "hover:bg-[#D47253]",
         gridSpan: index < 3 ? "lg:col-span-2" : "lg:col-span-3",
@@ -125,7 +127,8 @@ const ServicesSection = ({ services: apiServices = [] }) => {
               key={index}
               // variants={cardVariants}
               whileHover={{ y: -7 }} // Hover par halka sa upar uthega
-              className={`group relative bg-white h-[260px] p-6 flex flex-col justify-end transition-all duration-500 ease-in-out cursor-pointer overflow-hidden shadow-sm ${service.gridSpan} ${service.hoverBg}`}
+              className={`group relative bg-white h-[260px] p-6 flex flex-col justify-end transition-all duration-500 ease-in-out cursor-pointer overflow-hidden shadow-sm focus-within:ring-4 focus-within:ring-[#5DB4D1]/50 ${service.gridSpan} ${service.hoverBg}`}
+              data-service-card=""
             >
               {/* Background Number */}
               <span className="absolute top-8 right-8 text-[100px] font-bold text-gray-100 opacity-20 group-hover:opacity-10 group-hover:text-white transition-all duration-700 pointer-events-none group-hover:scale-110">
@@ -146,6 +149,9 @@ const ServicesSection = ({ services: apiServices = [] }) => {
                   {service.title}
                 </h3>
               </div>
+
+              {/* Whole card is the link (one link per card, named after the service) */}
+              <Link href={service.href || "/services"} aria-label={`Explore ${service.title}`} className="absolute inset-0 z-40 outline-none" />
 
               {/* Decorative Corner */}
               <div className="absolute bottom-0 right-0 w-12 h-12 border-r-4 border-b-4 border-white/20 opacity-0 group-hover:opacity-100 transition-all duration-500 scale-50 group-hover:scale-100"></div>

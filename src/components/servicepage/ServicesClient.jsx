@@ -69,7 +69,8 @@ export default function ServicesClient({ servicesData }) {
               exit={{ opacity: 0, scale: 0.9 }}
               transition={{ duration: 0.6, ease: "easeOut" }}
               key={service.id}
-              className="group relative bg-gradient-to-br from-[#1D1D7E]/40 to-[#5DB4D1]/60 p-8 rounded-[2.5rem] border border-white/[0.08] hover:border-[#5DB4D1]/90 flex flex-col justify-between min-h-[440px] transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(93,180,209,0.15)] overflow-hidden backdrop-blur-sm"
+              className="group relative cursor-pointer bg-gradient-to-br from-[#1D1D7E]/40 to-[#5DB4D1]/60 p-8 rounded-[2.5rem] border border-white/[0.08] hover:border-[#5DB4D1]/90 focus-within:border-[#5DB4D1] focus-within:ring-4 focus-within:ring-[#5DB4D1]/40 flex flex-col justify-between min-h-[440px] transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(93,180,209,0.15)] overflow-hidden backdrop-blur-sm"
+              data-service-card=""
             >
               <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#5DB4D1]/10 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
@@ -114,14 +115,16 @@ export default function ServicesClient({ servicesData }) {
               </div>
 
               <div className="mt-10 pt-6 border-t border-white/[0.08] flex items-center justify-between">
+                {/* Stretched link: its ::after covers the whole card, so the card and the arrow are clickable */}
                 <Link
-                  href={`/services/${service.url_slug}`}
+                  href={`/services/${encodeURIComponent(service.url_slug)}`}
                   prefetch={true}
-                  className="text-xs font-black tracking-widest uppercase text-white/80 group-hover:text-[#5DB4D1] transition-all duration-300 border-b-2 border-transparent group-hover:border-[#5DB4D1]/30 pb-1"
+                  aria-label={`Explore ${service.service_title}`}
+                  className="text-xs font-black tracking-widest uppercase text-white/80 group-hover:text-[#5DB4D1] transition-all duration-300 border-b-2 border-transparent group-hover:border-[#5DB4D1]/30 pb-1 outline-none after:absolute after:inset-0 after:z-20 after:rounded-[2.5rem] after:content-['']"
                 >
                   Explore Capability
                 </Link>
-                <div className="w-9 h-9 rounded-full bg-white/[0.05] border border-white/[0.08] flex items-center justify-center text-white/50 group-hover:bg-[#5DB4D1] group-hover:text-black transition-all duration-500 group-hover:translate-x-1 group-hover:-translate-y-1">
+                <div aria-hidden="true" className="w-9 h-9 rounded-full bg-white/[0.05] border border-white/[0.08] flex items-center justify-center text-white/50 group-hover:bg-[#5DB4D1] group-hover:text-black transition-all duration-500 group-hover:translate-x-1 group-hover:-translate-y-1">
                   <ArrowUpRight className="w-4 h-4" />
                 </div>
               </div>
