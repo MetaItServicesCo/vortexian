@@ -160,7 +160,7 @@ export default function RichTextEditor({
     const setLink = () => {
         const previous = editor.getAttributes("link").href || "";
         const url = window.prompt(
-            "Link URL — use /path for pages on this site (e.g. /services), or a full https:// address. Leave empty to remove.",
+            "Link — a page on this site (e.g. /services) or another website (e.g. www.example.com; https:// is added for you). Leave empty to remove.",
             previous
         );
         if (url === null) return;
@@ -168,7 +168,12 @@ export default function RichTextEditor({
             chain().extendMarkRange("link").unsetLink().run();
             return;
         }
-        chain().extendMarkRange("link").setLink(linkAttributes(url.trim())).run();
+        const attrs = linkAttributes(url);
+        if (!attrs.href) {
+            window.alert("That link isn't allowed. Use a web address (www.example.com), a page on this site (/services), an email or a phone number.");
+            return;
+        }
+        chain().extendMarkRange("link").setLink(attrs).run();
     };
 
     // Alt text is mandatory for images: keep asking until given, or cancel

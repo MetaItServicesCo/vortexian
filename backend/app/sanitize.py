@@ -4,6 +4,7 @@ Rich text is rendered on the public site with dangerouslySetInnerHTML, so it is
 cleaned on save: scripts, event handlers and javascript: URLs are removed while
 formatting, tables, images and embedded video survive.
 """
+import re
 from typing import Any
 
 import nh3
@@ -31,6 +32,37 @@ _STYLE_PROPERTIES = {
 }
 
 
+_BARE_DOMAIN = re.compile(r"^(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}(?::\d+)?(?:[/?#].*)?$", re.I)
+_EMAIL = re.compile(r"^[^\s@/:]+@[^\s@/]+\.[a-z]{2,}$", re.I)
+_SCHEME = re.compile(r"^[a-z][a-z0-9+.-]*:", re.I)
+
+
+def normalize_href(value: str | None) -> str | None:
+    """Make a link typed in the editor work. Mirrors normalizeHref() in src/lib/links.js.
+
+    "www.mbmts.com" is otherwise a *relative* link that opens
+    /blog/www.mbmts.com. Unsafe schemes are left for nh3 to strip.
+    """
+    href = (value or "").strip()
+    if not href or href.startswith(("/", "#", "?")) and not href.startswith("//"):
+        return href
+    if href.startswith("//"):
+        return "https:" + href
+    if _BARE_DOMAIN.match(href):
+        return "https://" + href
+    if _EMAIL.match(href):
+        return "mailto:" + href
+    if _SCHEME.match(href):
+        return href
+    return "/" + re.sub(r"^\.?/+", "", href)  # "services/web" is a page on this site
+
+
+def _attribute_filter(tag: str, attribute: str, value: str) -> str | None:
+    if tag == "a" and attribute == "href":
+        return normalize_href(value) or None
+    return value
+
+
 def clean_html(value: str | None) -> str | None:
     if value is None:
         return None
@@ -40,6 +72,7 @@ def clean_html(value: str | None) -> str | None:
         attributes=_ATTRIBUTES,
         url_schemes={"http", "https", "mailto", "tel"},
         filter_style_properties=_STYLE_PROPERTIES,
+        attribute_filter=_attribute_filter,
         link_rel=None,
     )
 
