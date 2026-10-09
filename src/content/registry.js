@@ -97,6 +97,12 @@ export const CONTENT_SECTIONS = [
         fields: [
             { name: "show_top_bar", label: "Show top bar (email & social icons)", type: "boolean" },
             {
+                name: "services_menu_auto",
+                label: "Services dropdown lists your services automatically",
+                type: "boolean",
+                help: "The menu item linking to /services shows every service with \"Show in Services menu\" turned on (Dashboard → Manage Services). Turn this off to use the dropdown items you add to that menu item below instead.",
+            },
+            {
                 name: "menu",
                 label: "Menu items",
                 type: "list",
@@ -111,6 +117,7 @@ export const CONTENT_SECTIONS = [
         ],
         defaults: {
             show_top_bar: true,
+            services_menu_auto: true,
             menu: [
                 { label: "HOME", href: "/", children: [] },
                 {

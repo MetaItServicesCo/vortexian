@@ -7,6 +7,7 @@ import ImageAltField, { altError } from "@/components/admin/ImageAltField";
 import { richTextAltError } from "@/lib/richText";
 import dynamic from "next/dynamic";
 import axios from "axios";
+import MenuToggle from "@/components/admin/services/MenuToggle";
 import {
     ArrowLeft,
     Loader2,
@@ -49,6 +50,7 @@ export default function CreateNewService() {
         image_alt: "",
         longDesc: "",
         features: ["", "", "", ""],
+        showInMenu: true,
 
         whyChoose: {
             expertise: "",
@@ -204,6 +206,8 @@ export default function CreateNewService() {
                 formData.features[3]
             );
 
+            submitData.append("show_in_menu", formData.showInMenu ? "true" : "false");
+
             // WHY CHOOSE
             submitData.append(
                 "why_choose_1",
@@ -311,6 +315,8 @@ export default function CreateNewService() {
                     <h2 className="text-sm font-black text-[#1D1D7E] uppercase tracking-widest border-b border-gray-100 pb-2">
                         Core Parameters
                     </h2>
+
+                    <MenuToggle checked={formData.showInMenu} onChange={(value) => setFormData((prev) => ({ ...prev, showInMenu: value }))} />
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 

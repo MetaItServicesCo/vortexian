@@ -5,6 +5,7 @@ import Link from "next/link";
 import axios from "axios";
 import { Plus, Pencil, Trash2, Layers, Code, Share2 } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
+import { adminFetch } from "@/lib/adminApi";
 import { useSelection } from "@/lib/useSelection";
 import BulkActions from "@/components/admin/bulk/BulkActions";
 import { SelectAllCheckbox, SelectRowCheckbox } from "@/components/admin/bulk/SelectCheckbox";
@@ -42,6 +43,22 @@ export default function AdminServicesList() {
 
         fetchServices();
     }, []);
+
+    // Quick switch for "Show in Services menu" straight from the list
+    const [menuBusy, setMenuBusy] = useState(null);
+    const toggleMenu = async (service) => {
+        const next = service.show_in_menu === false;
+        setMenuBusy(service.id);
+        try {
+            await adminFetch(`/api/services/update-service/${service.id}`, { method: "PATCH", body: { show_in_menu: next } });
+            setServices((prev) => prev.map((s) => (s.id === service.id ? { ...s, show_in_menu: next } : s)));
+            toast.success(next ? `“${service.service_title}” added to the Services menu` : `“${service.service_title}” hidden from the Services menu`);
+        } catch (err) {
+            toast.error(`Could not update the menu: ${err.message}`);
+        } finally {
+            setMenuBusy(null);
+        }
+    };
 
     const handleDelete = async (id) => {
         if (!confirm("Delete this service? Its page will stop working.\n\nYou can restore it from Recently deleted for 7 days.")) return;
@@ -105,6 +122,8 @@ export default function AdminServicesList() {
                                 </th>
 
                                 <th className="p-4">Category</th>
+
+                                <th className="p-4">Services menu</th>
 
                                 <th className="p-4">
                                     Keywords Mapping
@@ -173,6 +192,26 @@ export default function AdminServicesList() {
                                             <span className="text-[10px] font-black uppercase bg-blue-50 text-[#1D1D7E] px-2.5 py-1 rounded-md border border-blue-100">
                                                 {service.category_stack}
                                             </span>
+                                        </td>
+
+                                        {/* SERVICES MENU */}
+                                        <td className="p-4">
+                                            <button
+                                                type="button"
+                                                role="switch"
+                                                aria-checked={service.show_in_menu !== false}
+                                                aria-label={`Show “${service.service_title}” in the Services menu`}
+                                                title="Click to show or hide in the website's Services dropdown"
+                                                disabled={menuBusy === service.id}
+                                                onClick={() => toggleMenu(service)}
+                                                className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-md border transition disabled:opacity-50 ${
+                                                    service.show_in_menu !== false
+                                                        ? "bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-100"
+                                                        : "bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200"
+                                                }`}
+                                            >
+                                                {service.show_in_menu !== false ? "In menu" : "Hidden"}
+                                            </button>
                                         </td>
 
                                         {/* KEYWORDS */}

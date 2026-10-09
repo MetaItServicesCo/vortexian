@@ -4,7 +4,7 @@ from typing import Annotated
 
 from app.database import get_db
 from app import models
-from app.schema import CreateService, ServiceResponse, UpdateService
+from app.schema import CreateService, ServiceMenuItem, ServiceResponse, UpdateService
 from app.routes.admin import get_current_admin_dependence
 from app.sanitize import clean_html, slugify
 from app.uploads import IMAGE_EXTENSIONS, MAX_IMAGE_BYTES, delete_upload, has_file, require_alt, save_upload
@@ -34,6 +34,7 @@ def create_service(
     meta_description: str = Form(...),
     image_file: UploadFile = File(None),
     image_alt: str = Form(None),
+    show_in_menu: bool = Form(True),
     db: Session = Depends(get_db),
     admin: models.Admin = Depends(get_current_admin_dependence)
 ):
@@ -83,7 +84,8 @@ def create_service(
         why_choose_3=why_choose_3,
         meta_title=meta_title,
         keywords=keywords,
-        meta_description=meta_description
+        meta_description=meta_description,
+        show_in_menu=show_in_menu,
     )
 
     db.add(new_service)
@@ -95,6 +97,13 @@ def create_service(
 @router.get("/", response_model=list[ServiceResponse])
 def get_all_services(db: Annotated[Session, Depends(get_db)]):
     return db.query(models.Service).all()
+
+
+# Services for the website's Services dropdown (title + address only).
+# Declared before "/{slug}" so "menu" isn't read as a service slug.
+@router.get("/menu", response_model=list[ServiceMenuItem])
+def get_menu_services(db: Annotated[Session, Depends(get_db)]):
+    return db.query(models.Service).filter(models.Service.show_in_menu.is_(True)).order_by(models.Service.id).all()
 
 
 @router.get("/id/{service_id}", response_model=ServiceResponse)
@@ -136,6 +145,8 @@ def update_service(
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Slug already exists")
 
     update_data = data.model_dump(exclude_unset=True)
+    if "show_in_menu" in update_data and update_data["show_in_menu"] is None:
+        del update_data["show_in_menu"]  # never store NULL
     if update_data.get("long_description") is not None:
         update_data["long_description"] = clean_html(update_data["long_description"])
     old_image = service.image_showcase_url

@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { FaFacebook, FaLinkedinIn, FaInstagram, FaXTwitter, FaYoutube } from "react-icons/fa6";
 import { Mail, Menu, X, ChevronDown } from "lucide-react";
-import { useContent, useSettings } from "@/components/content/SiteContentProvider";
+import { useContent, useMenuServices, useSettings } from "@/components/content/SiteContentProvider";
 import { mediaUrl } from "@/lib/api";
 
 const TOP_BAR_SOCIALS = [
@@ -13,6 +13,17 @@ const TOP_BAR_SOCIALS = [
   { key: "twitter", Icon: FaXTwitter, label: "X" },
   { key: "youtube", Icon: FaYoutube, label: "YouTube" },
 ];
+
+const linksToServices = (item) => (item.href || "").replace(/\/+$/, "") === "/services";
+
+// The menu item linking to /services lists the services marked "Show in
+// Services menu" (Dashboard → Manage Services), unless the Header setting
+// "Services dropdown lists your services automatically" is off.
+function withServicesDropdown(menu, header, services) {
+  if (header.services_menu_auto === false) return menu;
+  const children = services.map((s) => ({ label: s.service_title, href: `/services/${encodeURIComponent(s.url_slug)}` }));
+  return menu.map((item) => (linksToServices(item) ? { ...item, children } : item));
+}
 
 // Menu items may have no link of their own (dropdown-only parents)
 function MenuLink({ href, children, ...props }) {
@@ -24,7 +35,8 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const settings = useSettings();
   const header = useContent("header");
-  const menu = header.menu || [];
+  const menuServices = useMenuServices();
+  const menu = withServicesDropdown(header.menu || [], header, menuServices);
   const socials = TOP_BAR_SOCIALS.filter((s) => settings[s.key]);
 
   return (

@@ -28,6 +28,11 @@ export async function getFreshSiteContent() {
     return resolveAll(await getJson("/api/content/", {}));
 }
 
+export const getMenuServices = cache(async () => {
+    const services = await getJson("/api/services/menu", []);
+    return Array.isArray(services) ? services : [];
+});
+
 export async function getSection(key) {
     return (await getSiteContent())[key];
 }

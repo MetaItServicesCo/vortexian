@@ -36,6 +36,7 @@ class BaseService(BaseModel):
     meta_title:str
     keywords:str
     meta_description:str
+    show_in_menu:bool=True
 
 
 class CreateService(BaseService):
@@ -47,6 +48,15 @@ class ServiceResponse(BaseService):
 
     class Config:
         from_attributes=True
+
+class ServiceMenuItem(BaseModel):
+    id: int
+    service_title: str
+    url_slug: str
+
+    class Config:
+        from_attributes = True
+
 
 class UpdateService(BaseModel):
 
@@ -73,6 +83,7 @@ class UpdateService(BaseModel):
 
     meta_title: Optional[str] = None
     keywords: Optional[str] = None
+    show_in_menu: Optional[bool] = None
 
     meta_description: Optional[str] = None
 

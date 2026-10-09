@@ -34,6 +34,8 @@ class Service(Base):
     why_choose_3:Mapped[str| None]=mapped_column(Text,nullable=True)
     meta_title:Mapped[str]=mapped_column(String(200),nullable=False)
     keywords:Mapped[str]=mapped_column(Text,nullable=False)
+    # Listed in the website's Services dropdown (the page stays live either way)
+    show_in_menu:Mapped[bool]=mapped_column(Boolean,nullable=False,default=True,server_default="true")
 
     meta_description:Mapped[str]=mapped_column(Text,nullable=False)
 

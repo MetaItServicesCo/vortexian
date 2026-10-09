@@ -8,6 +8,7 @@ import { slugify, slugifyTyping } from "@/lib/slugify";
 import ImageAltField, { altError } from "@/components/admin/ImageAltField";
 import { richTextAltError } from "@/lib/richText";
 import dynamic from "next/dynamic";
+import MenuToggle from "@/components/admin/services/MenuToggle";
 
 const RichTextEditor = dynamic(() => import("@/components/editor/RichTextEditor"), { ssr: false });
 
@@ -34,6 +35,7 @@ export default function EditServicePage({ params }) {
         image_alt: "",
         longDesc: "",
         features: ["", "", "", ""],
+        showInMenu: true,
         whyChoose: { expertise: "", scalability: "", quality: "" },
         seo: { title: "", description: "", keywords: "" }
     });
@@ -60,6 +62,7 @@ export default function EditServicePage({ params }) {
                     image: isLocalUpload ? "" : (data.image_showcase_url || ""),
                     image_alt: data.image_alt || "",
                     longDesc: data.long_description || "",
+                    showInMenu: data.show_in_menu !== false,
                     features: [
                         data.feature_1 || "",
                         data.feature_2 || "",
@@ -142,6 +145,7 @@ export default function EditServicePage({ params }) {
                 meta_title: formData.seo.title,
                 meta_description: formData.seo.description,
                 keywords: formData.seo.keywords,
+                show_in_menu: formData.showInMenu,
             };
 
             const res = await fetch(`${BASE_URL}/update-service/${id}`, {
@@ -212,6 +216,7 @@ export default function EditServicePage({ params }) {
                 {/* CORE PARAMETERS */}
                 <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-xl shadow-slate-100 space-y-4">
                     <h2 className="text-sm font-black text-[#1D1D7E] uppercase tracking-widest border-b border-gray-100 pb-2">Core Parameters</h2>
+                    <MenuToggle checked={formData.showInMenu} onChange={(value) => setFormData((prev) => ({ ...prev, showInMenu: value }))} />
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
