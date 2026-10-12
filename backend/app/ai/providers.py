@@ -284,6 +284,9 @@ class FakeAssistantModel(BaseChatModel):
             lines =[l for l in context.split("\n") if len(l) > 40 and not l.startswith("[source:")]
             sentence = re.split(r"(?<=[.!?])\s", (lines[0] if lines else source.group(3)).strip())[0]
             return f"{sentence} More on [{source.group(1)}]({source.group(2)}).\nFOLLOW_UPS: How much does it cost? | How long does it take? | Can I see examples?"
+        if task == "NUDGE":
+            page = re.search(r"The visitor is on: (.+)", system)
+            return f"Exploring {page.group(1).strip() if page else 'our services'}? I can help you find the right fit. Would you like our team to send you a tailored quote?"
         if task == "LEAD":
             missing = re.search(r"Still needed: (.+)", system)
             if missing and missing.group(1).strip() != "nothing":

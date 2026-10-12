@@ -329,6 +329,17 @@ def store_ready() -> bool:
         return False
 
 
+def page_title(path: str) -> str | None:
+    """The title of a website page, from the knowledge base (None if unknown)."""
+    if not path or not store_ready():
+        return None
+    try:
+        with engine.connect() as conn:
+            return conn.execute(text(f"SELECT title FROM {TABLE} WHERE url = :u LIMIT 1"), {"u": path[:300]}).scalar()
+    except Exception:
+        return None
+
+
 def search(query: str, k: int = 5) -> list[dict]:
     """Most relevant chunks for a question: [{title, url, content, score}]."""
     query = (query or "").strip()

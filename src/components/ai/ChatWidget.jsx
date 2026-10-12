@@ -174,6 +174,8 @@ export default function ChatWidget() {
     const recorder = useRef(null);
     const recordTimer = useRef(null);
     const openedByAssistant = useRef(false);
+    const idleSeconds = useRef(null);
+    const leadDone = useRef(false);
 
     useEffect(() => { pathRef.current = pathname; }, [pathname]);
 
@@ -200,15 +202,11 @@ export default function ChatWidget() {
                 if (data.session_id) remember(data.session_id);
                 if (!data.reply) return;
                 store.set("sessionStorage", SEEN_KEY, "1");
-                setMessages((prev) => [...prev, { role: "assistant", content: data.reply }]);
-                // Desktop/tablet: open the chat with the message. Phones: a bubble by the icon (a full-screen
-                // window would cover the page the visitor is reading)
-                if (window.matchMedia("(min-width: 640px)").matches) {
-                    openedByAssistant.current = true;
-                    setOpen(true);
-                } else {
-                    setTeaser(data.reply);
-                }
+                setMessages((prev) => [...prev, { role: "assistant", content: data.reply, agent: data.agent, suggestions: data.suggestions }]);
+                // The whole chat window pops up with the assistant's message (without moving keyboard focus)
+                openedByAssistant.current = true;
+                setTeaser(null);
+                setOpen(true);
             } catch (err) {
                 if (err.status === 409 && err.data?.idle_in != null) scheduleIdle(err.data.idle_in);
             }
@@ -229,6 +227,7 @@ export default function ChatWidget() {
             visit.current = store.get("sessionStorage", VISIT_KEY) || conf.visit;
             store.set("sessionStorage", VISIT_KEY, visit.current);
             setConfig(conf);
+            idleSeconds.current = conf.idle_seconds;
             setVoiceSupported(Boolean(conf.voice) && canRecord());
             setReadAloud(store.get("localStorage", SPEAK_KEY) === "on" && canSpeak());
 
@@ -286,8 +285,11 @@ export default function ChatWidget() {
                 body: JSON.stringify({ message: text, session_id: sessionId.current, visit: visit.current, page: pathRef.current, voice }),
             });
             remember(data.session_id);
-            setMessages((prev) => [...prev, { role: "assistant", content: data.reply, sources: data.sources, suggestions: data.suggestions }]);
+            setMessages((prev) => [...prev, { role: "assistant", content: data.reply, agent: data.agent, sources: data.sources, suggestions: data.suggestions }]);
             if (voice || readAloud) speak(data.reply, lang); // answer a spoken question out loud
+            // Quiet again for the delay after this answer: the lead agent may check in (once per visit)
+            leadDone.current = ["captured", "declined"].includes(data.lead_status);
+            if (!leadDone.current) scheduleIdle(idleSeconds.current);
         } catch (err) {
             if (err.status === 404) remember(null); // conversation expired: the next message starts a new one
             setMessages((prev) => [...prev, { role: "assistant", content: err.message, error: true }]);
@@ -374,7 +376,7 @@ export default function ChatWidget() {
     const userWrote = messages.some((m) => m.role === "user");
     const last = messages[messages.length - 1];
     const followUps = !busy && last?.role === "assistant" && !last.error
-        ? [...(last.suggestions || []), ...(last.suggestions?.length ? [TALK_TO_PERSON] : [])]
+        ? [...(last.suggestions || []), ...(last.suggestions?.length && last.agent === "chat" ? [TALK_TO_PERSON] : [])]
         : [];
 
     return (
@@ -418,11 +420,11 @@ export default function ChatWidget() {
 
                         <div ref={listRef} className="flex-1 overflow-y-auto px-3.5 py-4 space-y-3" aria-live="polite">
                             <Bubble msg={{ role: "assistant", content: config.welcome_message }} />
-                            {!userWrote && (
+                            {!userWrote && !followUps.length && (
                                 <Chips items={[...(config.quick_questions || []), TALK_TO_PERSON]} onPick={(q) => ask(q)} disabled={busy} label="Suggested questions" />
                             )}
                             {messages.map((m, i) => <Bubble key={i} msg={m} onSpeak={canSpeak() ? speak : null} />)}
-                            {followUps.length > 0 && userWrote && <Chips items={followUps} onPick={(q) => ask(q)} disabled={busy} label="Suggested follow-up questions" />}
+                            {followUps.length > 0 && <Chips items={followUps} onPick={(q) => ask(q)} disabled={busy} label="Suggested follow-up questions" />}
                             {(sending || transcribing) && (
                                 <div className="flex justify-start" aria-label={transcribing ? "Listening to your message" : "Assistant is typing"}>
                                     <div className="bg-white border border-slate-100 shadow-sm rounded-2xl rounded-bl-md px-4 py-3 flex items-center gap-1">
@@ -457,7 +459,11 @@ export default function ChatWidget() {
                                         rows={1}
                                         value={input}
                                         maxLength={MAX_CHARS}
-                                        onChange={(e) => setInput(e.target.value)}
+                                        onChange={(e) => {
+                                            setInput(e.target.value);
+                                            // Typing counts as activity: restart the quiet timer
+                                            if (idleTimer.current && !leadDone.current) scheduleIdle(idleSeconds.current);
+                                        }}
                                         onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) send(e); }}
                                         placeholder={voiceSupported ? "Ask a question or tap the mic…" : "Ask a question…"}
                                         className="flex-1 resize-none max-h-28 rounded-2xl bg-slate-100 px-4 py-2.5 text-[14px] outline-none focus:ring-2 focus:ring-[#5DB4D1]"

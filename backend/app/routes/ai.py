@@ -146,13 +146,31 @@ def voice_ready(conf: dict) -> bool:
     return provider == "fake" or bool(key and os.getenv(key))
 
 
+def _last_user_time(session: models.AIChatSession) -> float | None:
+    for m in reversed(_json(session.messages, [])):
+        if m.get("role") == "user" and m.get("at"):
+            try:
+                return datetime.fromisoformat(m["at"]).timestamp()
+            except ValueError:
+                return None
+    return None
+
+
 def idle_in(conf: dict, arrived: float | None, session: models.AIChatSession | None = None) -> int | None:
-    """Seconds until the lead capture message may show (None: it won't)."""
+    """Seconds until the lead capture message may show (None: it won't).
+
+    Every visitor qualifies once per visit, counted from their arrival or their
+    last message, whichever is later; not after they've left their details or
+    said no."""
     if not (conf["enabled"] and conf["idle_enabled"]) or arrived is None:
         return None
-    if session is not None and (session.user_messages or _json(session.state, {}).get("nudged")):
-        return None
-    return max(0, int(conf["idle_seconds"] - (time.time() - arrived)))
+    quiet_since = arrived
+    if session is not None:
+        state = _json(session.state, {})
+        if state.get("lead_status") in ("captured", "declined") or state.get("nudged_visit") == int(arrived):
+            return None
+        quiet_since = max(arrived, _last_user_time(session) or 0)
+    return max(0, int(conf["idle_seconds"] - (time.time() - quiet_since)))
 
 
 def public_messages(session: models.AIChatSession) -> list[dict]:
@@ -251,7 +269,7 @@ def chat(body: ChatIn, request: Request, db: Session = Depends(get_db)):
         "page": (body.page or session.first_page or "")[:300],
         "lead": state.get("lead", {}),
         "lead_status": state.get("lead_status", "none"),
-        "ctx": {**conf, **company_info(db)},
+        "ctx": {**conf, **company_info(db), "page_title": knowledge.page_title(body.page or session.first_page or "")},
     })
 
     stamp = now().isoformat()
@@ -265,7 +283,7 @@ def chat(body: ChatIn, request: Request, db: Session = Depends(get_db)):
     state["lead"] = result.get("lead", state.get("lead", {}))
     state["lead_status"] = result.get("lead_status", state.get("lead_status", "none"))
     if body.event == "idle":
-        state["nudged"] = True
+        state["nudged_visit"] = int(arrived)
     session.messages = json.dumps(history, ensure_ascii=False)
     session.state = json.dumps(state, ensure_ascii=False)
     session.last_seen_at = now()

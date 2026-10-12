@@ -49,7 +49,7 @@ LEAD_WORDS = re.compile(
     r"get in touch|reach me|talk to (?:someone|sales|a person|your team)|book a call|my (?:name|email|number|phone))\b",
     re.I,
 )
-DECLINE = re.compile(r"\b(no thanks|no thank you|not now|not interested|maybe later|just (?:browsing|looking)|i'?d rather not|don'?t want)\b", re.I)
+DECLINE = re.compile(r"\b(no thanks|no thank you|not now|not right now|not interested|maybe later|just (?:browsing|looking)|i'?d rather not|don'?t want)\b", re.I)
 # Explicit requests for a human: always the lead agent, whatever the router model says
 HANDOFF = re.compile(r"\b(talk|speak|chat) (?:to|with) (?:a |an |your )?(?:person|human|someone|somebody|agent|team|sales|representative)\b|"
                      r"\b(?:contact|call|email|reach) me\b|\bget in touch\b", re.I)
@@ -239,6 +239,40 @@ Collected so far: {collected}
 Still needed: {missing}
 Write your next message, 1–2 short sentences: briefly thank them for what they shared and ask for what is still needed (at most two things at once). Never ask again for something already collected. Be warm and never pushy; they may skip it. Reply in the visitor's language."""
 
+NUDGE_PROMPT = """TASK: NUDGE
+You are {name}, the assistant on the website of {company}. The visitor has been quiet for a while, so you start the conversation.
+The visitor is on: {page}
+{conversation}
+Write ONE short, warm message (max 35 words) that:
+- relates to that page or to what they asked about (never generic),
+- offers concrete help, and asks if they'd like our team to follow up with them (e.g. a tailored quote or a quick call).
+No greeting if you already talked. No pressure, no exclamation marks overload, no emojis except possibly one. Don't ask for contact details yet; the visitor will choose. Reply in the language of the conversation (English if none).{extra}"""
+
+YES_CONTACT = "Yes, please contact me"
+NOT_NOW = "Not right now"
+
+
+def nudge_message(state: ChatState) -> str:
+    """The proactive message for a quiet visitor, written for their page and conversation."""
+    ctx = state["ctx"]
+    # "Portfolio | Vortexian Tech - Showcasing ..." -> "Portfolio"
+    page = (ctx.get("page_title") or "").split(" | ")[0].strip() or state.get("page") or "the home page"
+    turns = (state.get("history") or [])[-6:]
+    conversation = ("So far:\n" + "\n".join(f"{t['role']}: {str(t['content'])[:300]}" for t in turns)) if turns else "You haven't talked yet."
+    extra = f"\nStyle notes from the site owner: {ctx['idle_message']}" if ctx.get("idle_message") else ""
+    try:
+        reply = text_of(main_model().invoke([
+            SystemMessage(content=NUDGE_PROMPT.format(name=ctx["assistant_name"], company=ctx["company"], page=page, conversation=conversation, extra=extra)),
+            HumanMessage(content="Write the message now."),
+        ])).strip().strip('"')
+        reply, _ = split_follow_ups(reply)
+        if 10 <= len(reply) <= 400:
+            return reply
+    except Exception as err:
+        _failed("lead (opening message)", err)
+    return ctx["idle_message"]   # the site owner's own message as the fallback
+
+
 FIELD_LABELS = {"name": "your name", "contact": "your email address or phone number", "need": "what you'd like help with"}
 
 
@@ -262,7 +296,8 @@ def lead_agent(state: ChatState) -> dict:
     lead: Lead = dict(state.get("lead") or {})
 
     if state.get("event") == "idle":
-        return {"reply": ctx["idle_message"], "agent": "lead", "lead": lead, "lead_status": "collecting", "sources": []}
+        return {"reply": nudge_message(state), "agent": "lead", "lead": lead, "lead_status": "collecting",
+                "sources": [], "suggestions": [YES_CONTACT, NOT_NOW]}
 
     message = state.get("message", "")
     if (email := EMAIL.search(message)) and not lead.get("email"):

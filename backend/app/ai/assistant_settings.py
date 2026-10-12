@@ -17,6 +17,7 @@ DEFAULTS = {
     "welcome_message": "Hi! I'm the Vortexian Tech assistant. Ask me anything about our services, projects or company.",
     "idle_enabled": True,
     "idle_seconds": 60,
+    # Fallback when the AI can't write the personal opening message
     "idle_message": "Hi there 👋 Looking for help with a project? Leave your name and email and our team will get back to you, or ask me anything.",
     "lead_thanks": "Thank you! Our team will get back to you shortly. Is there anything else I can help you with?",
     "extra_instructions": "",
