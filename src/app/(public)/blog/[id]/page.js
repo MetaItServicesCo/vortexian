@@ -57,7 +57,7 @@ export default async function BlogDetailPage({ params }) {
     return (
         <>
             <SchemaMarkup kind="blog" item={blog} path={blogPath(blog)} custom={blog.schema_json} />
-            <BreadcrumbHero title="Blog" currentPage={blog.title} headingAs="p" />
+            <BreadcrumbHero title="Blog" currentPage={blog.title} headingAs="p" trail={[{ label: "Blog", href: "/blog" }]} />
 
             <main className="max-w-5xl mx-auto px-5 py-10">
 
