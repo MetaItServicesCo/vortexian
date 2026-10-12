@@ -173,6 +173,7 @@ export default function ChatWidget() {
     const pathRef = useRef(pathname);
     const recorder = useRef(null);
     const recordTimer = useRef(null);
+    const openedByAssistant = useRef(false);
 
     useEffect(() => { pathRef.current = pathname; }, [pathname]);
 
@@ -200,7 +201,14 @@ export default function ChatWidget() {
                 if (!data.reply) return;
                 store.set("sessionStorage", SEEN_KEY, "1");
                 setMessages((prev) => [...prev, { role: "assistant", content: data.reply }]);
-                setTeaser(data.reply);
+                // Desktop/tablet: open the chat with the message. Phones: a bubble by the icon (a full-screen
+                // window would cover the page the visitor is reading)
+                if (window.matchMedia("(min-width: 640px)").matches) {
+                    openedByAssistant.current = true;
+                    setOpen(true);
+                } else {
+                    setTeaser(data.reply);
+                }
             } catch (err) {
                 if (err.status === 409 && err.data?.idle_in != null) scheduleIdle(err.data.idle_in);
             }
@@ -257,7 +265,9 @@ export default function ChatWidget() {
             return;
         }
         setTeaser(null);
-        const t = setTimeout(() => inputRef.current?.focus(), 150);
+        // Don't move the visitor's focus when the chat opened by itself
+        const t = openedByAssistant.current ? null : setTimeout(() => inputRef.current?.focus(), 150);
+        openedByAssistant.current = false;
         const onKey = (e) => e.key === "Escape" && setOpen(false);
         document.addEventListener("keydown", onKey);
         return () => { clearTimeout(t); document.removeEventListener("keydown", onKey); };
