@@ -43,7 +43,7 @@ const menuItems = [
   { label: "Portfolio", icon: FiBriefcase, href: "/dashboard/portfolio" },
   { label: "Blog", icon: FiFileText, href: "/dashboard/blog" },
   { label: "News Feed", icon: FiRss, href: "/dashboard/newsfeed" },
-  // { label: "Media Library", icon: FiImage, href: "/dashboard/media" },
+  { label: "Media Library", icon: FiImage, href: "/dashboard/media" },
   { label: "Testimonials", icon: FiStar, href: "/dashboard/testimonials" },
   { label: "Career", icon: FiUserCheck, href: "/dashboard/career" },
   { label: "Recently deleted", icon: FiTrash2, href: "/dashboard/trash" },

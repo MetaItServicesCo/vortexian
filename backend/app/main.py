@@ -66,6 +66,13 @@ def hide_deleted_files(path: str):
 
 
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+# Media Library files keep their link for good; let browsers re-check after a "Replace image"
+@app.middleware("http")
+async def revalidate_media(request, call_next):
+    response = await call_next(request)
+    if request.url.path.startswith("/uploads/media/"):
+        response.headers.setdefault("Cache-Control", "public, max-age=3600, must-revalidate")
+    return response
 
 app.include_router(admin_router,prefix="/api/admins",tags=["Admins"])
 app.include_router(service_router,prefix="/api/services",tags=["Services"])

@@ -24,14 +24,28 @@ def has_file(file: UploadFile | None) -> bool:
     return bool(file and file.filename)
 
 
+def readable_name(directory: str, name: str, ext: str) -> str:
+    """A free, descriptive file name: "Augmented Outsourcing" -> augmented-outsourcing.png (-2, -3… if taken)."""
+    from app.sanitize import slugify
+
+    base = slugify(name)[:80].rstrip("-") or "image"
+    file_name, n = f"{base}.{ext}", 2
+    while os.path.exists(os.path.join(directory, file_name)):
+        file_name, n = f"{base}-{n}.{ext}", n + 1
+    return file_name
+
+
 def save_upload(
     file: UploadFile,
     subdir: str,
     allowed_extensions: set[str],
     max_bytes: int,
+    name: str | None = None,
 ) -> str:
-    """Validate and store an upload under uploads/<subdir>/ with a random name.
+    """Validate and store an upload under uploads/<subdir>/.
 
+    The file gets a random name, or a readable one made from `name` (used by
+    the Media Library so shared links describe the image).
     Returns the public path, e.g. "/uploads/blogs/<uuid>.png".
     """
     ext = os.path.splitext(file.filename or "")[1].lstrip(".").lower()
@@ -45,7 +59,7 @@ def save_upload(
     directory = os.path.join(UPLOAD_ROOT, subdir)
     os.makedirs(directory, exist_ok=True)
 
-    file_name = f"{uuid.uuid4()}.{ext}"
+    file_name = readable_name(directory, name, ext) if name else f"{uuid.uuid4()}.{ext}"
     file_location = os.path.join(directory, file_name)
 
     written = 0

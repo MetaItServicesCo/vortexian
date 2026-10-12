@@ -404,3 +404,23 @@ class AIKnowledgeState(Base):
     changed_at = mapped_column(DateTime(timezone=True), nullable=True)   # website content changed
     indexed_at = mapped_column(DateTime(timezone=True), nullable=True)   # last successful refresh
     started_at = mapped_column(DateTime(timezone=True), nullable=True)   # current/last refresh started
+
+
+# ///////// Media Library (Dashboard → Media Library) //////////
+
+class MediaItem(Base):
+    """An uploaded image with a permanent public link (/uploads/media/<readable-name>.<ext>).
+
+    The file name never changes after upload, because the link may be shared
+    on other websites; "Replace image" swaps the file behind the same link.
+    """
+    __tablename__ = "MediaItem"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    path: Mapped[str] = mapped_column(String(300), nullable=False, unique=True, index=True)
+    title: Mapped[str] = mapped_column(String(200), nullable=False, default="")
+    alt: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    file_size: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    uploaded_by: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    created_at = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc), index=True)
+    updated_at = mapped_column(DateTime(timezone=True), nullable=True)
