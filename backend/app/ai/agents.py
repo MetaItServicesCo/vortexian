@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import logging
 import re
+from datetime import datetime, timezone
 from functools import lru_cache
 from typing import Callable, Literal, TypedDict
 
@@ -82,12 +83,22 @@ def _model(spec: str, temperature: float, max_tokens: int):
     return chat_model(spec, temperature=temperature, max_tokens=max_tokens)
 
 
+# Output limits leave room for reasoning models' thinking tokens; replies stay short by prompt
 def main_model():
-    return _model(settings.ai_chat_model, 0.3, 500)
+    return _model(settings.ai_chat_model, 0.3, 1500)
 
 
 def fast_model():
-    return _model(settings.ai_fast_model, 0.0, 200)
+    return _model(settings.ai_fast_model, 0.0, 800)
+
+
+# The most recent model failure (per worker), shown in Dashboard → AI Assistant
+last_error: dict = {}
+
+
+def _failed(what: str, err: Exception) -> None:
+    log.warning("%s model failed: %s", what, err)
+    last_error.update(model=what, message=str(err)[:400], at=datetime.now(timezone.utc).isoformat())
 
 
 def _history(state: ChatState) -> list:
@@ -136,7 +147,7 @@ def orchestrator(state: ChatState) -> dict:
         if route in ("chat", "lead"):
             return {"route": route}
     except Exception as err:   # fall back to rules if the model is unavailable
-        log.warning("router model failed: %s", err)
+        _failed("router", err)
     if LEAD_WORDS.search(message) or (collecting and not message.rstrip().endswith("?")):
         return {"route": "lead"}
     return {"route": "chat"}
@@ -176,11 +187,13 @@ def make_chat_agent(retrieve: Callable[[str], list[dict]]):
                 HumanMessage(content=message),
             ])).strip() or FALLBACK_ANSWER
         except Exception as err:
-            log.warning("chat model failed: %s", err)
+            _failed("chat", err)
             reply = FALLBACK_ANSWER
+        # Source chips: only the pages the answer actually links to
+        linked = set(re.findall(r"\]\((/[^)\s]*)\)", reply)) if reply != FALLBACK_ANSWER else set()
         sources, seen = [], set()
         for h in hits:
-            if h["url"] not in seen and h.get("score", 0) >= 0.35:
+            if h["url"] in linked and h["url"] not in seen:
                 seen.add(h["url"])
                 sources.append({"title": h["title"], "url": h["url"]})
         return {"reply": reply, "agent": "chat", "sources": sources[:3]}
@@ -246,7 +259,7 @@ def lead_agent(state: ChatState) -> dict:
                 lead[field] = value
         declined = declined or found.get("declined") is True
     except Exception as err:
-        log.warning("extraction model failed: %s", err)
+        _failed("extraction", err)
 
     has_contact = bool(lead.get("email") or lead.get("phone"))
     if declined and not has_contact:
@@ -266,7 +279,7 @@ def lead_agent(state: ChatState) -> dict:
             HumanMessage(content=message),
         ])).strip()
     except Exception as err:
-        log.warning("lead model failed: %s", err)
+        _failed("lead", err)
         reply = ""
     reply = reply or f"Thanks! Could you share {wanted}?"
     return {"reply": reply, "agent": "lead", "lead": lead, "lead_status": "collecting", "sources": []}

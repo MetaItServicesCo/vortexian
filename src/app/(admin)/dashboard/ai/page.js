@@ -110,6 +110,17 @@ export default function AIAssistantPage() {
                 </div>
             )}
 
+            {status.last_model_error && (
+                <div className="flex gap-3 items-start bg-red-50 border border-red-200 text-red-900 rounded-2xl p-4" role="alert" data-model-error="">
+                    <AlertTriangle size={20} className="shrink-0 mt-0.5" />
+                    <div className="text-sm min-w-0">
+                        <p className="font-bold">The AI model returned an error ({status.last_model_error.model}, {formatReceived(status.last_model_error.at)}).</p>
+                        <p className="break-words">{status.last_model_error.message}</p>
+                        <p className="mt-1 text-red-800/80">Visitors get a polite “can&apos;t answer right now” message meanwhile. If the model was retired, set AI_CHAT_MODEL / AI_FAST_MODEL on the server to a current model and restart the backend.</p>
+                    </div>
+                </div>
+            )}
+
             <div className="grid md:grid-cols-2 gap-6">
                 <Card title="Knowledge base" icon={Database} action={
                     <button type="button" onClick={refresh} disabled={kb.status === "indexing"}

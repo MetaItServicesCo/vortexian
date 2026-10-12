@@ -92,6 +92,11 @@ def chat_model(spec: str, *, temperature: float = 0.2, max_tokens: int = 600) ->
     kwargs["max_output_tokens" if provider == "google" else "num_predict" if provider == "ollama" else "max_tokens"] = max_tokens
     if provider == "ollama":
         kwargs.pop("max_retries"), kwargs.pop("timeout")
+    if provider == "groq" and "gpt-oss" in model:
+        # Reasoning models: think briefly and don't send the reasoning back (it
+        # still uses output tokens, so the callers' limits leave room for it)
+        kwargs["reasoning_effort"] = "low"
+        kwargs["model_kwargs"] = {"include_reasoning": False}
     return cls(**kwargs)
 
 

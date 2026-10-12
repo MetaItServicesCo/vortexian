@@ -30,8 +30,9 @@ class Settings(BaseSettings):
     # AI assistant. Models are "provider:model" strings (see app/ai/providers.py),
     # so switching provider is a configuration change. The provider's API key is
     # read from its usual variable (GROQ_API_KEY, OPENAI_API_KEY, ...).
-    ai_chat_model: str = "groq:llama-3.3-70b-versatile"   # answers and lead conversation
-    ai_fast_model: str = "groq:llama-3.1-8b-instant"      # routing and detail extraction
+    # (Groq retired the Llama 3.x models on 2026-08-16; see console.groq.com/docs/deprecations)
+    ai_chat_model: str = "groq:openai/gpt-oss-120b"       # answers and lead conversation
+    ai_fast_model: str = "groq:openai/gpt-oss-20b"        # routing and detail extraction
     ai_embedding_model: str = "fastembed:BAAI/bge-small-en-v1.5"  # knowledge base vectors
     ai_model_cache: str = "models"                        # downloaded embedding models
     # Pages are read from the public website for the knowledge base

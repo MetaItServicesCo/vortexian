@@ -34,7 +34,7 @@ from sqlalchemy.orm import Session
 
 from app import models
 from app.ai import assistant_settings, knowledge
-from app.ai.agents import build_graph
+from app.ai.agents import build_graph, last_error
 from app.ai.providers import missing_key
 from app.config import settings
 from app.database import get_db
@@ -302,6 +302,7 @@ def admin_status(db: Session = Depends(get_db), admin=Depends(get_current_admin_
         "idle_seconds": conf["idle_seconds"],
         "idle_enabled": conf["idle_enabled"],
         "knowledge": knowledge.state_dict(knowledge.get_state(db)),
+        "last_model_error": dict(last_error) or None,
         "leads": db.query(models.AIChatLead).count(),
         "conversations": db.query(models.AIChatSession).filter(models.AIChatSession.user_messages > 0).count(),
     }
