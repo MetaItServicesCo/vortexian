@@ -104,12 +104,13 @@ export default async function ServiceDetailPage({ params }) {
 
                 <div className="lg:col-span-7 space-y-12">
 
-                    <div className="relative h-[260px] sm:h-[420px] w-full rounded-[2.5rem] overflow-hidden border border-white/[0.08] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)] group">
+                    {/* Whole image at its own proportions (never cropped or stretched); the frame hugs the image */}
+                    <div className="relative w-fit max-w-full mx-auto rounded-[2.5rem] overflow-hidden border border-white/[0.08] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)]">
                         <div className="absolute inset-0 bg-gradient-to-t from-[#060613]/60 via-transparent to-transparent z-10 pointer-events-none" />
                         <img
                             src={getImageUrl(service.image_showcase_url)}
                             alt={service.image_alt || `${service.service_title || "Capability"} showcase`}
-                            className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700 ease-out"
+                            className="block max-w-full h-auto max-h-[80vh]"
                         />
                     </div>
 

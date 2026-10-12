@@ -75,12 +75,12 @@ export default function ServicesClient({ servicesData }) {
               <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#5DB4D1]/10 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
               <div>
-                {/* ✅ Image */}
-                <div className="relative w-full h-44 rounded-2xl overflow-hidden mb-6">
+                {/* Image: the whole image at its own proportions (never cropped or stretched) */}
+                <div className="relative w-full rounded-2xl overflow-hidden mb-6">
                   <img
                     src={getImageUrl(service.image_showcase_url)}
                     alt={service.image_alt || service.service_title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    className="block w-full h-auto max-h-[28rem] object-contain"
                   />
                 </div>
 
