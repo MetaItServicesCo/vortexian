@@ -8,6 +8,7 @@ from app.schema import CreateService, ServiceMenuItem, ServiceResponse, UpdateSe
 from app.routes.admin import get_current_admin_dependence
 from app.sanitize import clean_html, slugify
 from app.schema_markup import clean_schema_json
+from app import categories as cats
 from app.uploads import IMAGE_EXTENSIONS, MAX_IMAGE_BYTES, delete_upload, has_file, require_alt, save_upload
 from app.trash import move_to_trash
 
@@ -17,7 +18,7 @@ router = APIRouter()
 def create_service(
     service_title: str = Form(...),
     url_slug: str = Form(...),
-    category_stack: str = Form(...),
+    category_stack: str = Form(None),  # legacy: category name
     lucide_icon: str = Form(...),
     image_source_type: str = Form(...),
     image_showcase_url: str = Form(None),
@@ -37,6 +38,7 @@ def create_service(
     image_alt: str = Form(None),
     show_in_menu: bool = Form(True),
     schema_json: str = Form(None),
+    category_id: str = Form(None),
     db: Session = Depends(get_db),
     admin: models.Admin = Depends(get_current_admin_dependence)
 ):
@@ -67,10 +69,12 @@ def create_service(
     else:
         raise HTTPException(status_code=400, detail="Invalid image source type")
 
+    category = cats.resolve(db, "service", category_id, name=category_stack, create=True)
     new_service = models.Service(
         service_title=service_title,
         url_slug=url_slug,
-        category_stack=category_stack,
+        category_stack=category.name,
+        category_id=category.id,
         lucide_icon=lucide_icon,
         image_source_type=image_source_type,
         image_showcase_url=image_path,
@@ -107,6 +111,25 @@ def get_all_services(db: Annotated[Session, Depends(get_db)]):
 @router.get("/menu", response_model=list[ServiceMenuItem])
 def get_menu_services(db: Annotated[Session, Depends(get_db)]):
     return db.query(models.Service).filter(models.Service.show_in_menu.is_(True)).order_by(models.Service.id).all()
+
+
+# Services dropdown grouped by category: categories switched on for the menu,
+# in their order, each with its services that have "Show in Services menu" on.
+# Services without a (known) category are listed under "Others".
+@router.get("/menu-tree")
+def get_menu_tree(db: Annotated[Session, Depends(get_db)]):
+    others = cats.others(db, "service")
+    db.commit()
+    categories = cats.ordered(db, "service")
+    known = {c.id for c in categories}
+    groups = {c.id: [] for c in categories}
+    for s in db.query(models.Service).filter(models.Service.show_in_menu.is_(True)).order_by(models.Service.id):
+        groups[s.category_id if s.category_id in known else others.id].append({"id": s.id, "service_title": s.service_title, "url_slug": s.url_slug})
+    return [
+        {"id": c.id, "name": c.name, "services": groups[c.id]}
+        for c in categories
+        if c.show_in_menu and groups[c.id]
+    ]
 
 
 @router.get("/id/{service_id}", response_model=ServiceResponse)
@@ -152,6 +175,12 @@ def update_service(
         del update_data["show_in_menu"]  # never store NULL
     if "schema_json" in update_data:
         update_data["schema_json"] = clean_schema_json(update_data["schema_json"])
+    if update_data.get("category_id") is not None or update_data.get("category_stack"):
+        category = cats.resolve(db, "service", update_data.get("category_id"), name=update_data.get("category_stack"), create=True)
+        update_data["category_id"], update_data["category_stack"] = category.id, category.name
+    else:
+        update_data.pop("category_id", None)
+        update_data.pop("category_stack", None)
     if update_data.get("long_description") is not None:
         update_data["long_description"] = clean_html(update_data["long_description"])
     old_image = service.image_showcase_url

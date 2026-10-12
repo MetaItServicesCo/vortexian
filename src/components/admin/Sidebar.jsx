@@ -21,6 +21,7 @@ import {
   FiLogOut,
   FiTrash2,
   FiTrendingUp,
+  FiTag,
 } from "react-icons/fi";
 
 const menuItems = [
@@ -30,6 +31,7 @@ const menuItems = [
   { label: "Pages", icon: FiFile, href: "/dashboard/pages" },
   { label: "SEO & Tracking", icon: FiTrendingUp, href: "/dashboard/seo" },
   { label: "Manage Services", icon: FiLayers, href: "/dashboard/services" },
+  { label: "Categories", icon: FiTag, href: "/dashboard/categories" },
   { label: "Home Page Enquiries", icon: FiMail, href: "/dashboard/quotes" },
   { label: "Quote Requests", icon: FiInbox, href: "/dashboard/contacts" },
   { label: "Newsletter", icon: FiSend, href: "/dashboard/newsletter" },

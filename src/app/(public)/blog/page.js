@@ -6,7 +6,7 @@ import TrustedBy from "@/components/blog/TrustedBy";
 import HeroBanner from "@/components/blog/HeroBanner";
 import BlogGrid from "@/components/blog/BlogGrid";
 import { serverApiUrl } from "@/lib/api";
-import { getSection } from "@/lib/content";
+import { getJson, getSection } from "@/lib/content";
 import SchemaMarkup from "@/components/seo/SchemaMarkup";
 
 export async function generateMetadata() {
@@ -48,9 +48,11 @@ async function getBlogs() {
 
 export default async function BlogPage() {
     let blogs = [];
+    let categories = [];
 
     try {
         blogs = await getBlogs();
+        categories = await getJson("/api/categories/?kind=blog", []);
 
     } catch (error) {
         console.log("Blog Fetch Error:", error);
@@ -69,7 +71,7 @@ export default async function BlogPage() {
             {/* BLOG GRID */}
             <section className="bg-[#F6F6F8] py-16">
                 <div className="max-w-7xl mx-auto px-5 lg:px-10">
-                    <BlogGrid blogs={blogs} />
+                    <BlogGrid blogs={blogs} categories={Array.isArray(categories) ? categories : []} />
                 </div>
             </section>
 

@@ -9,6 +9,7 @@ import ImageAltField, { altError } from "@/components/admin/ImageAltField";
 import { richTextAltError } from "@/lib/richText";
 import dynamic from "next/dynamic";
 import MenuToggle from "@/components/admin/services/MenuToggle";
+import CategorySelect from "@/components/admin/CategorySelect";
 import SchemaMarkupField, { schemaJsonError } from "@/components/admin/SchemaMarkupField";
 
 const RichTextEditor = dynamic(() => import("@/components/editor/RichTextEditor"), { ssr: false });
@@ -29,7 +30,8 @@ export default function EditServicePage({ params }) {
     const [formData, setFormData] = useState({
         title: "",
         slug: "",
-        category: "Marketing",
+        category: "",
+        categoryId: "",
         shortDesc: "",
         icon: "Share2",
         image: "",
@@ -58,7 +60,8 @@ export default function EditServicePage({ params }) {
                 setFormData({
                     title: data.service_title || "",
                     slug: data.url_slug || "",
-                    category: data.category_stack || "Marketing",
+                    category: data.category_stack || "",
+                    categoryId: data.category_id || "",
                     shortDesc: data.short_description || "",
                     icon: data.lucide_icon || "Share2",
                     image: isLocalUpload ? "" : (data.image_showcase_url || ""),
@@ -137,6 +140,7 @@ export default function EditServicePage({ params }) {
                 service_title: formData.title,
                 url_slug: formData.slug,
                 category_stack: formData.category,
+                ...(formData.categoryId ? { category_id: Number(formData.categoryId) } : {}),
                 lucide_icon: formData.icon,
                 short_description: formData.shortDesc,
                 long_description: formData.longDesc,
@@ -247,13 +251,9 @@ export default function EditServicePage({ params }) {
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                         <div>
-                            <label className="text-xs font-black uppercase text-gray-400 block mb-1.5">Category Stack</label>
-                            <select value={formData.category} className="w-full p-3.5 bg-gray-50 border border-gray-200 rounded-xl text-base outline-none focus:ring-2 focus:ring-[#5DB4D1] focus:bg-white transition-all cursor-pointer"
-                                onChange={(e) => setFormData({ ...formData, category: e.target.value })}>
-                                <option value="Marketing">Marketing</option>
-                                <option value="Design">Design</option>
-                                <option value="Technology">Technology</option>
-                            </select>
+                            <label htmlFor="service-category" className="text-xs font-black uppercase text-gray-400 block mb-1.5">Category</label>
+                            <CategorySelect kind="service" id="service-category" value={formData.categoryId} legacyName={formData.category}
+                                onChange={(id, name) => setFormData((prev) => (prev.categoryId === id ? prev : { ...prev, categoryId: id, category: name }))} />
                         </div>
                         <div>
                             <label className="text-xs font-black uppercase text-gray-400 block mb-1.5">Lucide Icon String</label>

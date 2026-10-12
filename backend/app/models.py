@@ -20,7 +20,8 @@ class Service(Base):
     id:Mapped[int]=mapped_column(Integer,primary_key=True,index=True)
     service_title:Mapped[str]=mapped_column(String(100),nullable=False)
     url_slug:Mapped[str]=mapped_column(String(150),unique=True,nullable=False)
-    category_stack:Mapped[str]=mapped_column(String(100),nullable=False)
+    category_stack:Mapped[str]=mapped_column(String(100),nullable=False)  # category name, kept in sync with category_id
+    category_id:Mapped[int | None]=mapped_column(Integer,nullable=True,index=True)
     lucide_icon:Mapped[str]=mapped_column(String(100),nullable=False)
     image_source_type:Mapped[str]=mapped_column(String(50),nullable=False)
     image_showcase_url:Mapped[str]=mapped_column(Text,nullable=False)
@@ -193,7 +194,8 @@ class Blog(Base):
 
     content: Mapped[str] = mapped_column(Text, nullable=False)  # HTML or Markdown
 
-    category: Mapped[str] = mapped_column(String(100), nullable=False)
+    category: Mapped[str] = mapped_column(String(100), nullable=False)  # category name, kept in sync with category_id
+    category_id: Mapped[int | None] = mapped_column(Integer, nullable=True, index=True)
     author: Mapped[str] = mapped_column(String(100), nullable=False)
 
     featured_image: Mapped[str] = mapped_column(Text, nullable=True)
@@ -317,3 +319,26 @@ class DeletedItem(Base):
     files = mapped_column(JSON, nullable=False, default=list)
     deleted_by: Mapped[str | None] = mapped_column(String(100), nullable=True)
     deleted_at = mapped_column(DateTime(timezone=True), nullable=False, index=True)
+
+
+# ///////// Categories for services and blog posts //////////
+
+class Category(Base):
+    """Admin-managed categories. kind: "service" or "blog".
+
+    Items keep the category *name* in their own text column (category_stack /
+    category) so existing pages keep working; category_id links the record.
+    No foreign key: items restored from Recently deleted may point to a
+    category that is gone, and fall back to "Others".
+    """
+    __tablename__ = "Category"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    kind: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    sort_order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    # Services: list this category (with its services) in the header Services dropdown
+    show_in_menu: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default="true")
+    # The built-in "Others" category: can't be deleted or renamed
+    is_system: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default="false")
+    created_at = mapped_column(DateTime(timezone=True), nullable=True, default=lambda: datetime.now(timezone.utc))

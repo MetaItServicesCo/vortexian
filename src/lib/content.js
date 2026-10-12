@@ -28,9 +28,10 @@ export async function getFreshSiteContent() {
     return resolveAll(await getJson("/api/content/", {}));
 }
 
-export const getMenuServices = cache(async () => {
-    const services = await getJson("/api/services/menu", []);
-    return Array.isArray(services) ? services : [];
+// Services dropdown: [{ id, name, services: [{ service_title, url_slug }] }]
+export const getServicesMenu = cache(async () => {
+    const groups = await getJson("/api/services/menu-tree", []);
+    return Array.isArray(groups) ? groups : [];
 });
 
 export async function getSection(key) {

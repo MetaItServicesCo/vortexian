@@ -11,6 +11,7 @@ import toast, { Toaster } from "react-hot-toast";
 import ImageAltField, { altError } from "@/components/admin/ImageAltField";
 import { adminFetch } from "@/lib/adminApi";
 import SchemaMarkupField, { schemaJsonError } from "@/components/admin/SchemaMarkupField";
+import CategorySelect from "@/components/admin/CategorySelect";
 import { mediaUrl } from "@/lib/api";
 import { richTextAltError } from "@/lib/richText";
 import { slugify, slugifyTyping } from "@/lib/slugify";
@@ -40,6 +41,7 @@ export default function BlogForm({ initial }) {
         title: initial?.title || "",
         slug: initial?.slug || "",
         category: initial?.category || "",
+        category_id: initial?.category_id || "",
         author: initial?.author || "",
         excerpt: initial?.excerpt || "",
         meta_title: initial?.meta_title || "",
@@ -95,6 +97,7 @@ export default function BlogForm({ initial }) {
             title: form.title.trim(),
             slug: slugify(form.slug) || slugify(form.title),
             category: form.category.trim(),
+            ...(form.category_id ? { category_id: form.category_id } : {}),
             author: form.author.trim(),
             excerpt: form.excerpt.trim(),
             meta_title: form.meta_title.trim(),
@@ -177,7 +180,8 @@ export default function BlogForm({ initial }) {
 
                     <div>
                         <label htmlFor="blog-category" className={labelClass}>Category *</label>
-                        <input id="blog-category" className={inputClass} value={form.category} maxLength={LIMITS.category} onChange={(e) => set("category", e.target.value)} />
+                        <CategorySelect kind="blog" id="blog-category" className={inputClass} value={form.category_id} legacyName={form.category}
+                            onChange={(id, name) => setForm((prev) => (prev.category_id === id ? prev : { ...prev, category_id: id, category: name }))} />
                     </div>
 
                     <div>

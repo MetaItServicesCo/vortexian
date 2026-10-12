@@ -7,14 +7,24 @@ import { motion } from "framer-motion";
 import { Search } from "lucide-react";
 import { useState } from "react";
 
-export default function BlogGrid({ blogs }) {
+// categories: blog categories in display order (Dashboard → Categories)
+export default function BlogGrid({ blogs, categories = [] }) {
   const [search, setSearch] = useState("");
+  const [activeCategory, setActiveCategory] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
 
   const blogsPerPage = 12;
 
   // ✅ SAFE ARRAY
   const safeBlogs = Array.isArray(blogs) ? blogs : [];
+
+  // Category of a post: its category id, or (older posts) its category name
+  const categoryOf = (blog) =>
+    categories.find((c) => c.id === blog?.category_id) ||
+    categories.find((c) => c.name.toLowerCase() === (blog?.category || "").trim().toLowerCase()) ||
+    categories.find((c) => c.is_system); // unknown -> "Others"
+  // Filter buttons: categories that have posts, in the admin's order
+  const usedCategories = categories.filter((c) => safeBlogs.some((b) => categoryOf(b)?.id === c.id));
 
   // ✅ FILTER
   // const filteredBlogs = safeBlogs.filter((blog) =>
@@ -25,6 +35,7 @@ export default function BlogGrid({ blogs }) {
     .filter((blog) =>
       (blog?.title || "").toLowerCase().includes(search.toLowerCase()),
     )
+    .filter((blog) => activeCategory === "all" || categoryOf(blog)?.id === activeCategory)
     .sort((a, b) => {
       // created_at ke base par sort karein
       return new Date(b.created_at) - new Date(a.created_at);
@@ -78,6 +89,30 @@ export default function BlogGrid({ blogs }) {
           />
         </div>
       </div>
+
+      {/* CATEGORY FILTER (only when there is more than one category to choose from) */}
+      {usedCategories.length > 1 && (
+        <div className="flex flex-wrap gap-2 mb-8" role="group" aria-label="Filter blog posts by category">
+          {[{ id: "all", name: "All" }, ...usedCategories].map((c) => (
+            <button
+              key={c.id}
+              type="button"
+              aria-pressed={activeCategory === c.id}
+              onClick={() => {
+                setActiveCategory(c.id);
+                setCurrentPage(1);
+              }}
+              className={`px-4 py-2 rounded-full text-sm font-semibold border transition ${
+                activeCategory === c.id
+                  ? "bg-[#1D1D7E] text-white border-[#1D1D7E]"
+                  : "bg-white text-slate-600 border-gray-200 hover:border-[#1D1D7E]/40 hover:text-[#1D1D7E]"
+              }`}
+            >
+              {c.name}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* EMPTY STATE */}
       {currentBlogs.length === 0 ? (

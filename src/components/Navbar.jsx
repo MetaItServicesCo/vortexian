@@ -2,8 +2,8 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { FaFacebook, FaLinkedinIn, FaInstagram, FaXTwitter, FaYoutube } from "react-icons/fa6";
-import { Mail, Menu, X, ChevronDown } from "lucide-react";
-import { useContent, useMenuServices, useSettings } from "@/components/content/SiteContentProvider";
+import { Mail, Menu, X, ChevronDown, ChevronRight } from "lucide-react";
+import { useContent, useServicesMenu, useSettings } from "@/components/content/SiteContentProvider";
 import { mediaUrl } from "@/lib/api";
 
 const TOP_BAR_SOCIALS = [
@@ -16,12 +16,18 @@ const TOP_BAR_SOCIALS = [
 
 const linksToServices = (item) => (item.href || "").replace(/\/+$/, "") === "/services";
 
-// The menu item linking to /services lists the services marked "Show in
-// Services menu" (Dashboard → Manage Services), unless the Header setting
-// "Services dropdown lists your services automatically" is off.
-function withServicesDropdown(menu, header, services) {
+// The menu item linking to /services lists the categories switched on in
+// Dashboard → Categories, each opening its services ("Show in Services menu"
+// on). Category names aren't links. If the only category is "Others", its
+// services are listed directly. The Header setting "Services dropdown lists
+// your services automatically" turns this off (hand-made links instead).
+function withServicesDropdown(menu, header, groups) {
   if (header.services_menu_auto === false) return menu;
-  const children = services.map((s) => ({ label: s.service_title, href: `/services/${encodeURIComponent(s.url_slug)}` }));
+  const serviceLink = (s) => ({ label: s.service_title, href: `/services/${encodeURIComponent(s.url_slug)}` });
+  const children =
+    groups.length === 1 && groups[0].name === "Others"
+      ? groups[0].services.map(serviceLink)
+      : groups.map((g) => ({ label: g.name, children: g.services.map(serviceLink) }));
   return menu.map((item) => (linksToServices(item) ? { ...item, children } : item));
 }
 
@@ -35,8 +41,8 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const settings = useSettings();
   const header = useContent("header");
-  const menuServices = useMenuServices();
-  const menu = withServicesDropdown(header.menu || [], header, menuServices);
+  const servicesMenu = useServicesMenu();
+  const menu = withServicesDropdown(header.menu || [], header, servicesMenu);
   const socials = TOP_BAR_SOCIALS.filter((s) => settings[s.key]);
 
   return (
@@ -86,13 +92,31 @@ const Navbar = () => {
             item.children?.length ? (
               <div key={i} className="group relative cursor-pointer flex items-center gap-1 hover:text-[#5DB4D1] transition">
                 <MenuLink href={item.href}>{item.label}</MenuLink> <ChevronDown size={16} />
-                <div className="absolute top-full left-0 hidden group-hover:block bg-white shadow-lg p-4 w-48 border-t-2 border-[#5DB4D1]">
+                <div className="absolute top-full left-0 hidden group-hover:block group-focus-within:block bg-white shadow-lg p-4 min-w-48 w-max max-w-64 border-t-2 border-[#5DB4D1]" data-menu-level="1">
                   <ul className="flex flex-col gap-2 text-sm text-slate-700">
-                    {item.children.map((child, j) => (
-                      <li key={j} className="hover:text-[#5DB4D1]">
-                        <MenuLink href={child.href}>{child.label}</MenuLink>
-                      </li>
-                    ))}
+                    {item.children.map((child, j) =>
+                      child.children?.length ? (
+                        // Category: hover (or focus) opens its services to the right
+                        <li key={j} className="group/sub relative" data-menu-category="">
+                          <span tabIndex={0} className="flex items-center justify-between gap-3 hover:text-[#5DB4D1] outline-none focus:text-[#5DB4D1]">
+                            {child.label} <ChevronRight size={14} aria-hidden="true" />
+                          </span>
+                          <div className="absolute left-full -top-4 hidden group-hover/sub:block group-focus-within/sub:block pl-4">
+                            <ul className="flex flex-col gap-2 bg-white shadow-lg p-4 min-w-52 w-max max-w-72 border-t-2 border-[#5DB4D1]" data-menu-level="2">
+                              {child.children.map((grand, k) => (
+                                <li key={k} className="hover:text-[#5DB4D1]">
+                                  <MenuLink href={grand.href}>{grand.label}</MenuLink>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </li>
+                      ) : (
+                        <li key={j} className="hover:text-[#5DB4D1]">
+                          <MenuLink href={child.href}>{child.label}</MenuLink>
+                        </li>
+                      )
+                    )}
                   </ul>
                 </div>
               </div>
@@ -137,11 +161,22 @@ const Navbar = () => {
                 <MenuLink href={item.href} onClick={() => setIsOpen(false)}>
                   {item.label}
                 </MenuLink>
-                {item.children?.map((child, j) => (
-                  <MenuLink key={j} href={child.href} onClick={() => setIsOpen(false)} className="pl-4 text-sm font-medium text-slate-600">
-                    {child.label}
-                  </MenuLink>
-                ))}
+                {item.children?.map((child, j) =>
+                  child.children?.length ? (
+                    <div key={j} className="pl-4 flex flex-col gap-2" data-menu-category="">
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-400">{child.label}</span>
+                      {child.children.map((grand, k) => (
+                        <MenuLink key={k} href={grand.href} onClick={() => setIsOpen(false)} className="pl-3 text-sm font-medium text-slate-600">
+                          {grand.label}
+                        </MenuLink>
+                      ))}
+                    </div>
+                  ) : (
+                    <MenuLink key={j} href={child.href} onClick={() => setIsOpen(false)} className="pl-4 text-sm font-medium text-slate-600">
+                      {child.label}
+                    </MenuLink>
+                  )
+                )}
               </div>
             ))}
             {header.cta_label && (

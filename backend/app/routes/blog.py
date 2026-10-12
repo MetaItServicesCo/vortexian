@@ -6,6 +6,7 @@ from app.schema import CreateBlog, UpdateBlog, BlogResponse
 from app.routes.admin import get_current_admin_dependence
 from app.sanitize import clean_html, slugify
 from app.schema_markup import clean_schema_json
+from app import categories as cats
 from app.uploads import IMAGE_EXTENSIONS, MAX_IMAGE_BYTES, delete_upload, has_file, require_alt, save_upload
 from app.trash import move_to_trash
 
@@ -54,7 +55,8 @@ def create_blog(
     title: str = Form(...),
     excerpt: str = Form(...),
     content: str = Form(...),
-    category: str = Form(...),
+    category: str = Form(None),  # legacy: category name
+    category_id: str = Form(None),
     author: str = Form(...),
     meta_title: str = Form(...),
     meta_description: str = Form(...),
@@ -67,6 +69,8 @@ def create_blog(
 ):
     title = title.strip()
     schema_json = clean_schema_json(schema_json)
+    blog_category = cats.resolve(db, "blog", category_id, name=category, create=True)
+    category = blog_category.name
     _check_lengths({"title": title, "category": category, "author": author,
                     "meta_title": meta_title, "meta_description": meta_description})
     alt = require_alt(has_file(image), featured_image_alt)
@@ -82,6 +86,7 @@ def create_blog(
         excerpt=excerpt,
         content=clean_html(content),
         category=category,
+        category_id=blog_category.id,
         author=author,
         featured_image=image_path,
         featured_image_alt=alt,
@@ -149,6 +154,12 @@ def update_blog(
         updates["content"] = clean_html(updates["content"])
     if "schema_json" in updates:
         updates["schema_json"] = clean_schema_json(updates["schema_json"])
+    if updates.get("category_id") is not None or (updates.get("category") or "").strip():
+        blog_category = cats.resolve(db, "blog", updates.get("category_id"), name=updates.get("category"), create=True)
+        updates["category_id"], updates["category"] = blog_category.id, blog_category.name
+    else:
+        updates.pop("category_id", None)
+        updates.pop("category", None)
 
     if "featured_image_alt" in updates:
         updates["featured_image_alt"] = require_alt(bool(blog.featured_image), updates["featured_image_alt"])

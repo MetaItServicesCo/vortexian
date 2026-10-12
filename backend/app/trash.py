@@ -182,6 +182,12 @@ def restore(db: Session, item: models.DeletedItem) -> object:
             raise RestoreError(f"Another {resource.singular} already uses the {label} “{value}”. Change or delete that one first.")
 
     values = _from_snapshot(model, item.data)
+    if item.resource in ("services", "blog") and values.get("category_id") is not None:
+        from app import categories as cats  # restored into a deleted category -> Others
+        if not db.get(models.Category, values["category_id"]):
+            fallback = cats.others(db, "service" if item.resource == "services" else "blog")
+            values["category_id"] = fallback.id
+            values["category_stack" if item.resource == "services" else "category"] = fallback.name
     if db.get(model, item.record_id):
         values.pop("id", None)  # id taken meanwhile: restore under a new id
     restored = model(**values)

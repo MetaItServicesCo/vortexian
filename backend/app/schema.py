@@ -20,6 +20,7 @@ class BaseService(BaseModel):
     service_title:str
     url_slug:str
     category_stack:str
+    category_id:Optional[int]=None
     lucide_icon:str
     image_source_type:str
     image_showcase_url:str
@@ -54,6 +55,7 @@ class ServiceMenuItem(BaseModel):
     id: int
     service_title: str
     url_slug: str
+    category_id: Optional[int] = None
 
     class Config:
         from_attributes = True
@@ -64,6 +66,7 @@ class UpdateService(BaseModel):
     service_title: Optional[str] = None
     url_slug: Optional[str] = None
     category_stack: Optional[str] = None
+    category_id: Optional[int] = None
     lucide_icon: Optional[str] = None
 
     image_source_type: Optional[str] = None
@@ -265,6 +268,7 @@ class BlogBase(BaseModel):
     excerpt: str
     content: str
     category: str
+    category_id: Optional[int] = None
     author: str
 
     meta_title: str
@@ -283,6 +287,7 @@ class UpdateBlog(BaseModel):
     excerpt: Optional[str] = None
     content: Optional[str] = None
     category: Optional[str] = None
+    category_id: Optional[int] = None
     author: Optional[str] = None
     meta_title: Optional[str] = None
     meta_description: Optional[str] = None

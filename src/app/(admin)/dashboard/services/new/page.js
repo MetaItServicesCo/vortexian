@@ -8,6 +8,7 @@ import { richTextAltError } from "@/lib/richText";
 import dynamic from "next/dynamic";
 import axios from "axios";
 import MenuToggle from "@/components/admin/services/MenuToggle";
+import CategorySelect from "@/components/admin/CategorySelect";
 import SchemaMarkupField, { schemaJsonError } from "@/components/admin/SchemaMarkupField";
 import {
     ArrowLeft,
@@ -44,7 +45,8 @@ export default function CreateNewService() {
     const [formData, setFormData] = useState({
         title: "",
         slug: "",
-        category: "Marketing",
+        category: "",
+        categoryId: "",
         shortDesc: "",
         icon: "Share2",
         image: "",
@@ -151,10 +153,8 @@ export default function CreateNewService() {
                 formData.slug
             );
 
-            submitData.append(
-                "category_stack",
-                formData.category
-            );
+            submitData.append("category_stack", formData.category);
+            if (formData.categoryId) submitData.append("category_id", String(formData.categoryId));
 
             submitData.append(
                 "lucide_icon",
@@ -378,31 +378,11 @@ export default function CreateNewService() {
 
                         <div>
                             <label className="text-xs font-black uppercase text-gray-400 block mb-1.5">
-                                Category Stack
+                                Category
                             </label>
 
-                            <select
-                                className="w-full p-3.5 bg-gray-50 border border-gray-200 rounded-xl"
-                                value={formData.category}
-                                onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        category: e.target.value
-                                    })
-                                }
-                            >
-                                <option value="Marketing">
-                                    Marketing
-                                </option>
-
-                                <option value="Design">
-                                    Design
-                                </option>
-
-                                <option value="Technology">
-                                    Technology
-                                </option>
-                            </select>
+                            <CategorySelect kind="service" id="service-category" value={formData.categoryId} legacyName={formData.category}
+                                onChange={(id, name) => setFormData((prev) => (prev.categoryId === id ? prev : { ...prev, categoryId: id, category: name }))} />
                         </div>
 
                         <div>

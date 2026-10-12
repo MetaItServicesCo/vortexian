@@ -17,6 +17,7 @@ from app.routes.pages import router as pages_router
 from app.routes.media import router as media_router
 from app.routes.bulk import router as bulk_router
 from app.routes.trash import router as trash_router
+from app.routes.categories import router as categories_router
 from app.database import sessionlocal
 from app.trash import TRASH_DIR, purge_expired
 from fastapi.staticfiles import StaticFiles
@@ -76,3 +77,4 @@ app.include_router(pages_router, prefix="/api/pages", tags=["Pages"])
 app.include_router(media_router, prefix="/api/media", tags=["Media"])
 app.include_router(bulk_router, prefix="/api/bulk", tags=["Bulk actions"])
 app.include_router(trash_router, prefix="/api/trash", tags=["Recently deleted"])
+app.include_router(categories_router, prefix="/api/categories", tags=["Categories"])
