@@ -3,6 +3,7 @@ import React from "react";
 import Link from "next/link";
 import { blogPath } from "@/lib/blog";
 import { useContent } from "@/components/content/SiteContentProvider";
+import { mediaUrl } from "@/lib/api";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
 import {
@@ -112,6 +113,19 @@ const BlogSlider = ({ posts = [] }) => {
             {blogPosts.map((post) => (
               <SwiperSlide key={post.id} className="h-auto py-4">
                 <div className="bg-white border border-gray-100 shadow-sm rounded-2xl overflow-hidden flex flex-col min-h-[460px] transition-all duration-500 hover:-translate-y-2 hover:border-[#5DB4D1]/40 hover:shadow-[0_20px_40px_-15px_rgba(93,180,209,0.15)] group h-full">
+                  {/* Featured image: the whole image at its own proportions, like the Blog page cards */}
+                  {post.featured_image && (
+                    <Link href={blogPath(post)} tabIndex={-1} className="block w-full bg-slate-50">
+                      {/* eslint-disable-next-line @next/next/no-img-element -- admin-uploaded image */}
+                      <img
+                        src={mediaUrl(post.featured_image)}
+                        alt={post.featured_image_alt || post.title}
+                        loading="lazy"
+                        className="block w-full h-auto max-h-[28rem] object-contain"
+                      />
+                    </Link>
+                  )}
+
                   {/* Card Content Layer */}
                   <div className="p-8 md:p-10 flex flex-col flex-grow">
                     {/* Author Section */}
