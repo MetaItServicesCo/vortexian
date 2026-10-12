@@ -7,6 +7,10 @@ import Link from "next/link";
 import ImageAltField, { altError } from "@/components/admin/ImageAltField";
 import SchemaMarkupField, { schemaJsonError } from "@/components/admin/SchemaMarkupField";
 import { adminFetch } from "@/lib/adminApi";
+import dynamic from "next/dynamic";
+import { richTextAltError, isBlankHtml } from "@/lib/richText";
+
+const RichTextEditor = dynamic(() => import("@/components/editor/RichTextEditor"), { ssr: false });
 
 const MAX_IMAGE_MB = 10;
 
@@ -31,12 +35,17 @@ export default function CreatePortfolioAssetForm() {
 
     const dispatchSubmission = async (e) => {
         e.preventDefault();
-        if (!form.project_title || !form.business_challenge || !form.solution_node || !fileObj) {
+        if (!form.project_title || isBlankHtml(form.business_challenge) || isBlankHtml(form.solution_node) || !fileObj) {
             toast.error("Please fill in the title, challenge, solution and choose an image.");
             return;
         }
         if (fileObj.size > MAX_IMAGE_MB * 1024 * 1024) {
             toast.error(`The image is too large (max ${MAX_IMAGE_MB} MB). Please use a smaller or compressed image.`);
+            return;
+        }
+        const inlineAlt = richTextAltError(form.business_challenge, "business challenge") || richTextAltError(form.solution_node, "solution");
+        if (inlineAlt) {
+            toast.error(inlineAlt);
             return;
         }
         const missingAlt = altError(true, imageAlt);
@@ -130,14 +139,19 @@ export default function CreatePortfolioAssetForm() {
 
                 <div>
                     <label className={labelStyles}>The Business Challenge Statement *</label>
-                    {/* ✅ CHANGED */}
-                    <textarea rows="4" className={`${inputStyles} resize-none`} placeholder="What structural anomalies did the client face?" required onChange={e => setForm({ ...form, business_challenge: e.target.value })}></textarea>
+                    <p className="text-[11px] text-slate-400 mb-2">Headings, lists, links, tables, images and image links, same as blog posts and services.</p>
+                    <div data-field="business_challenge">
+                        <RichTextEditor value={form.business_challenge} placeholder="What challenge did the client face?" minHeight={180}
+                            onChange={(value) => setForm((prev) => ({ ...prev, business_challenge: value }))} />
+                    </div>
                 </div>
 
                 <div>
                     <label className={labelStyles}>Vortexian Strategic Solution Node *</label>
-                    {/* ✅ CHANGED */}
-                    <textarea rows="4" className={`${inputStyles} resize-none`} placeholder="Describe our technical architectural resolution approach..." required onChange={e => setForm({ ...form, solution_node: e.target.value })}></textarea>
+                    <div data-field="solution_node">
+                        <RichTextEditor value={form.solution_node} placeholder="Describe how we solved it…" minHeight={180}
+                            onChange={(value) => setForm((prev) => ({ ...prev, solution_node: value }))} />
+                    </div>
                 </div>
 
                 <div className="border-t border-gray-100 pt-6 space-y-6">

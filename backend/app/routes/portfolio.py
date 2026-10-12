@@ -1,3 +1,4 @@
+import re
 from fastapi import APIRouter, Depends, HTTPException, Form, File, UploadFile
 from sqlalchemy.orm import Session
 from typing import Optional
@@ -8,8 +9,17 @@ from app.routes.admin import get_current_admin_dependence
 from app.schema_markup import clean_schema_json
 from app.uploads import IMAGE_EXTENSIONS, MAX_IMAGE_BYTES, delete_upload, has_file, require_alt, save_upload
 from app.trash import move_to_trash
+from app.sanitize import clean_html
 
 router = APIRouter()
+
+
+def rich_text(value: str, label: str) -> str:
+    """Challenge/Solution come from the rich text editor: sanitise, and refuse empty content."""
+    html = clean_html(value) or ""
+    if not re.search(r"<(img|video)", html) and not re.sub(r"<[^>]+>|&nbsp;|\s", "", html):
+        raise HTTPException(status_code=400, detail=f"Please write the {label}.")
+    return html
 
 # -------------------------------------------------------------
 # CREATE PORTFOLIO
@@ -44,8 +54,8 @@ def create_portfolio(
         deployment_year=deployment_year,
         primary_image=image_url,
         primary_image_alt=alt,
-        business_challenge=business_challenge,
-        solution_node=solution_node,
+        business_challenge=rich_text(business_challenge, "business challenge"),
+        solution_node=rich_text(solution_node, "solution"),
         meta_title=meta_title,
         meta_description=meta_description,
         meta_keywords=meta_keywords,
@@ -103,8 +113,8 @@ def update_portfolio(
     item.project_title = project_title
     item.category_node = category_node
     item.deployment_year = deployment_year
-    item.business_challenge = business_challenge
-    item.solution_node = solution_node
+    item.business_challenge = rich_text(business_challenge, "business challenge")
+    item.solution_node = rich_text(solution_node, "solution")
     item.meta_title = meta_title
     item.meta_description = meta_description
     item.meta_keywords = meta_keywords

@@ -7,6 +7,10 @@ import Link from "next/link";
 import ImageAltField, { altError } from "@/components/admin/ImageAltField";
 import SchemaMarkupField, { schemaJsonError } from "@/components/admin/SchemaMarkupField";
 import { adminFetch } from "@/lib/adminApi";
+import dynamic from "next/dynamic";
+import { richTextAltError, isBlankHtml, toEditorHtml } from "@/lib/richText";
+
+const RichTextEditor = dynamic(() => import("@/components/editor/RichTextEditor"), { ssr: false });
 import { mediaUrl } from "@/lib/api";
 
 export default function EditPortfolioAssetForm() {
@@ -47,8 +51,8 @@ export default function EditPortfolioAssetForm() {
                     project_title: data.project_title || "",
                     category_node: data.category_node || "Web Development",
                     deployment_year: data.deployment_year || "",
-                    business_challenge: data.business_challenge || "",
-                    solution_node: data.solution_node || "",
+                    business_challenge: toEditorHtml(data.business_challenge || ""), // older items hold plain text
+                    solution_node: toEditorHtml(data.solution_node || ""),
                     meta_title: data.meta_title || "",
                     meta_description: data.meta_description || "",
                     meta_keywords: data.meta_keywords || "",
@@ -81,6 +85,15 @@ export default function EditPortfolioAssetForm() {
 
     const dispatchUpdate = async (e) => {
         e.preventDefault();
+        if (isBlankHtml(form.business_challenge) || isBlankHtml(form.solution_node)) {
+            toast.error("Please write the business challenge and the solution.");
+            return;
+        }
+        const inlineAlt = richTextAltError(form.business_challenge, "business challenge") || richTextAltError(form.solution_node, "solution");
+        if (inlineAlt) {
+            toast.error(inlineAlt);
+            return;
+        }
         const missingAlt = altError(true, imageAlt);
         if (missingAlt) {
             toast.error(missingAlt);
@@ -188,12 +201,19 @@ export default function EditPortfolioAssetForm() {
 
                 <div>
                     <label className={labelStyles}>The Business Challenge Statement *</label>
-                    <textarea rows="4" value={form.business_challenge} className={`${inputStyles} resize-none`} required onChange={e => setForm({ ...form, business_challenge: e.target.value })}></textarea>
+                    <p className="text-[11px] text-slate-400 mb-2">Headings, lists, links, tables, images and image links, same as blog posts and services.</p>
+                    <div data-field="business_challenge">
+                        <RichTextEditor value={form.business_challenge} placeholder="What challenge did the client face?" minHeight={180}
+                            onChange={(value) => setForm((prev) => ({ ...prev, business_challenge: value }))} />
+                    </div>
                 </div>
 
                 <div>
                     <label className={labelStyles}>Vortexian Strategic Solution Node *</label>
-                    <textarea rows="4" value={form.solution_node} className={`${inputStyles} resize-none`} required onChange={e => setForm({ ...form, solution_node: e.target.value })}></textarea>
+                    <div data-field="solution_node">
+                        <RichTextEditor value={form.solution_node} placeholder="Describe how we solved it…" minHeight={180}
+                            onChange={(value) => setForm((prev) => ({ ...prev, solution_node: value }))} />
+                    </div>
                 </div>
 
                 <div className="border-t border-gray-100 pt-6 space-y-6">

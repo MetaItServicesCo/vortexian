@@ -6,6 +6,7 @@ import Link from "next/link";
 import BreadcrumbHero from "@/components/BreadcrumbHero";
 import { serverApiUrl } from "@/lib/api";
 import SchemaMarkup from "@/components/seo/SchemaMarkup";
+import RichText from "@/components/content/RichText";
 
 const API_BASE = "";
 
@@ -271,8 +272,10 @@ export default async function PortfolioDetailPage({ params }) {
                                 The Business<br />Challenge Context
                             </h2>
                         </div>
-                        <div className="lg:col-span-7 text-gray-400 text-base md:text-lg font-medium leading-relaxed whitespace-pre-line lg:border-l lg:border-white/5 lg:pl-12">
-                            <p>{project.business_challenge || "No challenge description provided."}</p>
+                        <div className="lg:col-span-7 text-gray-400 text-base md:text-lg font-medium leading-relaxed lg:border-l lg:border-white/5 lg:pl-12">
+                            {project.business_challenge
+                                ? <RichText html={project.business_challenge} className="rich-content-invert text-gray-400!" />
+                                : <p>No challenge description provided.</p>}
                         </div>
                     </section>
 
@@ -289,8 +292,10 @@ export default async function PortfolioDetailPage({ params }) {
                                 Vortexian Strategy<br />Resolved
                             </h2>
                         </div>
-                        <div className="lg:col-span-7 text-gray-300 text-base md:text-lg font-medium leading-relaxed whitespace-pre-line lg:border-l lg:border-white/5 lg:pl-12">
-                            <p>{project.solution_node || "No solution description provided."}</p>
+                        <div className="lg:col-span-7 text-gray-300 text-base md:text-lg font-medium leading-relaxed lg:border-l lg:border-white/5 lg:pl-12">
+                            {project.solution_node
+                                ? <RichText html={project.solution_node} className="rich-content-invert text-gray-300!" />
+                                : <p>No solution description provided.</p>}
                         </div>
                     </section>
 
