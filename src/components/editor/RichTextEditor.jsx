@@ -13,11 +13,12 @@ import {
     Code2, Minus, AlignLeft, AlignCenter, AlignRight, AlignJustify, ImagePlus,
     Film, Table as TableIcon, Undo2, Redo2, RemoveFormatting, Loader2,
     ArrowUpToLine, ArrowDownToLine, ArrowLeftToLine, ArrowRightToLine,
-    Rows3, Columns3, Merge, Split, Heading, Trash2, Captions,
+    Rows3, Columns3, Merge, Split, Heading, Trash2, Captions, FileImage,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { uploadMedia } from "@/lib/adminApi";
 import { linkAttributes } from "@/lib/links";
+import { isImageHref } from "@/lib/imageLinks";
 
 // <video> blocks (used by the news feed). Sanitised server-side.
 const Video = Node.create({
@@ -90,6 +91,8 @@ export default function RichTextEditor({
 }) {
     const [uploading, setUploading] = useState(false);
     const imageInput = useRef(null);
+    const imageLinkInput = useRef(null);
+    const imageLinkRange = useRef(null);
     const videoInput = useRef(null);
     const editorRef = useRef(null);
 
@@ -176,6 +179,37 @@ export default function RichTextEditor({
         chain().extendMarkRange("link").setLink(attrs).run();
     };
 
+    // "Link to image": the selected text opens an uploaded image (a pop-up on the website)
+    const startImageLink = () => {
+        const { from, to, empty } = editor.state.selection;
+        if (empty && !editor.isActive("link")) {
+            toast.error("Select the text that should open the image first.");
+            return;
+        }
+        imageLinkRange.current = empty ? null : { from, to };
+        imageLinkInput.current?.click();
+    };
+
+    const handleImageLink = async (file) => {
+        if (!file) return;
+        if (!file.type.startsWith("image/")) {
+            toast.error("Choose an image file (JPG, PNG, WEBP, GIF or AVIF).");
+            return;
+        }
+        setUploading(true);
+        try {
+            const url = await uploadMedia(file);
+            const c = chain();
+            if (imageLinkRange.current) c.setTextSelection(imageLinkRange.current);
+            c.extendMarkRange("link").setLink(linkAttributes(url)).run();
+            toast.success("Linked: clicking this text opens the image.");
+        } catch (err) {
+            toast.error(err.message || "Upload failed");
+        } finally {
+            setUploading(false);
+        }
+    };
+
     // Alt text is mandatory for images: keep asking until given, or cancel
     const askAlt = (current = "") => {
         let alt = current;
@@ -246,6 +280,7 @@ export default function RichTextEditor({
                 <ToolbarButton title="Underline" active={editor.isActive("underline")} onClick={() => chain().toggleUnderline().run()}><Underline size={15} /></ToolbarButton>
                 <ToolbarButton title="Strikethrough" active={editor.isActive("strike")} onClick={() => chain().toggleStrike().run()}><Strikethrough size={15} /></ToolbarButton>
                 <ToolbarButton title="Link" active={editor.isActive("link")} onClick={setLink}><Link2 size={15} /></ToolbarButton>
+                <ToolbarButton title="Link to image: select text, then choose an image it opens" active={editor.isActive("link") && isImageHref(editor.getAttributes("link").href)} disabled={uploading} onClick={startImageLink}><FileImage size={15} /></ToolbarButton>
                 <Divider />
                 <ToolbarButton title="Bulleted list" active={editor.isActive("bulletList")} onClick={() => chain().toggleBulletList().run()}><List size={15} /></ToolbarButton>
                 <ToolbarButton title="Numbered list" active={editor.isActive("orderedList")} onClick={() => chain().toggleOrderedList().run()}><ListOrdered size={15} /></ToolbarButton>
@@ -283,6 +318,8 @@ export default function RichTextEditor({
                 <ToolbarButton title="Undo" disabled={!editor.can().undo()} onClick={() => chain().undo().run()}><Undo2 size={15} /></ToolbarButton>
                 <ToolbarButton title="Redo" disabled={!editor.can().redo()} onClick={() => chain().redo().run()}><Redo2 size={15} /></ToolbarButton>
 
+                <input ref={imageLinkInput} type="file" accept="image/png,image/jpeg,image/gif,image/webp,image/avif" className="hidden"
+                    onChange={(e) => { handleImageLink(e.target.files?.[0]); e.target.value = ""; }} />
                 <input ref={imageInput} type="file" accept="image/png,image/jpeg,image/gif,image/webp,image/avif" className="hidden"
                     onChange={(e) => { handleUpload(e.target.files?.[0], "image"); e.target.value = ""; }} />
                 <input ref={videoInput} type="file" accept="video/mp4,video/webm,video/quicktime" className="hidden"

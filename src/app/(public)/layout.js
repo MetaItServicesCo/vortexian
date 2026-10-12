@@ -3,6 +3,7 @@ import Navbar from "@/components/Navbar";
 import SocialFloatingButton from "@/components/SocialFloatingButton";
 import AdminSiteBar from "@/components/admin/AdminSiteBar";
 import SiteSeo from "@/components/seo/SiteSeo";
+import ImageLinkLightbox from "@/components/content/ImageLinkLightbox";
 import SiteContentProvider from "@/components/content/SiteContentProvider";
 import { getFooterPages, getServicesMenu, getSiteContent } from "@/lib/content";
 
@@ -18,6 +19,7 @@ export default async function PublicLayout({ children }) {
             <SocialFloatingButton />
             <AdminSiteBar />
             <SiteSeo />
+            <ImageLinkLightbox />
 
             <Footer />
         </SiteContentProvider>
