@@ -224,7 +224,7 @@ def page_paths(db: Session) -> list[str]:
     paths = list(BUILT_IN_PAGES)
     paths += [f"/services/{quote(s.url_slug, safe='')}" for s in db.query(models.Service).filter(models.Service.url_slug.isnot(None)).all() if s.url_slug]
     paths += [f"/blog/{quote(b.slug or str(b.id), safe='')}" for b in db.query(models.Blog).all()]
-    paths += [f"/portfolio/{p.id}" for p in db.query(models.Portfolio).all()]
+    paths += [f"/portfolio/{quote(p.slug or str(p.id), safe='')}" for p in db.query(models.Portfolio).all()]
     paths += [f"/{p.slug}" for p in db.query(models.Page).filter(models.Page.is_published.is_(True)).all()]
     return list(dict.fromkeys(paths))[:MAX_PAGES]
 

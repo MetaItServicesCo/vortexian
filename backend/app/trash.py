@@ -47,7 +47,7 @@ RESOURCES: dict[str, Resource] = {
     "blog": Resource(models.Blog, "blog post", "blog posts", lambda r: r.title, ("featured_image",), ("slug",)),
     "services": Resource(models.Service, "service", "services", lambda r: r.service_title, ("image_showcase_url",), ("url_slug",)),
     "team": Resource(models.Team, "team member", "team members", lambda r: r.full_name, ("profile_image",)),
-    "portfolio": Resource(models.Portfolio, "portfolio item", "portfolio items", lambda r: r.project_title, ("primary_image",)),
+    "portfolio": Resource(models.Portfolio, "portfolio item", "portfolio items", lambda r: r.project_title, ("primary_image",), ("slug",)),
     "testimonials": Resource(models.Testimonial, "testimonial", "testimonials", lambda r: r.client_name, ("profile_image",)),
     "newsfeed": Resource(models.NewsFeed, "news update", "news updates", lambda r: r.title, ("media_url",), publishable=True),
     "pages": Resource(models.Page, "page", "pages", lambda r: r.title, unique_fields=("slug",), publishable=True),
@@ -183,12 +183,14 @@ def restore(db: Session, item: models.DeletedItem) -> object:
             raise RestoreError(f"Another {resource.singular} already uses the {label} “{value}”. Change or delete that one first.")
 
     values = _from_snapshot(model, item.data)
-    if item.resource in ("services", "blog") and values.get("category_id") is not None:
+    kinds = {"services": ("service", "category_stack"), "blog": ("blog", "category"), "portfolio": ("portfolio", "category_node")}
+    if item.resource in kinds and values.get("category_id") is not None:
         from app import categories as cats  # restored into a deleted category -> Others
         if not db.get(models.Category, values["category_id"]):
-            fallback = cats.others(db, "service" if item.resource == "services" else "blog")
+            kind, column = kinds[item.resource]
+            fallback = cats.others(db, kind)
             values["category_id"] = fallback.id
-            values["category_stack" if item.resource == "services" else "category"] = fallback.name
+            values[column] = fallback.name
     if db.get(model, item.record_id):
         values.pop("id", None)  # id taken meanwhile: restore under a new id
     restored = model(**values)

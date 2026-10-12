@@ -1,4 +1,4 @@
-"""Categories for services and blog posts (Dashboard → Categories).
+"""Categories for services, blog posts and portfolio projects (Dashboard → Categories).
 
 Every kind has a built-in "Others" category that can't be deleted: items with
 no category, an unknown category, or a deleted category belong there.
@@ -11,17 +11,18 @@ from sqlalchemy.orm import Session
 
 from app import models
 
-KINDS = ("service", "blog")
+KINDS = ("service", "blog", "portfolio")
 OTHERS = "Others"
 ITEMS = {
     "service": (models.Service, "category_stack"),
     "blog": (models.Blog, "category"),
+    "portfolio": (models.Portfolio, "category_node"),
 }
 
 
 def check_kind(kind: str) -> str:
     if kind not in KINDS:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Category type must be service or blog.")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Category type must be service, blog or portfolio.")
     return kind
 
 

@@ -46,7 +46,7 @@ export default function CategorySelect({ kind, value, legacyName, onChange, id, 
                 ))}
             </select>
             <Link href={`/dashboard/categories?kind=${kind}`} className="mt-1 inline-block text-xs text-[#1D1D7E] underline underline-offset-2">
-                Manage {kind === "blog" ? "blog" : "service"} categories
+                Manage {kind} categories
             </Link>
         </div>
     );

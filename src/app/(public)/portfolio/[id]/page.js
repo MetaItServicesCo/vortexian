@@ -1,18 +1,23 @@
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import Link from "next/link";
 import BreadcrumbHero from "@/components/BreadcrumbHero";
 import { serverApiUrl } from "@/lib/api";
 import SchemaMarkup from "@/components/seo/SchemaMarkup";
 import RichText from "@/components/content/RichText";
+import { portfolioPath } from "@/lib/portfolio";
 
 const API_BASE = "";
 
-async function getProject(id) {
+// The segment is a slug (/portfolio/my-project) or, for old links, a numeric id (/portfolio/6)
+async function getProject(param) {
+    let key = param;
+    try { key = decodeURIComponent(param); } catch {}
+    const path = /^\d+$/.test(key) ? `/api/portfolio/${key}` : `/api/portfolio/slug/${encodeURIComponent(key)}`;
     try {
-        const res = await fetch(serverApiUrl(`/api/portfolio/${encodeURIComponent(id)}`), {
+        const res = await fetch(serverApiUrl(path), {
             cache: "no-store",
             headers: { Accept: "application/json" },
         });
@@ -43,7 +48,7 @@ export async function generateMetadata({ params }) {
         keywords:
             project.meta_keywords ||
             `${project.category_node}, Web Development, Vortexian Tech`,
-        alternates: { canonical: `/portfolio/${project.id}` },
+        alternates: { canonical: portfolioPath(project) },
         openGraph: {
             title: project.meta_title || project.project_title,
             description: project.meta_description || "",
@@ -63,6 +68,8 @@ export default async function PortfolioDetailPage({ params }) {
     const project = await getProject(id);
 
     if (!project) notFound();
+    // Old numeric URLs move permanently to the slug URL (keeps links and ranking)
+    if (project.slug && id !== project.slug) permanentRedirect(portfolioPath(project));
 
     // Short node ID for display
     const nodeId = String(project.id).padStart(8, "0");
@@ -75,11 +82,12 @@ export default async function PortfolioDetailPage({ params }) {
             <div className="absolute bottom-1/4 right-10 w-[400px] h-[400px] bg-[#5DB4D1]/5 rounded-full blur-[120px] pointer-events-none -z-10" aria-hidden="true" />
             <div className="absolute top-1/3 left-[-10%] w-[350px] h-[350px] bg-purple-950/10 rounded-full blur-[100px] pointer-events-none -z-10" aria-hidden="true" />
 
-            <SchemaMarkup kind="portfolio" item={project} path={`/portfolio/${project.id}`} custom={project.schema_json} />
+            <SchemaMarkup kind="portfolio" item={project} path={portfolioPath(project)} custom={project.schema_json} />
             {/* Breadcrumb */}
             <BreadcrumbHero
                 headingAs="p"
                 title="Case Study"
+                trail={[{ label: "Portfolio", href: "/portfolio" }]}
                 currentPage={
                     project.project_title
                         ? project.project_title.toUpperCase()

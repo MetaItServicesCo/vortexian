@@ -1,6 +1,6 @@
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
-import SocialFloatingButton from "@/components/SocialFloatingButton";
+import FloatingCallButton from "@/components/FloatingCallButton";
 import AdminSiteBar from "@/components/admin/AdminSiteBar";
 import SiteSeo from "@/components/seo/SiteSeo";
 import ImageLinkLightbox from "@/components/content/ImageLinkLightbox";
@@ -17,7 +17,7 @@ export default async function PublicLayout({ children }) {
             <main className="flex-grow mt-[120px] md:mt-[122px]">
                 {children}
             </main>
-            <SocialFloatingButton />
+            <FloatingCallButton />
             <AdminSiteBar />
             <SiteSeo />
             <ImageLinkLightbox />

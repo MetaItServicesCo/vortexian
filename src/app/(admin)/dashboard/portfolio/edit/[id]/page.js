@@ -7,6 +7,8 @@ import Link from "next/link";
 import ImageAltField, { altError } from "@/components/admin/ImageAltField";
 import SchemaMarkupField, { schemaJsonError } from "@/components/admin/SchemaMarkupField";
 import { adminFetch } from "@/lib/adminApi";
+import CategorySelect from "@/components/admin/CategorySelect";
+import { slugify, slugifyTyping } from "@/lib/slugify";
 import dynamic from "next/dynamic";
 import { richTextAltError, isBlankHtml, toEditorHtml } from "@/lib/richText";
 
@@ -21,10 +23,14 @@ export default function EditPortfolioAssetForm() {
     const [fileObj, setFileObj] = useState(null);
     const [preview, setPreview] = useState("");
     const [imageAlt, setImageAlt] = useState("");
+    const [slugTouched, setSlugTouched] = useState(true);   // existing projects keep their address unless edited
+    const [originalSlug, setOriginalSlug] = useState("");
 
     const [form, setForm] = useState({
         project_title: "",
-        category_node: "Web Development",
+        slug: "",
+        category_node: "",
+        category_id: "",
         deployment_year: "",
         business_challenge: "",
         solution_node: "",
@@ -49,7 +55,9 @@ export default function EditPortfolioAssetForm() {
 
                 setForm({
                     project_title: data.project_title || "",
-                    category_node: data.category_node || "Web Development",
+                    slug: data.slug || slugify(data.project_title || ""),
+                    category_node: data.category_node || "",
+                    category_id: data.category_id || "",
                     deployment_year: data.deployment_year || "",
                     business_challenge: toEditorHtml(data.business_challenge || ""), // older items hold plain text
                     solution_node: toEditorHtml(data.solution_node || ""),
@@ -59,6 +67,7 @@ export default function EditPortfolioAssetForm() {
                     schema_json: data.schema_json || ""
                 });
 
+                setOriginalSlug(data.slug || "");
                 setPreview(data.primary_image ? mediaUrl(data.primary_image) : "");
                 setImageAlt(data.primary_image_alt || "");
             } catch (error) {
@@ -85,6 +94,10 @@ export default function EditPortfolioAssetForm() {
 
     const dispatchUpdate = async (e) => {
         e.preventDefault();
+        if (!slugify(form.slug)) {
+            toast.error("Please enter a URL slug (letters or numbers).");
+            return;
+        }
         if (isBlankHtml(form.business_challenge) || isBlankHtml(form.solution_node)) {
             toast.error("Please write the business challenge and the solution.");
             return;
@@ -112,6 +125,8 @@ export default function EditPortfolioAssetForm() {
             const formData = new FormData();
             formData.append("project_title", form.project_title);
             formData.append("category_node", form.category_node);
+            formData.append("category_id", form.category_id);
+            formData.append("slug", slugify(form.slug));
             formData.append("deployment_year", parseInt(form.deployment_year) || 0);
             formData.append("business_challenge", form.business_challenge);
             formData.append("solution_node", form.solution_node);
@@ -147,6 +162,8 @@ export default function EditPortfolioAssetForm() {
 
     if (fetching) return <div className="flex justify-center py-40"><Loader2 className="animate-spin text-[#1D1D7E]" size={36} /></div>;
 
+    const slugChanged = Boolean(originalSlug) && slugify(form.slug) !== originalSlug;
+
     return (
         <div className="p-6 md:p-10 min-h-screen bg-slate-50/40 text-slate-800 max-w-3xl mx-auto">
             <Toaster />
@@ -164,17 +181,25 @@ export default function EditPortfolioAssetForm() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="md:col-span-2">
                         <label className={labelStyles}>Project Title *</label>
-                        <input type="text" value={form.project_title} className={inputStyles} required onChange={e => setForm({ ...form, project_title: e.target.value })} />
+                        <input type="text" value={form.project_title} className={inputStyles} required
+                            onChange={e => { const v = e.target.value; setForm((prev) => ({ ...prev, project_title: v, slug: slugTouched ? prev.slug : slugify(v) })); }} />
                     </div>
                     <div>
-                        <label className={labelStyles}>Category Node *</label>
-                        <select value={form.category_node} className={inputStyles} onChange={e => setForm({ ...form, category_node: e.target.value })}>
-                            <option value="Web Development">Web Development</option>
-                            <option value="Graphic Design">Graphic Design</option>
-                            <option value="UI/UX Design">UI/UX Design</option>
-                            <option value="App Development">App Development</option>
-                        </select>
+                        <label htmlFor="portfolio-category" className={labelStyles}>Category *</label>
+                        <CategorySelect kind="portfolio" id="portfolio-category" value={form.category_id} legacyName={form.category_node}
+                            onChange={(cid, name) => setForm((prev) => ({ ...prev, category_id: cid, category_node: name }))} className={inputStyles} />
                     </div>
+                </div>
+
+                <div>
+                    <label htmlFor="portfolio-slug" className={labelStyles}>Slug (URL) *</label>
+                    <div className="flex items-center rounded-xl border border-gray-200 bg-white shadow-sm focus-within:ring-2 focus-within:ring-[#1D1D7E]">
+                        <span className="pl-3.5 text-sm text-gray-400 select-none">/portfolio/</span>
+                        <input id="portfolio-slug" type="text" value={form.slug} maxLength={200} required
+                            onChange={e => { setSlugTouched(true); setForm({ ...form, slug: slugifyTyping(e.target.value) }); }}
+                            className="flex-1 min-w-0 p-3.5 pl-1 bg-transparent outline-none text-sm font-semibold text-slate-800" />
+                    </div>
+                    <p className={`text-xs mt-1 ${slugChanged ? "text-amber-600 font-semibold" : "text-gray-400"}`}>{slugChanged ? `Changing the address breaks links to /portfolio/${originalSlug}.` : "The project's web address."}</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

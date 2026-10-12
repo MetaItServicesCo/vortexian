@@ -136,7 +136,9 @@ class UpdateTeam(BaseModel):
 
 class BasePortfolio(BaseModel):
     project_title: str
+    slug: Optional[str] = None
     category_node: str
+    category_id: Optional[int] = None
     deployment_year: str
     business_challenge: str
     solution_node: str

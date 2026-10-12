@@ -7,6 +7,8 @@ import Link from "next/link";
 import ImageAltField, { altError } from "@/components/admin/ImageAltField";
 import SchemaMarkupField, { schemaJsonError } from "@/components/admin/SchemaMarkupField";
 import { adminFetch } from "@/lib/adminApi";
+import CategorySelect from "@/components/admin/CategorySelect";
+import { slugify, slugifyTyping } from "@/lib/slugify";
 import dynamic from "next/dynamic";
 import { richTextAltError, isBlankHtml } from "@/lib/richText";
 
@@ -19,11 +21,14 @@ export default function CreatePortfolioAssetForm() {
     const [loading, setLoading] = useState(false);
     const [fileObj, setFileObj] = useState(null);
     const [imageAlt, setImageAlt] = useState("");
+    const [slugTouched, setSlugTouched] = useState(false);
 
     // ✅ CHANGED: field names API ke mutabiq
     const [form, setForm] = useState({
         project_title: "",
-        category_node: "Web Development",
+        slug: "",
+        category_node: "",
+        category_id: "",
         deployment_year: new Date().getFullYear().toString(),
         business_challenge: "",
         solution_node: "",
@@ -35,6 +40,10 @@ export default function CreatePortfolioAssetForm() {
 
     const dispatchSubmission = async (e) => {
         e.preventDefault();
+        if (!slugify(form.slug || form.project_title)) {
+            toast.error("Please enter a URL slug (letters or numbers).");
+            return;
+        }
         if (!form.project_title || isBlankHtml(form.business_challenge) || isBlankHtml(form.solution_node) || !fileObj) {
             toast.error("Please fill in the title, challenge, solution and choose an image.");
             return;
@@ -61,7 +70,7 @@ export default function CreatePortfolioAssetForm() {
 
         setLoading(true);
         const bundle = new FormData();
-        Object.keys(form).forEach(key => bundle.append(key, form[key]));
+        Object.keys(form).forEach(key => bundle.append(key, key === "slug" ? (slugify(form.slug) || slugify(form.project_title)) : form[key]));
         bundle.append("image_file", fileObj);
         bundle.append("primary_image_alt", imageAlt.trim());
 
@@ -101,18 +110,25 @@ export default function CreatePortfolioAssetForm() {
                     <div className="md:col-span-2">
                         <label className={labelStyles}>Project Title *</label>
                         {/* ✅ CHANGED */}
-                        <input type="text" className={inputStyles} placeholder="e.g. Quantum Analytics Suite" required onChange={e => setForm({ ...form, project_title: e.target.value })} />
+                        <input type="text" className={inputStyles} placeholder="e.g. Quantum Analytics Suite" required
+                            onChange={e => { const v = e.target.value; setForm((prev) => ({ ...prev, project_title: v, slug: slugTouched ? prev.slug : slugify(v) })); }} />
                     </div>
                     <div>
-                        <label className={labelStyles}>Category Node *</label>
-                        {/* ✅ CHANGED */}
-                        <select className={inputStyles} onChange={e => setForm({ ...form, category_node: e.target.value })}>
-                            <option value="Web Development">Web Development</option>
-                            <option value="Graphic Design">Graphic Design</option>
-                            <option value="UI/UX Design">UI/UX Design</option>
-                            <option value="App Development">App Development</option>
-                        </select>
+                        <label htmlFor="portfolio-category" className={labelStyles}>Category *</label>
+                        <CategorySelect kind="portfolio" id="portfolio-category" value={form.category_id} legacyName={form.category_node}
+                            onChange={(cid, name) => setForm((prev) => ({ ...prev, category_id: cid, category_node: name }))} className={inputStyles} />
                     </div>
+                </div>
+
+                <div>
+                    <label htmlFor="portfolio-slug" className={labelStyles}>Slug (URL) *</label>
+                    <div className="flex items-center rounded-xl border border-gray-200 bg-white shadow-sm focus-within:ring-2 focus-within:ring-[#1D1D7E]">
+                        <span className="pl-3.5 text-sm text-gray-400 select-none">/portfolio/</span>
+                        <input id="portfolio-slug" type="text" value={form.slug} maxLength={200} required
+                            onChange={e => { setSlugTouched(true); setForm({ ...form, slug: slugifyTyping(e.target.value) }); }}
+                            className="flex-1 min-w-0 p-3.5 pl-1 bg-transparent outline-none text-sm font-semibold text-slate-800" />
+                    </div>
+                    <p className="text-xs mt-1 text-gray-400">{slugTouched ? "The project's web address." : "Filled in from the title; you can edit it."}</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

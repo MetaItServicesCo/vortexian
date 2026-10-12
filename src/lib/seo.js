@@ -55,7 +55,7 @@ export async function sitemapEntries(settings) {
         ...STATIC_PAGES,
         ...list(services).filter((s) => s.url_slug).map((s) => ({ path: `/services/${encodeURIComponent(s.url_slug)}`, priority: 0.8 })),
         ...list(blogs).map((b) => ({ path: blogPath(b), priority: 0.7 })),
-        ...list(projects).map((p) => ({ path: `/portfolio/${p.id}`, priority: 0.6 })),
+        ...list(projects).map((p) => ({ path: `/portfolio/${p.slug || p.id}`, priority: 0.6 })),
         ...list(pages).map((p) => ({ path: `/${p.slug}`, priority: 0.4, lastModified: p.updated_at })),
         ...lines(settings.extra_urls).map(toSitePath).filter(Boolean).map((path) => ({ path, priority: 0.5 })),
     ];

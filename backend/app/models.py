@@ -66,7 +66,10 @@ class Portfolio(Base):
 
     id = mapped_column(Integer, primary_key=True, index=True)
     project_title = mapped_column(String(200), nullable=False)
+    # Public URL: /portfolio/<slug> (old /portfolio/<id> links redirect)
+    slug = mapped_column(String(220), nullable=True, unique=True, index=True)
     category_node = mapped_column(String(100), nullable=False)
+    category_id = mapped_column(Integer, nullable=True, index=True)   # Dashboard → Categories (kind "portfolio")
     deployment_year = mapped_column(String(10), nullable=False)
     primary_image = mapped_column(Text, nullable=False)
     primary_image_alt = mapped_column(String(255), nullable=True)

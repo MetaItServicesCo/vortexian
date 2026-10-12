@@ -3,36 +3,33 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiArrowUpRight } from "react-icons/fi";
 import Link from "next/link";
+import { portfolioPath } from "@/lib/portfolio";
 
-const categories = [
-  "All",
-  "Web Development",
-  "Graphic Design",
-  "UI/UX Design",
-  "App Development",
-];
-
-const PortfolioGrid = ({ initialProjects = [] }) => {
+// Categories come from Dashboard → Categories → Portfolio; a button appears for
+// each category that has projects, in the dashboard's order.
+const PortfolioGrid = ({ initialProjects = [], categories = [] }) => {
   const [filter, setFilter] = useState("All");
 
-  // Filter logic: Safe check lower casing
   const safeProjects = Array.isArray(initialProjects) ? initialProjects : [];
+  const cats = Array.isArray(categories) ? categories : [];
+  const categoryOf = (p) =>
+    cats.find((c) => c.id === p.category_id)?.name ||
+    cats.find((c) => c.name.toLowerCase() === (p.category_node || "").trim().toLowerCase())?.name ||
+    p.category_node || "Others";
+  const used = new Set(safeProjects.map(categoryOf));
+  const buttons = ["All", ...cats.map((c) => c.name).filter((n) => used.has(n)), ...[...used].filter((n) => !cats.some((c) => c.name === n))];
 
-  const filteredProjects =
-    filter === "All"
-      ? safeProjects
-      : safeProjects.filter(
-          (p) => p.category_node?.toLowerCase() === filter.toLowerCase(),
-        );
-  console.log(initialProjects, "Initial Projects in PortfolioGrid");
+  const filteredProjects = filter === "All" ? safeProjects : safeProjects.filter((p) => categoryOf(p) === filter);
   return (
     <section className="py-24 px-6 md:px-20 lg:px-32 bg-[#F9FAFB] font-sans text-neutral-900">
       <div className="max-w-7xl mx-auto">
         {/* --- FILTER BUTTONS --- */}
         <div className="flex flex-wrap justify-center gap-4 mb-16 relative z-20">
-          {categories.map((cat) => (
+          {buttons.length > 2 && buttons.map((cat) => (
             <button
               key={cat}
+              type="button"
+              aria-pressed={filter === cat}
               onClick={() => setFilter(cat)}
               className={`px-6 py-2 rounded text-sm font-bold transition-all uppercase tracking-widest cursor-pointer focus:outline-none ${
                 filter === cat
@@ -67,7 +64,7 @@ const PortfolioGrid = ({ initialProjects = [] }) => {
                   className="group relative bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 cursor-pointer"
                 >
                   <Link
-                    href={`/portfolio/${project.id}`}
+                    href={portfolioPath(project)}
                     className="absolute inset-0 z-30"
                   >
                     <span className="sr-only">
@@ -102,7 +99,7 @@ const PortfolioGrid = ({ initialProjects = [] }) => {
                   <div className="p-6 relative z-20 bg-white">
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-[#5DB4D1] text-[10px] font-black uppercase tracking-[3px]">
-                        {project.category_node || "Uncategorized"}
+                        {categoryOf(project)}
                       </span>
                       <span className="text-[10px] font-mono text-gray-400 border border-gray-100 px-1.5 py-0.5 rounded-md font-bold">
                         {project.deployment_year || "N/A"}

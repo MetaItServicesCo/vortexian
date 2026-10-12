@@ -2,7 +2,7 @@ import BreadcrumbHero from "@/components/BreadcrumbHero";
 import CtaBanner from "@/components/CtaBanner";
 import PortfolioGrid from "@/components/portfolio/PortfolioGrid";
 import { serverApiUrl } from "@/lib/api";
-import { getSection } from "@/lib/content";
+import { getJson, getSection } from "@/lib/content";
 import SchemaMarkup from "@/components/seo/SchemaMarkup";
 
 export const dynamic = "force-dynamic";
@@ -78,7 +78,7 @@ export async function generateMetadata() {
 
 export default async function PortfolioPage() {
     const page = await getSection("page.portfolio");
-    const liveProjects = await getLivePortfolioData();
+    const [liveProjects, categories] = await Promise.all([getLivePortfolioData(), getJson("/api/categories/?kind=portfolio", [])]);
 
     return (
         <main>
@@ -90,7 +90,7 @@ export default async function PortfolioPage() {
             />
 
             {/* Injected Server side fetched dataset directly passed to layout client grid */}
-            <PortfolioGrid initialProjects={liveProjects} />
+            <PortfolioGrid initialProjects={liveProjects} categories={categories} />
 
             <CtaBanner />
         </main>

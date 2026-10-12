@@ -53,6 +53,18 @@ export const CONTENT_GROUPS = ["Global", "Home Page", "About Page", "Contact Pag
 export const CONTENT_SECTIONS = [
     // ------------------------------------------------------------------ GLOBAL
     {
+        key: "floating_call",
+        group: "Global",
+        title: "Floating call button",
+        description: "The phone button at the bottom-left of every page. Visitors tap it to call you.",
+        fields: [
+            { name: "enabled", label: "Show the call button", type: "boolean" },
+            { name: "phone", label: "Phone number (optional)", type: "text", help: "Leave empty to use the primary phone from Basic Info. Write it as visitors should see it, e.g. +1 (214) 217-6302." },
+            { name: "label", label: "Tooltip text", type: "text", help: "Shown next to the button on hover, before the number, e.g. \"Call us\"." },
+        ],
+        defaults: { enabled: true, phone: "", label: "Call us" },
+    },
+    {
         key: "settings",
         group: "Global",
         title: "Basic Info",
