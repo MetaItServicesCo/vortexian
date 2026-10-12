@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
+import Link from "next/link";
 import { notFound } from "next/navigation";
 // import Image from "next/image";
 import { cache } from "react";
@@ -180,9 +181,9 @@ export default async function ServiceDetailPage({ params }) {
                             )}
                         </div>
 
-                        <button className="w-full bg-[#1D1D7E] text-white py-4 rounded-xl font-black uppercase tracking-widest hover:bg-[#5DB4D1] hover:text-black transition-all duration-300 shadow-xl shadow-blue-950/40 text-xs cursor-pointer">
-                            Initiate System Scope
-                        </button>
+                        <Link href="/contact" className="block w-full text-center bg-[#1D1D7E] text-white py-4 rounded-xl font-black uppercase tracking-widest hover:bg-[#5DB4D1] hover:text-black transition-all duration-300 shadow-xl shadow-blue-950/40 text-xs cursor-pointer">
+                            Get A Free Quote
+                        </Link>
                     </div>
                 </div>
             </section>
