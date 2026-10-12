@@ -18,6 +18,9 @@ from app.routes.media import router as media_router
 from app.routes.bulk import router as bulk_router
 from app.routes.trash import router as trash_router
 from app.routes.categories import router as categories_router
+from app.routes.ai import router as ai_router
+from app.ai import knowledge
+from app.config import settings
 from app.database import sessionlocal
 from app.trash import TRASH_DIR, purge_expired
 from fastapi.staticfiles import StaticFiles
@@ -36,6 +39,9 @@ def startup():
             purge_expired(db)
     except Exception as err:  # never block startup on housekeeping
         print(f"Recently deleted cleanup skipped: {err}")
+    # Keeps the AI assistant's knowledge base in step with the website
+    if settings.ai_kb_auto_refresh:
+        knowledge.start_scheduler()
 
 app.add_middleware(
     CORSMiddleware,
@@ -78,3 +84,4 @@ app.include_router(media_router, prefix="/api/media", tags=["Media"])
 app.include_router(bulk_router, prefix="/api/bulk", tags=["Bulk actions"])
 app.include_router(trash_router, prefix="/api/trash", tags=["Recently deleted"])
 app.include_router(categories_router, prefix="/api/categories", tags=["Categories"])
+app.include_router(ai_router, prefix="/api/ai", tags=["AI assistant"])

@@ -12,6 +12,7 @@ export const formatReceived = (iso) =>
 const empty = <span className="text-slate-400 italic">Not provided</span>;
 
 function Value({ field }) {
+    if (field.type === "node") return field.value || empty; // already rendered (e.g. a chat transcript)
     const v = typeof field.value === "string" ? field.value.trim() : field.value;
     if (!v) return field.type === "date" ? <span className="text-slate-400 italic">Not recorded</span> : empty;
     switch (field.type) {

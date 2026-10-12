@@ -22,6 +22,8 @@ import {
   FiTrash2,
   FiTrendingUp,
   FiTag,
+  FiCpu,
+  FiMessageSquare,
 } from "react-icons/fi";
 
 const menuItems = [
@@ -34,6 +36,8 @@ const menuItems = [
   { label: "Categories", icon: FiTag, href: "/dashboard/categories" },
   { label: "Home Page Enquiries", icon: FiMail, href: "/dashboard/quotes" },
   { label: "Quote Requests", icon: FiInbox, href: "/dashboard/contacts" },
+  { label: "AI Assistant", icon: FiCpu, href: "/dashboard/ai" },
+  { label: "Chat Leads", icon: FiMessageSquare, href: "/dashboard/chat-leads" },
   { label: "Newsletter", icon: FiSend, href: "/dashboard/newsletter" },
   { label: "Team Management", icon: FiUsers, href: "/dashboard/team" },
   { label: "Portfolio", icon: FiBriefcase, href: "/dashboard/portfolio" },

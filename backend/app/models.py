@@ -342,3 +342,62 @@ class Category(Base):
     # The built-in "Others" category: can't be deleted or renamed
     is_system: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default="false")
     created_at = mapped_column(DateTime(timezone=True), nullable=True, default=lambda: datetime.now(timezone.utc))
+
+
+# ///////// AI assistant (chat widget) //////////
+
+class AIChatSession(Base):
+    """One website visitor's conversation with the AI assistant.
+
+    messages: JSON list of {"role": "user"|"assistant", "content", "agent", "at"}.
+    state: JSON with the lead details collected so far and the lead status
+    ("none", "collecting", "captured", "declined"), plus "nudged" once the
+    idle (lead capture) message was shown.
+    """
+    __tablename__ = "AIChatSession"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)  # uuid4, kept by the browser
+    created_at = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
+    last_seen_at = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc), index=True)
+    first_page: Mapped[str | None] = mapped_column(String(300), nullable=True)
+    messages: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
+    state: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+    user_messages: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    ip_hash: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
+
+
+class AIChatLead(Base):
+    """A lead captured by the AI assistant (Dashboard → Chat Leads).
+
+    Saved as soon as the visitor gives an email or phone number and updated as
+    the conversation continues; transcript is a copy of the conversation.
+    """
+    __tablename__ = "AIChatLead"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    session_id: Mapped[str | None] = mapped_column(String(36), nullable=True, index=True)
+    name: Mapped[str | None] = mapped_column(String(150), nullable=True)
+    email: Mapped[str | None] = mapped_column(String(254), nullable=True)
+    phone: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    company: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    need: Mapped[str | None] = mapped_column(Text, nullable=True)
+    page: Mapped[str | None] = mapped_column(String(300), nullable=True)
+    transcript: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
+    created_at = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc), index=True)
+    updated_at = mapped_column(DateTime(timezone=True), nullable=True, default=lambda: datetime.now(timezone.utc))
+
+
+class AIKnowledgeState(Base):
+    """Single row (id=1) describing the knowledge base. The vectors themselves
+    live in the pgvector table ai_kb_chunks (see app/ai/knowledge.py)."""
+    __tablename__ = "AIKnowledgeState"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="empty")  # empty|indexing|ready|error|unavailable
+    message: Mapped[str | None] = mapped_column(Text, nullable=True)
+    pages: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    chunks: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    embedding_model: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    changed_at = mapped_column(DateTime(timezone=True), nullable=True)   # website content changed
+    indexed_at = mapped_column(DateTime(timezone=True), nullable=True)   # last successful refresh
+    started_at = mapped_column(DateTime(timezone=True), nullable=True)   # current/last refresh started

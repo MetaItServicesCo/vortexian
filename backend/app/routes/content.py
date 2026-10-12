@@ -10,6 +10,7 @@ from app import models
 from app.routes.admin import get_current_admin_dependence
 from app.sanitize import clean_html_fields
 from app.schema_markup import clean_schema_json
+from app.ai import assistant_settings
 
 router = APIRouter()
 
@@ -123,6 +124,11 @@ def save_content(
     _validate_key(key)
 
     cleaned = _validate_seo(key, clean_html_fields(data))
+    if key == assistant_settings.KEY:
+        try:
+            cleaned = assistant_settings.validate(cleaned)
+        except ValueError as err:
+            _bad(str(err))
     serialized = json.dumps(cleaned, ensure_ascii=False)
     if len(serialized.encode("utf-8")) > MAX_DOCUMENT_BYTES:
         raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail="Content too large")

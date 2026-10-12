@@ -55,6 +55,7 @@ RESOURCES: dict[str, Resource] = {
     "contacts": Resource(models.Contact, "quote request", "quote requests", lambda r: _name(r.first_name, r.last_name, f"<{r.email}>" if r.email else ""), ("project_file",)),
     "quotes": Resource(models.ContactUs, "enquiry", "enquiries", lambda r: _name(r.full_name, f"<{r.email}>" if r.email else "")),
     "newsletter": Resource(models.Newsletter, "subscriber", "subscribers", lambda r: r.email, unique_fields=("email",)),
+    "chat-leads": Resource(models.AIChatLead, "chat lead", "chat leads", lambda r: _name(r.name, f"<{r.email or r.phone}>" if (r.email or r.phone) else "")),
 }
 
 

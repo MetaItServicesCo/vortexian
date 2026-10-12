@@ -979,6 +979,34 @@ export const CONTENT_SECTIONS = [
             ],
         },
     },
+    {
+        // Dashboard → AI Assistant → Settings (backend defaults: backend/app/ai/assistant_settings.py)
+        key: "ai.assistant",
+        group: "AI Assistant",
+        title: "Assistant settings",
+        description: "The chat assistant on the website: its name, messages and when the lead capture message appears.",
+        viewUrl: "/",
+        fields: [
+            { name: "enabled", label: "Show the chat assistant on the website", type: "boolean" },
+            { name: "assistant_name", label: "Assistant name", type: "text", help: "Shown at the top of the chat window." },
+            { name: "welcome_message", label: "Welcome message", type: "textarea", help: "The first message visitors see when they open the chat." },
+            { name: "idle_enabled", label: "Lead capture message for quiet visitors", type: "boolean", help: "If a visitor hasn't asked anything after the delay below, the assistant greets them and offers to take their details." },
+            { name: "idle_seconds", label: "Delay before the lead capture message (seconds)", type: "number", help: "Between 10 and 600. Counted from the visitor's arrival; shown once per visit.", showIf: { field: "idle_enabled", equals: true } },
+            { name: "idle_message", label: "Lead capture message", type: "textarea", showIf: { field: "idle_enabled", equals: true } },
+            { name: "lead_thanks", label: "Message after a visitor leaves their details", type: "textarea" },
+            { name: "extra_instructions", label: "Extra instructions for the assistant (optional)", type: "textarea", help: "e.g. \"Always mention our free 30-minute consultation.\" The assistant still only states facts from the website. Up to 2,000 characters." },
+        ],
+        defaults: {
+            enabled: true,
+            assistant_name: "Vortexian Assistant",
+            welcome_message: "Hi! I'm the Vortexian Tech assistant. Ask me anything about our services, projects or company.",
+            idle_enabled: true,
+            idle_seconds: 60,
+            idle_message: "Hi there 👋 Looking for help with a project? Leave your name and email and our team will get back to you, or ask me anything.",
+            lead_thanks: "Thank you! Our team will get back to you shortly. Is there anything else I can help you with?",
+            extra_instructions: "",
+        },
+    },
 ];
 
 export const SECTION_MAP = Object.fromEntries(CONTENT_SECTIONS.map((s) => [s.key, s]));
