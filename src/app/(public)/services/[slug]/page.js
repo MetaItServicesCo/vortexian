@@ -96,6 +96,7 @@ export default async function ServiceDetailPage({ params }) {
             <BreadcrumbHero
                 title={service.service_title?.toUpperCase() || "CAPABILITY OVERVIEW"} // ✅
                 currentPage={service.service_title || "Detail View"}
+                trail={[{ label: "Services", href: "/services" }]}
             />
 
             <section className="py-20 px-4 sm:px-8 md:px-16 lg:px-24 max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-16 relative z-10">

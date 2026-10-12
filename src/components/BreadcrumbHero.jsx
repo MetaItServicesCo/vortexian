@@ -6,7 +6,8 @@ import { useContent } from "@/components/content/SiteContentProvider";
 import { mediaUrl } from "@/lib/api";
 
 // headingAs="p" on pages that render their own <h1> (one H1 per page for SEO)
-const BreadcrumbHero = ({ title, currentPage, headingAs = "h1" }) => {
+// trail: pages between Home and the current one, e.g. [{ label: "Services", href: "/services" }]
+const BreadcrumbHero = ({ title, currentPage, headingAs = "h1", trail = [] }) => {
   const Heading = headingAs === "h1" ? motion.h1 : motion.p;
   const banner = useContent("page_banner");
   return (
@@ -46,6 +47,16 @@ const BreadcrumbHero = ({ title, currentPage, headingAs = "h1" }) => {
               </Link>
             </li>
             <li className="text-white/30 font-light">/</li>
+            {trail.map((item) => (
+              <React.Fragment key={item.href}>
+                <li>
+                  <Link href={item.href} className="hover:text-[#5DB4D1] transition-colors">
+                    {item.label}
+                  </Link>
+                </li>
+                <li className="text-white/30 font-light">/</li>
+              </React.Fragment>
+            ))}
             <li className="text-white/60 cursor-default" aria-current="page">
               {currentPage}
             </li>
