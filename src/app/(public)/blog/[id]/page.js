@@ -62,11 +62,12 @@ export default async function BlogDetailPage({ params }) {
             <main className="max-w-5xl mx-auto px-5 py-10">
 
                 {/* ── FEATURED IMAGE ─────────────────────────────────── */}
-                <div className="w-full h-[300px] md:h-[400px] rounded-xl overflow-hidden mb-7">
+                {/* Whole image at its own proportions (never cropped or stretched); very tall images are capped to the screen height */}
+                <div className="w-full mb-7">
                     <img
                         src={getImageUrl(blog.featured_image)}
                         alt={blog.featured_image_alt || blog.title}
-                        className="w-full h-full object-cover"
+                        className="block mx-auto w-auto max-w-full h-auto max-h-[80vh] rounded-xl"
                     />
                 </div>
 

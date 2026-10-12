@@ -122,6 +122,7 @@ export default function BlogGrid({ blogs, categories = [] }) {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {currentBlogs.map((blog, index) => (
             <motion.div
+              className="h-full"
               key={blog.id}
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
@@ -129,15 +130,15 @@ export default function BlogGrid({ blogs, categories = [] }) {
             >
               <Link
                 href={blogPath(blog)}
-                className="block rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition"
+                className="block h-full rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition"
               >
-                <div className="bg-white rounded-xl shadow hover:shadow-xl transition overflow-hidden">
-                  {/* IMAGE */}
-                  <div className="relative h-56 w-full">
+                <div className="h-full bg-white rounded-xl shadow hover:shadow-xl transition overflow-hidden">
+                  {/* IMAGE: the whole image at its own proportions (never cropped or stretched) */}
+                  <div className="w-full bg-slate-50">
                     <img
                       src={getImageUrl(blog.featured_image)}
                       alt={blog.featured_image_alt || blog.title}
-                      className="w-full h-56 object-cover"
+                      className="block w-full h-auto max-h-[28rem] object-contain"
                     />
                   </div>
 
