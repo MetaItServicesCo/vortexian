@@ -4,6 +4,7 @@ Public (the chat widget):
     GET  /api/ai/config                 widget settings and a signed "visit" token, or {"enabled": false}
     GET  /api/ai/session/{id}           restore a conversation after a page reload
     POST /api/ai/chat                   a visitor message, or the idle event
+    POST /api/ai/transcribe             a voice message -> text (speech to text)
 
 The idle (lead capture) timing is decided here. The visit token records when
 the visitor arrived (signed, so it can't be faked); the browser asks for the
@@ -22,20 +23,23 @@ from __future__ import annotations
 import hashlib
 import hmac
 import json
+import os
 import threading
 import time
 import uuid
 from collections import defaultdict, deque
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from app import models
 from app.ai import assistant_settings, knowledge
+from app.ai import agents
 from app.ai.agents import build_graph, last_error
-from app.ai.providers import missing_key
+from starlette.concurrency import run_in_threadpool
+from app.ai.providers import ProviderError, missing_key, split_spec, transcribe, TRANSCRIBE_PROVIDERS
 from app.config import settings
 from app.database import get_db
 from app.routes.admin import get_current_admin_dependence
@@ -78,6 +82,8 @@ class _RateLimit:
 
 
 message_limit = _RateLimit(MESSAGES_PER_MINUTE, 60)
+voice_limit = _RateLimit(8, 60)
+MAX_AUDIO_BYTES = 5 * 1024 * 1024     # about 3 minutes of compressed speech
 session_limit = _RateLimit(SESSIONS_PER_HOUR, 3600)
 
 
@@ -129,6 +135,17 @@ def visit_arrived(token: str | None) -> float | None:
     return float(stamp) if -60 <= age <= VISIT_MAX_AGE else None
 
 
+def voice_ready(conf: dict) -> bool:
+    if not conf.get("voice_enabled"):
+        return False
+    try:
+        provider, _ = split_spec(settings.ai_transcribe_model)
+    except ProviderError:
+        return False
+    key = TRANSCRIBE_PROVIDERS.get(provider)
+    return provider == "fake" or bool(key and os.getenv(key))
+
+
 def idle_in(conf: dict, arrived: float | None, session: models.AIChatSession | None = None) -> int | None:
     """Seconds until the lead capture message may show (None: it won't)."""
     if not (conf["enabled"] and conf["idle_enabled"]) or arrived is None:
@@ -165,6 +182,8 @@ def config(db: Session = Depends(get_db)):
         "assistant_name": conf["assistant_name"],
         "welcome_message": conf["welcome_message"],
         "idle_seconds": conf["idle_seconds"] if conf["idle_enabled"] else None,
+        "quick_questions": assistant_settings.quick_questions(conf),
+        "voice": voice_ready(conf),
         "visit": visit_token(time.time()),   # the browser keeps the first one for the whole visit
     }
 
@@ -184,6 +203,7 @@ class ChatIn(BaseModel):
     session_id: str | None = Field(default=None, max_length=36)
     visit: str | None = Field(default=None, max_length=80)
     event: str = Field(default="message", pattern="^(message|idle)$")
+    voice: bool = False   # the visitor spoke this message (shown in Chat Leads)
     message: str | None = Field(default=None, max_length=MAX_MESSAGE_CHARS)
     page: str | None = Field(default=None, max_length=300)
 
@@ -240,6 +260,8 @@ def chat(body: ChatIn, request: Request, db: Session = Depends(get_db)):
         session.user_messages += 1
     history.append({"role": "assistant", "content": result["reply"], "agent": result["agent"], "at": stamp,
                     **({"sources": result["sources"]} if result.get("sources") else {})})
+    if body.voice and body.event == "message":
+        history[-2]["voice"] = True
     state["lead"] = result.get("lead", state.get("lead", {}))
     state["lead_status"] = result.get("lead_status", state.get("lead_status", "none"))
     if body.event == "idle":
@@ -251,7 +273,36 @@ def chat(body: ChatIn, request: Request, db: Session = Depends(get_db)):
     db.commit()
 
     return {"session_id": session.id, "reply": result["reply"], "agent": result["agent"],
-            "sources": result.get("sources", []), "lead_status": state["lead_status"]}
+            "sources": result.get("sources", []), "suggestions": result.get("suggestions", []),
+            "lead_status": state["lead_status"]}
+
+
+@router.post("/transcribe")
+async def transcribe_voice(request: Request, audio: UploadFile = File(...), db: Session = Depends(get_db)):
+    """Speech to text for the chat's mic button. The audio is not stored."""
+    conf = assistant_settings.load(db)
+    if not conf["enabled"] or ai_ready() or not voice_ready(conf):
+        raise HTTPException(status_code=503, detail="Voice messages are not available right now.")
+    if not voice_limit.allow(ip_hash(request)):
+        raise HTTPException(status_code=429, detail="Too many voice messages. Please wait a moment.")
+    kind = (audio.content_type or "").split(";")[0]
+    if not kind.startswith(("audio/", "video/webm")):
+        raise HTTPException(status_code=415, detail="Please send an audio recording.")
+    data = await audio.read(MAX_AUDIO_BYTES + 1)
+    if len(data) > MAX_AUDIO_BYTES:
+        raise HTTPException(status_code=413, detail="That recording is too long. Please keep it under about 2 minutes.")
+    if len(data) < 500:
+        raise HTTPException(status_code=422, detail="I couldn't hear anything. Please try again.")
+    ext = {"audio/webm": "webm", "video/webm": "webm", "audio/ogg": "ogg", "audio/mp4": "mp4", "audio/mpeg": "mp3",
+           "audio/wav": "wav", "audio/x-wav": "wav", "audio/aac": "aac"}.get(kind, "webm")
+    try:
+        text, language = await run_in_threadpool(transcribe, settings.ai_transcribe_model, f"voice.{ext}", data)
+    except Exception as err:
+        agents.last_error.update(model="speech to text", message=str(err)[:400], at=now().isoformat())
+        raise HTTPException(status_code=502, detail="Sorry, I couldn't understand the recording. Please try again or type your question.")
+    if not text:
+        raise HTTPException(status_code=422, detail="I couldn't hear anything. Please try again.")
+    return {"text": text[:MAX_MESSAGE_CHARS], "language": language}
 
 
 def _save_lead(db: Session, session: models.AIChatSession, state: dict, page: str | None) -> None:
@@ -281,7 +332,8 @@ def _lead_dict(row: models.AIChatLead, transcript: bool = False) -> dict:
         "updated_at": _aware(row.updated_at).isoformat() if row.updated_at else None,
     }
     if transcript:
-        data["transcript"] = [{"role": m.get("role"), "content": m.get("content"), "at": m.get("at")} for m in _json(row.transcript, [])]
+        data["transcript"] = [{"role": m.get("role"), "content": m.get("content"), "at": m.get("at"), "voice": bool(m.get("voice"))}
+                              for m in _json(row.transcript, [])]
     return data
 
 
@@ -298,6 +350,8 @@ def admin_status(db: Session = Depends(get_db), admin=Depends(get_current_admin_
         "fast_model": settings.ai_fast_model,
         "embedding_model": settings.ai_embedding_model,
         "embedding_problem": f"{embed_key} is not set on the server." if embed_key else None,
+        "transcribe_model": settings.ai_transcribe_model,
+        "voice": voice_ready(conf),
         "crawl_url": knowledge.base_url(),
         "idle_seconds": conf["idle_seconds"],
         "idle_enabled": conf["idle_enabled"],

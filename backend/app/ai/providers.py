@@ -204,6 +204,43 @@ def embedder(spec: str | None = None) -> Embedder:
     return LangChainEmbedder(spec, cls(model=model))
 
 
+# ---------------------------------------------------------------- speech to text
+
+# provider -> API key variable; "fake:" returns a fixed sentence (tests)
+TRANSCRIBE_PROVIDERS = {"groq": "GROQ_API_KEY", "openai": "OPENAI_API_KEY"}
+
+
+def transcribe(spec: str, filename: str, audio: bytes) -> tuple[str, str | None]:
+    """Text of a voice message, and its language code when the provider reports it."""
+    provider, model = split_spec(spec)
+    if provider == "fake":
+        return "What services do you offer?", "en"
+    if provider not in TRANSCRIBE_PROVIDERS:
+        raise ProviderError(f"Unknown speech-to-text provider '{provider}'. Known: {', '.join(sorted(TRANSCRIBE_PROVIDERS))}, fake.")
+    key = TRANSCRIBE_PROVIDERS[provider]
+    if not os.getenv(key):
+        raise ProviderError(f"{key} is not set on the server.")
+    try:
+        if provider == "groq":
+            from groq import Groq as Client
+        else:
+            from openai import OpenAI as Client
+    except ImportError as err:
+        raise ProviderError(f"Install the '{provider}' package for {provider} speech to text.") from err
+    result = Client(max_retries=1, timeout=30).audio.transcriptions.create(
+        model=model, file=(filename, audio), response_format="verbose_json", temperature=0.0)
+    language = getattr(result, "language", None)
+    return (getattr(result, "text", "") or "").strip(), LANGUAGE_CODES.get(str(language or "").lower(), language)
+
+
+# Whisper reports language names; browsers' speech synthesis wants codes
+LANGUAGE_CODES = {
+    "english": "en", "arabic": "ar", "urdu": "ur", "hindi": "hi", "spanish": "es", "french": "fr", "german": "de",
+    "portuguese": "pt", "italian": "it", "dutch": "nl", "turkish": "tr", "russian": "ru", "chinese": "zh",
+    "japanese": "ja", "korean": "ko", "persian": "fa", "bengali": "bn", "punjabi": "pa", "indonesian": "id", "malay": "ms",
+}
+
+
 # ---------------------------------------------------------------- fake chat model (tests)
 
 class FakeAssistantModel(BaseChatModel):
@@ -246,7 +283,7 @@ class FakeAssistantModel(BaseChatModel):
                 return "I'm not sure about that. You can reach our team on the [Contact](/contact) page."
             lines =[l for l in context.split("\n") if len(l) > 40 and not l.startswith("[source:")]
             sentence = re.split(r"(?<=[.!?])\s", (lines[0] if lines else source.group(3)).strip())[0]
-            return f"{sentence} More on [{source.group(1)}]({source.group(2)})."
+            return f"{sentence} More on [{source.group(1)}]({source.group(2)}).\nFOLLOW_UPS: How much does it cost? | How long does it take? | Can I see examples?"
         if task == "LEAD":
             missing = re.search(r"Still needed: (.+)", system)
             if missing and missing.group(1).strip() != "nothing":

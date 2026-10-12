@@ -143,6 +143,7 @@ export default function AIAssistantPage() {
                     <Row label="Answer model">{status.chat_model}</Row>
                     <Row label="Routing model">{status.fast_model}</Row>
                     <Row label="Embedding model">{status.embedding_model}</Row>
+                    <Row label="Voice (speech to text)">{status.voice ? status.transcribe_model : "Off"}</Row>
                     <Row label="Conversations">{status.conversations}</Row>
                     <Row label="Leads captured"><Link href="/dashboard/chat-leads" className="text-[#1D1D7E] underline underline-offset-2">{status.leads}</Link></Row>
                     {status.embedding_problem && <p className="text-sm text-red-700 mt-2">{status.embedding_problem}</p>}

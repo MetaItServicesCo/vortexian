@@ -34,6 +34,7 @@ class Settings(BaseSettings):
     ai_chat_model: str = "groq:openai/gpt-oss-120b"       # answers and lead conversation
     ai_fast_model: str = "groq:openai/gpt-oss-20b"        # routing and detail extraction
     ai_embedding_model: str = "fastembed:BAAI/bge-small-en-v1.5"  # knowledge base vectors
+    ai_transcribe_model: str = "groq:whisper-large-v3-turbo"  # voice messages (speech to text)
     ai_model_cache: str = "models"                        # downloaded embedding models
     # Pages are read from the public website for the knowledge base
     ai_crawl_base_url: str | None = None                  # defaults to site_url

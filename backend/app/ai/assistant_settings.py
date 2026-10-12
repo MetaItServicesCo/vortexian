@@ -20,7 +20,16 @@ DEFAULTS = {
     "idle_message": "Hi there 👋 Looking for help with a project? Leave your name and email and our team will get back to you, or ask me anything.",
     "lead_thanks": "Thank you! Our team will get back to you shortly. Is there anything else I can help you with?",
     "extra_instructions": "",
+    "quick_questions": "What services do you offer?\nHow much does a project cost?\nCan I see your previous work?",
+    "voice_enabled": True,
 }
+
+MAX_QUICK_QUESTIONS, MAX_QUESTION_CHARS = 6, 80
+
+
+def quick_questions(conf: dict) -> list[str]:
+    lines = [line.strip() for line in str(conf.get("quick_questions") or "").splitlines()]
+    return [line[:MAX_QUESTION_CHARS] for line in lines if line][:MAX_QUICK_QUESTIONS]
 
 
 def load(db: Session) -> dict:
@@ -32,6 +41,8 @@ def load(db: Session) -> dict:
         except ValueError:
             data = {}
     merged = {**DEFAULTS, **{k: v for k, v in data.items() if v not in (None, "")}}
+    if "quick_questions" in data:   # an emptied list means "no suggested questions"
+        merged["quick_questions"] = data["quick_questions"] or ""
     try:
         merged["idle_seconds"] = min(MAX_IDLE_SECONDS, max(MIN_IDLE_SECONDS, int(merged["idle_seconds"])))
     except (TypeError, ValueError):
@@ -51,4 +62,9 @@ def validate(data: dict) -> dict:
         data = {**data, "idle_seconds": seconds}
     if len(str(data.get("extra_instructions") or "")) > 2000:
         raise ValueError("Extra instructions are limited to 2,000 characters.")
+    questions = [q.strip() for q in str(data.get("quick_questions") or "").splitlines() if q.strip()]
+    if len(questions) > MAX_QUICK_QUESTIONS:
+        raise ValueError(f"Up to {MAX_QUICK_QUESTIONS} suggested questions, one per line.")
+    if any(len(q) > MAX_QUESTION_CHARS for q in questions):
+        raise ValueError(f"Keep each suggested question under {MAX_QUESTION_CHARS} characters.")
     return data

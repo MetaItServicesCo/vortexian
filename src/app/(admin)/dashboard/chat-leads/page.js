@@ -18,7 +18,7 @@ function Transcript({ messages }) {
             {messages.map((m, i) => (
                 <li key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
                     <span className={`max-w-[85%] rounded-xl px-3 py-2 text-sm whitespace-pre-wrap break-words ${m.role === "user" ? "bg-[#1D1D7E] text-white" : "bg-slate-100 text-slate-700"}`}>
-                        <span className="block text-[10px] font-bold uppercase tracking-wider opacity-60 mb-0.5">{m.role === "user" ? "Visitor" : "Assistant"}</span>
+                        <span className="block text-[10px] font-bold uppercase tracking-wider opacity-60 mb-0.5">{m.role === "user" ? (m.voice ? "Visitor 🎤 (spoken)" : "Visitor") : "Assistant"}</span>
                         {m.content}
                     </span>
                 </li>

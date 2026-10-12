@@ -994,6 +994,8 @@ export const CONTENT_SECTIONS = [
             { name: "idle_seconds", label: "Delay before the lead capture message (seconds)", type: "number", help: "Between 10 and 600. Counted from the visitor's arrival; shown once per visit.", showIf: { field: "idle_enabled", equals: true } },
             { name: "idle_message", label: "Lead capture message", type: "textarea", showIf: { field: "idle_enabled", equals: true } },
             { name: "lead_thanks", label: "Message after a visitor leaves their details", type: "textarea" },
+            { name: "quick_questions", label: "Suggested questions", type: "textarea", help: "Shown as one-click buttons when the chat opens. One per line, up to 6, each under 80 characters. Leave empty for none." },
+            { name: "voice_enabled", label: "Voice messages", type: "boolean", help: "Visitors can speak their question (mic button) and hear answers read aloud." },
             { name: "extra_instructions", label: "Extra instructions for the assistant (optional)", type: "textarea", help: "e.g. \"Always mention our free 30-minute consultation.\" The assistant still only states facts from the website. Up to 2,000 characters." },
         ],
         defaults: {
@@ -1005,6 +1007,8 @@ export const CONTENT_SECTIONS = [
             idle_message: "Hi there 👋 Looking for help with a project? Leave your name and email and our team will get back to you, or ask me anything.",
             lead_thanks: "Thank you! Our team will get back to you shortly. Is there anything else I can help you with?",
             extra_instructions: "",
+            quick_questions: "What services do you offer?\nHow much does a project cost?\nCan I see your previous work?",
+            voice_enabled: true,
         },
     },
 ];
