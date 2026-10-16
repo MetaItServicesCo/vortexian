@@ -2,7 +2,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight, ChevronDown, Phone, PhoneCall, Sparkles, CircleHelp } from "lucide-react";
 import SchemaMarkup from "@/components/seo/SchemaMarkup";
-import DynamicIcon, { ICONS } from "@/components/content/DynamicIcon";
 import { getJson, getSection, pageMetadata } from "@/lib/content";
 import { OTHER_SERVICES_PATH, otherServices } from "@/lib/otherServices";
 
@@ -16,6 +15,9 @@ const safeHref = (v) => {
     const s = (v || "").trim();
     return /^\/(?!\/)\S*$/.test(s) || /^https?:\/\/\S+$/i.test(s) ? s : "";
 };
+// Dot pattern in the cards' corners
+const DOTS = { backgroundImage: "radial-gradient(rgba(255,255,255,0.35) 1.2px, transparent 1.2px)", backgroundSize: "9px 9px" };
+
 const telHref = (phone) => `tel:${(phone || "").replace(/[^\d+]/g, "")}`;
 
 export function generateMetadata() {
@@ -91,21 +93,26 @@ export default async function OtherServicesPage() {
                         <h2 id="other-services-heading" className="text-3xl md:text-4xl font-bold tracking-tight text-[#1D1D7E]">{page.services_heading || "Services We Provide"}</h2>
                         {page.services_text && <p className="mt-3 text-base md:text-lg text-slate-600">{page.services_text}</p>}
                     </div>
-                    {/* Same card as the home page Services / Employee Perks sections (information only, not links) */}
-                    <ul className="mt-10 md:mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                    {/* Navy service cards (information only, not links) */}
+                    <ul className="mt-10 md:mt-12 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
                         {list.map((s) => (
                             <li key={s.id} data-other-service
-                                className="group relative flex min-h-[260px] flex-col overflow-hidden bg-white p-8 pt-24 shadow-lg transition-all duration-500 ease-out hover:-translate-y-2 hover:shadow-2xl">
-                                <div aria-hidden="true" className="absolute inset-0 z-0 bg-gradient-to-br from-[#5DB4D1] via-[#2A2A8E] to-[#5DB4D1] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-                                <div aria-hidden="true" className="absolute top-12 left-0 z-10 h-6 w-full bg-[#F8F9FA] transition-colors duration-500 group-hover:bg-white/10" />
-                                <div aria-hidden="true" className="absolute top-6 left-8 z-20 flex h-14 w-14 items-center justify-center rounded-full bg-white text-black shadow-md transition-all duration-500 group-hover:scale-110 group-hover:bg-[#5DB4D1] group-hover:text-white">
-                                    <DynamicIcon name={ICONS[s.lucide_icon] ? s.lucide_icon : "Layers"} size={24} />
+                                className="rounded-[1.75rem] bg-gradient-to-br from-[#1D1D7E]/50 via-[#2b5f86]/50 to-[#5DB4D1]/70 p-3 shadow-[0_20px_50px_-25px_rgba(29,29,126,0.55)] transition-transform duration-500 hover:-translate-y-1.5">
+                                <div className="relative flex h-full min-h-[240px] flex-col items-center justify-center overflow-hidden rounded-[1.25rem] bg-gradient-to-br from-[#12123F] via-[#1D1D6E] to-[#2E2A8F] px-8 py-12 text-center text-white">
+                                    <span aria-hidden="true" className="pointer-events-none absolute left-1/2 top-1/2 h-[130%] aspect-square -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/[0.05]" />
+                                    <span aria-hidden="true" className="pointer-events-none absolute left-1/2 top-1/2 h-[80%] aspect-square -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/[0.05]" />
+                                    <span aria-hidden="true" className="pointer-events-none absolute left-4 top-4 h-7 w-11" style={DOTS} />
+                                    <span aria-hidden="true" className="pointer-events-none absolute bottom-4 right-4 h-7 w-11" style={DOTS} />
+                                    {page.card_eyebrow && (
+                                        <p className="relative text-[11px] font-bold uppercase tracking-[0.25em] text-[#5DB4D1]">
+                                            {page.card_eyebrow}
+                                            <span aria-hidden="true" className="mx-auto mt-2 block h-0.5 w-10 rounded-full bg-[#5DB4D1]" />
+                                        </p>
+                                    )}
+                                    <h3 className="relative mt-5 text-2xl md:text-[1.7rem] font-bold leading-tight">{s.service_title}</h3>
+                                    {s.short_description && <p className="relative mt-3 max-w-sm text-[15px] leading-relaxed text-white/75">{s.short_description}</p>}
+                                    {page.card_footer && <p className="relative mt-6 text-[11px] font-bold uppercase tracking-[0.2em] text-white">{page.card_footer}</p>}
                                 </div>
-                                <div className="relative z-20">
-                                    <h3 className="mb-3 text-xl font-bold text-black transition-colors group-hover:text-white">{s.service_title}</h3>
-                                    {s.short_description && <p className="text-sm leading-relaxed text-gray-600 transition-colors group-hover:text-white/80">{s.short_description}</p>}
-                                </div>
-                                <div aria-hidden="true" className="absolute -bottom-10 -right-10 h-24 w-24 rounded-full bg-white/10 blur-2xl transition-all duration-500 group-hover:bg-[#5DB4D1]/40" />
                             </li>
                         ))}
                     </ul>
