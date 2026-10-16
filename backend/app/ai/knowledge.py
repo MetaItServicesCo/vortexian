@@ -44,7 +44,7 @@ DAILY = timedelta(hours=24)         # safety-net refresh
 STALE_RUN = timedelta(minutes=30)   # an "indexing" status older than this was interrupted
 CHUNK_CHARS, OVERLAP_CHARS = 1000, 200
 MAX_PAGES = 400
-BUILT_IN_PAGES = ["/", "/about", "/services", "/portfolio", "/blog", "/news", "/career", "/contact"]
+BUILT_IN_PAGES = ["/", "/about", "/services", "/portfolio", "/blog", "/news", "/career", "/contact", "/gallery"]
 
 INSTALL_HELP = (
     "The pgvector extension is not installed in the database. On the server run: "
@@ -106,6 +106,7 @@ def state_dict(state: models.AIKnowledgeState) -> dict:
 CONTENT_MODELS = (
     models.Service, models.Blog, models.Portfolio, models.Page, models.NewsFeed,
     models.Team, models.Testimonial, models.SiteContent, models.Category,
+    models.GalleryImage, models.GalleryAlbum,
 )
 
 
@@ -226,6 +227,7 @@ def page_paths(db: Session) -> list[str]:
     paths += [f"/blog/{quote(b.slug or str(b.id), safe='')}" for b in db.query(models.Blog).all()]
     paths += [f"/portfolio/{quote(p.slug or str(p.id), safe='')}" for p in db.query(models.Portfolio).all()]
     paths += [f"/{p.slug}" for p in db.query(models.Page).filter(models.Page.is_published.is_(True)).all()]
+    paths += [f"/gallery/{a.slug}" for a in db.query(models.GalleryAlbum).filter(models.GalleryAlbum.is_published.is_(True)).all()]
     return list(dict.fromkeys(paths))[:MAX_PAGES]
 
 

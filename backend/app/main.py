@@ -19,6 +19,7 @@ from app.routes.bulk import router as bulk_router
 from app.routes.trash import router as trash_router
 from app.routes.categories import router as categories_router
 from app.routes.ai import router as ai_router
+from app.routes.gallery import router as gallery_router
 from app.ai import knowledge
 from app.config import settings
 from app.database import sessionlocal
@@ -92,3 +93,4 @@ app.include_router(bulk_router, prefix="/api/bulk", tags=["Bulk actions"])
 app.include_router(trash_router, prefix="/api/trash", tags=["Recently deleted"])
 app.include_router(categories_router, prefix="/api/categories", tags=["Categories"])
 app.include_router(ai_router, prefix="/api/ai", tags=["AI assistant"])
+app.include_router(gallery_router, prefix="/api/gallery", tags=["Gallery"])

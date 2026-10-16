@@ -428,3 +428,47 @@ class MediaItem(Base):
     uploaded_by: Mapped[str | None] = mapped_column(String(100), nullable=True)
     created_at = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc), index=True)
     updated_at = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+# ///////// Gallery (Dashboard → Gallery; public /gallery) //////////
+
+class GalleryAlbum(Base):
+    """An event album, e.g. "Annual Company Event 2026" (public /gallery/<slug>)."""
+    __tablename__ = "GalleryAlbum"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    title: Mapped[str] = mapped_column(String(150), nullable=False)
+    slug: Mapped[str] = mapped_column(String(180), nullable=False, unique=True, index=True)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    event_date: Mapped[str | None] = mapped_column(String(10), nullable=True)      # YYYY-MM-DD
+    cover_image_id: Mapped[int | None] = mapped_column(Integer, nullable=True)    # a GalleryImage; first photo if empty
+    sort_order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    is_published: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    created_at = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
+    updated_at = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class GalleryImage(Base):
+    """A gallery photo, stored as WebP in four sizes (see app/gallery_images.py)."""
+    __tablename__ = "GalleryImage"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    album_id: Mapped[int | None] = mapped_column(Integer, nullable=True, index=True)
+    category_id: Mapped[int | None] = mapped_column(Integer, nullable=True, index=True)   # Category kind "gallery"
+    category_name: Mapped[str] = mapped_column(String(100), nullable=False, default="Others")
+    title: Mapped[str] = mapped_column(String(150), nullable=False)
+    caption: Mapped[str | None] = mapped_column(Text, nullable=True)
+    event_name: Mapped[str | None] = mapped_column(String(150), nullable=True)
+    event_date: Mapped[str | None] = mapped_column(String(10), nullable=True)      # YYYY-MM-DD
+    alt: Mapped[str] = mapped_column(String(255), nullable=False)
+    path: Mapped[str] = mapped_column(String(300), nullable=False)
+    path_large: Mapped[str] = mapped_column(String(300), nullable=False)
+    path_medium: Mapped[str] = mapped_column(String(300), nullable=False)
+    path_thumb: Mapped[str] = mapped_column(String(300), nullable=False)
+    width: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    height: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    file_size: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    sort_order: Mapped[int] = mapped_column(Integer, nullable=False, default=0, index=True)
+    is_published: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    created_at = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
+    updated_at = mapped_column(DateTime(timezone=True), nullable=True)

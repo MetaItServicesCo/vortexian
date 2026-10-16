@@ -55,6 +55,9 @@ RESOURCES: dict[str, Resource] = {
     "contacts": Resource(models.Contact, "quote request", "quote requests", lambda r: _name(r.first_name, r.last_name, f"<{r.email}>" if r.email else ""), ("project_file",)),
     "quotes": Resource(models.ContactUs, "enquiry", "enquiries", lambda r: _name(r.full_name, f"<{r.email}>" if r.email else "")),
     "newsletter": Resource(models.Newsletter, "subscriber", "subscribers", lambda r: r.email, unique_fields=("email",)),
+    "gallery-images": Resource(models.GalleryImage, "gallery photo", "gallery photos", lambda r: r.title,
+                                ("path", "path_large", "path_medium", "path_thumb"), publishable=True),
+    "gallery-albums": Resource(models.GalleryAlbum, "album", "albums", lambda r: r.title, unique_fields=("slug",), publishable=True),
     "media": Resource(models.MediaItem, "image", "images", lambda r: r.title or r.path, ("path",), ("path",)),
     "chat-leads": Resource(models.AIChatLead, "chat lead", "chat leads", lambda r: _name(r.name, f"<{r.email or r.phone}>" if (r.email or r.phone) else "")),
 }
@@ -184,7 +187,8 @@ def restore(db: Session, item: models.DeletedItem) -> object:
             raise RestoreError(f"Another {resource.singular} already uses the {label} “{value}”. Change or delete that one first.")
 
     values = _from_snapshot(model, item.data)
-    kinds = {"services": ("service", "category_stack"), "blog": ("blog", "category"), "portfolio": ("portfolio", "category_node")}
+    kinds = {"services": ("service", "category_stack"), "blog": ("blog", "category"), "portfolio": ("portfolio", "category_node"),
+             "gallery-images": ("gallery", "category_name")}
     if item.resource in kinds and values.get("category_id") is not None:
         from app import categories as cats  # restored into a deleted category -> Others
         if not db.get(models.Category, values["category_id"]):

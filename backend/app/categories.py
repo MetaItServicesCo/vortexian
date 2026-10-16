@@ -11,18 +11,19 @@ from sqlalchemy.orm import Session
 
 from app import models
 
-KINDS = ("service", "blog", "portfolio")
+KINDS = ("service", "blog", "portfolio", "gallery")
 OTHERS = "Others"
 ITEMS = {
     "service": (models.Service, "category_stack"),
     "blog": (models.Blog, "category"),
     "portfolio": (models.Portfolio, "category_node"),
+    "gallery": (models.GalleryImage, "category_name"),
 }
 
 
 def check_kind(kind: str) -> str:
     if kind not in KINDS:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Category type must be service, blog or portfolio.")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Category type must be service, blog, portfolio or gallery.")
     return kind
 
 

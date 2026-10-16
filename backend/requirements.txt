@@ -63,3 +63,5 @@ fastembed==0.9.0
 onnxruntime==1.31.0
 numpy==2.4.6
 tokenizers==0.23.3
+# Gallery: image optimisation (app/gallery_images.py)
+pillow==12.3.0

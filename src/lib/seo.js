@@ -22,6 +22,7 @@ const STATIC_PAGES = [
     { path: "/career", priority: 0.7 },
     { path: "/contact", priority: 0.7 },
     { path: "/news", priority: 0.6 },
+    { path: "/gallery", priority: 0.6 },
 ];
 
 const lines = (text) => String(text || "").split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
@@ -43,11 +44,12 @@ function excluded(path, rules) {
 }
 
 export async function sitemapEntries(settings) {
-    const [services, blogs, projects, pages] = await Promise.all([
+    const [services, blogs, projects, pages, gallery] = await Promise.all([
         settings.include_services ? getJson("/api/services/", []) : [],
         settings.include_blog ? getJson("/api/blog/public", []) : [],
         settings.include_portfolio ? getJson("/api/portfolio/", []) : [],
         settings.include_pages ? getJson("/api/pages/published", []) : [],
+        getJson("/api/gallery/", { albums: [] }),
     ]);
     const list = (v) => (Array.isArray(v) ? v : []);
 
@@ -57,6 +59,7 @@ export async function sitemapEntries(settings) {
         ...list(blogs).map((b) => ({ path: blogPath(b), priority: 0.7 })),
         ...list(projects).map((p) => ({ path: `/portfolio/${p.slug || p.id}`, priority: 0.6 })),
         ...list(pages).map((p) => ({ path: `/${p.slug}`, priority: 0.4, lastModified: p.updated_at })),
+        ...list(gallery?.albums).map((a) => ({ path: `/gallery/${a.slug}`, priority: 0.5 })),
         ...lines(settings.extra_urls).map(toSitePath).filter(Boolean).map((path) => ({ path, priority: 0.5 })),
     ];
 

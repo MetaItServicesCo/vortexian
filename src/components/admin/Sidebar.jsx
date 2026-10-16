@@ -24,6 +24,7 @@ import {
   FiTag,
   FiCpu,
   FiMessageSquare,
+  FiCamera,
 } from "react-icons/fi";
 
 const menuItems = [
@@ -44,6 +45,7 @@ const menuItems = [
   { label: "Blog", icon: FiFileText, href: "/dashboard/blog" },
   { label: "News Feed", icon: FiRss, href: "/dashboard/newsfeed" },
   { label: "Media Library", icon: FiImage, href: "/dashboard/media" },
+  { label: "Gallery", icon: FiCamera, href: "/dashboard/gallery" },
   { label: "Testimonials", icon: FiStar, href: "/dashboard/testimonials" },
   { label: "Career", icon: FiUserCheck, href: "/dashboard/career" },
   { label: "Recently deleted", icon: FiTrash2, href: "/dashboard/trash" },

@@ -16,6 +16,7 @@ const GROUP_URLS = {
     "Career Page": "/career",
     "Services Page": "/services",
     "Portfolio Page": "/portfolio",
+    "Gallery Page": "/gallery",
     "Blog Page": "/blog",
     "News Page": "/news",
 };

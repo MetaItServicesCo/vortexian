@@ -48,7 +48,7 @@ const linkFields = [
     { name: "href", label: "Link", type: "url", placeholder: "/contact or https://…" },
 ];
 
-export const CONTENT_GROUPS = ["Global", "Home Page", "About Page", "Contact Page", "Career Page", "Services Page", "Portfolio Page", "Blog Page", "News Page", "SEO & Tracking", "Newsletter"];
+export const CONTENT_GROUPS = ["Global", "Home Page", "About Page", "Contact Page", "Career Page", "Services Page", "Portfolio Page", "Blog Page", "News Page", "Gallery Page", "SEO & Tracking", "Newsletter"];
 
 export const CONTENT_SECTIONS = [
     // ------------------------------------------------------------------ GLOBAL
@@ -162,6 +162,7 @@ export const CONTENT_SECTIONS = [
                         { label: "About Us", href: "/about" },
                         { label: "Portfolio", href: "/portfolio" },
                         { label: "Blog", href: "/blog" },
+                        { label: "Gallery", href: "/gallery" },
                     ],
                 },
                 { label: "CONTACT US", href: "/contact", children: [] },
@@ -204,6 +205,7 @@ export const CONTENT_SECTIONS = [
                 { label: "Careers", href: "/career" },
                 { label: "About Us", href: "/about" },
                 { label: "News & Updates", href: "/news" },
+                { label: "Gallery", href: "/gallery" },
                 { label: "Contact", href: "/contact" },
             ],
             pages_heading: "Legal",
@@ -618,6 +620,37 @@ export const CONTENT_SECTIONS = [
             text: "We decoupled from standard outdated WordPress frameworks to deliver staggering serverless speed, layout configuration flexibility, and pure organic positioning.",
         },
     },
+
+    // ---------------------------------------------------------- GALLERY PAGE
+    (() => {
+        const meta = pageMeta(
+            "OUR GALLERY",
+            "Gallery | Vortexian Tech – Events, Team & Culture",
+            "Photos from Vortexian Tech's company events, team activities, meetings, training sessions and achievements.",
+            "CollectionPage",
+        );
+        return {
+            key: "page.gallery",
+            group: "Gallery Page",
+            title: "Page text & SEO",
+            description: "Heading, introduction and SEO of the Gallery page. Photos and albums are managed in Dashboard → Gallery.",
+            fields: [
+                meta.fields[0],
+                { name: "intro_heading", label: "Introduction heading", type: "text" },
+                { name: "intro_text", label: "Introduction", type: "textarea" },
+                { name: "albums_heading", label: "Albums heading", type: "text" },
+                { name: "photos_heading", label: "Photos heading", type: "text" },
+                ...meta.fields.slice(1),
+            ],
+            defaults: {
+                ...meta.defaults,
+                intro_heading: "Life at Vortexian Tech",
+                intro_text: "A look inside our company: events, team activities, meetings, training sessions, celebrations and the achievements we're proud of.",
+                albums_heading: "Events & albums",
+                photos_heading: "All photos",
+            },
+        };
+    })(),
 
     // ---------------------------------------------------------- PORTFOLIO PAGE
     {

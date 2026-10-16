@@ -11,6 +11,7 @@ const KINDS = {
     service: { label: "Service categories", item: ["service", "services"], help: "Choose a category for each service. Categories switched on appear in the website's Services dropdown, each opening its services." },
     blog: { label: "Blog categories", item: ["post", "posts"], help: "Choose a category for each blog post. The Blog page shows them as filter buttons." },
     portfolio: { label: "Portfolio categories", item: ["project", "projects"], help: "Choose a category for each portfolio project. The Portfolio page shows them as filter buttons." },
+    gallery: { label: "Gallery categories", item: ["photo", "photos"], help: "Choose a category for each gallery photo. The Gallery page shows them as filter buttons (only categories with published photos)." },
 };
 
 function Switch({ checked, onChange, label, disabled }) {
@@ -24,7 +25,7 @@ function Switch({ checked, onChange, label, disabled }) {
 
 function CategoriesManager() {
     const params = useSearchParams();
-    const kind = ["blog", "portfolio"].includes(params.get("kind")) ? params.get("kind") : "service";
+    const kind = ["blog", "portfolio", "gallery"].includes(params.get("kind")) ? params.get("kind") : "service";
     const meta = KINDS[kind];
     const [rows, setRows] = useState(null);
     const [newName, setNewName] = useState("");
@@ -110,7 +111,7 @@ function CategoriesManager() {
 
             <form onSubmit={add} className="flex gap-2 mb-5">
                 <input id="new-category" value={newName} onChange={(e) => setNewName(e.target.value)} maxLength={100}
-                    placeholder={{ service: "New category, e.g. Cloud & DevOps", blog: "New category, e.g. Hiring Tips", portfolio: "New category, e.g. Staffing" }[kind]}
+                    placeholder={{ service: "New category, e.g. Cloud & DevOps", blog: "New category, e.g. Hiring Tips", portfolio: "New category, e.g. Staffing", gallery: "New category, e.g. Office Celebrations" }[kind]}
                     className="flex-1 p-3 bg-white border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-[#1D1D7E]/40" />
                 <button type="submit" disabled={busy || !newName.trim()} className="inline-flex items-center gap-2 bg-[#1D1D7E] text-white px-4 rounded-xl font-semibold disabled:opacity-50">
                     <Plus size={16} /> Add category
@@ -165,7 +166,7 @@ function CategoriesManager() {
             <p className="mt-3 text-xs text-slate-400">
                 {kind === "service"
                     ? "The dropdown shows categories in this order, each with its services that have “Show in Services menu” on (Manage Services). Others is always last."
-                    : `The ${kind === "blog" ? "Blog" : "Portfolio"} page lists these as filter buttons, in this order (only categories that have ${meta.item[1]}).`}
+                    : `The ${{ blog: "Blog", portfolio: "Portfolio", gallery: "Gallery" }[kind]} page lists these as filter buttons, in this order (only categories that have ${meta.item[1]}).`}
             </p>
         </div>
     );
