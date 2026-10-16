@@ -11,13 +11,6 @@ import { OTHER_SERVICES_PATH, otherServices } from "@/lib/otherServices";
 // Text, call band and FAQ: Site Content → Other Services Page.
 export const dynamic = "force-dynamic";
 
-// Card tints, cycled: the site's light blue, lavender and mint
-const TINTS = [
-    { card: "#EAF6FB", border: "#CBE8F3", icon: "#2B7FA0" },
-    { card: "#EEEEFB", border: "#D9D9F5", icon: "#1D1D7E" },
-    { card: "#E7F6F0", border: "#C8EBDD", icon: "#1F7A5C" },
-];
-
 // Admin-entered links: a page on this site or a full web address
 const safeHref = (v) => {
     const s = (v || "").trim();
@@ -93,24 +86,28 @@ export default async function OtherServicesPage() {
 
             {/* ---------------- services (information cards, not links) */}
             <section className="relative px-4 sm:px-8 -mt-6 md:-mt-10 pb-16 md:pb-24" aria-labelledby="other-services-heading">
-                <div className="max-w-[1240px] mx-auto rounded-[2rem] border border-slate-100 bg-white px-5 py-12 sm:px-10 md:py-16 shadow-[0_20px_60px_-30px_rgba(29,29,126,0.35)]">
+                <div className="max-w-[1240px] mx-auto rounded-[2rem] border border-slate-100 bg-[#F2F2F2] px-5 py-12 sm:px-10 md:py-16 shadow-[0_20px_60px_-30px_rgba(29,29,126,0.35)]">
                     <div className="mx-auto max-w-2xl text-center">
                         <h2 id="other-services-heading" className="text-3xl md:text-4xl font-bold tracking-tight text-[#1D1D7E]">{page.services_heading || "Services We Provide"}</h2>
                         {page.services_text && <p className="mt-3 text-base md:text-lg text-slate-600">{page.services_text}</p>}
                     </div>
-                    <ul className="mt-10 md:mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                        {list.map((s, i) => {
-                            const tint = TINTS[i % TINTS.length];
-                            return (
-                                <li key={s.id} className="flex flex-col rounded-2xl border p-6" style={{ backgroundColor: tint.card, borderColor: tint.border }} data-other-service>
-                                    <span className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-white shadow-sm" style={{ color: tint.icon }} aria-hidden="true">
-                                        <DynamicIcon name={ICONS[s.lucide_icon] ? s.lucide_icon : "Layers"} size={22} />
-                                    </span>
-                                    <h3 className="text-lg font-bold text-[#0b0b2e] leading-snug">{s.service_title}</h3>
-                                    {s.short_description && <p className="mt-2 text-[15px] leading-relaxed text-slate-600">{s.short_description}</p>}
-                                </li>
-                            );
-                        })}
+                    {/* Same card as the home page Services / Employee Perks sections (information only, not links) */}
+                    <ul className="mt-10 md:mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                        {list.map((s) => (
+                            <li key={s.id} data-other-service
+                                className="group relative flex min-h-[260px] flex-col overflow-hidden bg-white p-8 pt-24 shadow-lg transition-all duration-500 ease-out hover:-translate-y-2 hover:shadow-2xl">
+                                <div aria-hidden="true" className="absolute inset-0 z-0 bg-gradient-to-br from-[#5DB4D1] via-[#2A2A8E] to-[#5DB4D1] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                                <div aria-hidden="true" className="absolute top-12 left-0 z-10 h-6 w-full bg-[#F8F9FA] transition-colors duration-500 group-hover:bg-white/10" />
+                                <div aria-hidden="true" className="absolute top-6 left-8 z-20 flex h-14 w-14 items-center justify-center rounded-full bg-white text-black shadow-md transition-all duration-500 group-hover:scale-110 group-hover:bg-[#5DB4D1] group-hover:text-white">
+                                    <DynamicIcon name={ICONS[s.lucide_icon] ? s.lucide_icon : "Layers"} size={24} />
+                                </div>
+                                <div className="relative z-20">
+                                    <h3 className="mb-3 text-xl font-bold text-black transition-colors group-hover:text-white">{s.service_title}</h3>
+                                    {s.short_description && <p className="text-sm leading-relaxed text-gray-600 transition-colors group-hover:text-white/80">{s.short_description}</p>}
+                                </div>
+                                <div aria-hidden="true" className="absolute -bottom-10 -right-10 h-24 w-24 rounded-full bg-white/10 blur-2xl transition-all duration-500 group-hover:bg-[#5DB4D1]/40" />
+                            </li>
+                        ))}
                     </ul>
                 </div>
             </section>
