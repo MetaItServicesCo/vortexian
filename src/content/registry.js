@@ -48,7 +48,7 @@ const linkFields = [
     { name: "href", label: "Link", type: "url", placeholder: "/contact or https://…" },
 ];
 
-export const CONTENT_GROUPS = ["Global", "Home Page", "About Page", "Contact Page", "Career Page", "Hiring Impact", "Services Page", "Other Services Page", "Portfolio Page", "Blog Page", "News Page", "Gallery Page", "SEO & Tracking", "Newsletter"];
+export const CONTENT_GROUPS = ["Global", "Home Page", "About Page", "Contact Page", "Career Page", "Hiring Impact", "Services Page", "Portfolio Page", "Blog Page", "News Page", "Gallery Page", "SEO & Tracking", "Newsletter"];
 
 export const CONTENT_SECTIONS = [
     // ------------------------------------------------------------------ GLOBAL
@@ -685,78 +685,6 @@ export const CONTENT_SECTIONS = [
             heading_highlight: "Elite Architectures",
             text: "We decoupled from standard outdated WordPress frameworks to deliver staggering serverless speed, layout configuration flexibility, and pure organic positioning.",
         },
-    },
-
-    // ---------------------------------------------------- OTHER SERVICES PAGE
-    (() => {
-        const meta = pageMeta(
-            "Other Services",
-            "Other Services | Vortexian Tech",
-            "More services from Vortexian Tech beyond our core offering. Explore what we can do for your business and get a free, no-obligation quote.",
-            "CollectionPage",
-        );
-        return {
-            key: "page.other_services",
-            group: "Other Services Page",
-            title: "Page text & SEO",
-            description: "Banner, call band, FAQ and SEO of the /other-services page. Service cards are edited in Dashboard → Other Services Page.",
-            viewUrl: "/other-services",
-            fields: [
-                meta.fields[0],
-                { name: "eyebrow", label: "Small label above the heading", type: "text" },
-                { name: "hero_text", label: "Banner text", type: "textarea" },
-                { name: "hero_button", label: "Banner button text (opens the quote form)", type: "text" },
-                { name: "quote_label", label: "Category button text", type: "text", help: "The button at the end of each category. Opens the quote form with that category filled in." },
-                { name: "learn_more_label", label: "Card link text", type: "text", help: "Shown on cards that link to a service page." },
-                { name: "auto_list", label: "List services of the \"Others\" category automatically", type: "boolean", help: "Every service whose category is Others (Dashboard → Manage Services) gets a card in its own section." },
-                { name: "auto_heading", label: "Heading of that section", type: "text", showIf: { field: "auto_list", equals: true } },
-                { name: "auto_intro", label: "Short introduction of that section", type: "textarea", showIf: { field: "auto_list", equals: true } },
-                { name: "band_visible", label: "Show the call band", type: "boolean" },
-                { name: "band_eyebrow", label: "Call band: small label", type: "text", showIf: { field: "band_visible", equals: true } },
-                { name: "band_heading", label: "Call band: heading", type: "text", showIf: { field: "band_visible", equals: true } },
-                { name: "band_text", label: "Call band: text", type: "textarea", help: "The phone number comes from Basic Info.", showIf: { field: "band_visible", equals: true } },
-                { name: "faq_heading", label: "FAQ heading", type: "text" },
-                { name: "faq_text", label: "FAQ short text", type: "textarea" },
-                {
-                    name: "faqs",
-                    label: "Questions",
-                    type: "list",
-                    itemLabel: "question",
-                    fields: [
-                        { name: "question", label: "Question", type: "text", requiredIf: "answer" },
-                        { name: "answer", label: "Answer", type: "textarea", requiredIf: "question" },
-                    ],
-                },
-                ...meta.fields.slice(1),
-            ],
-            defaults: {
-                ...meta.defaults,
-                eyebrow: "What we do",
-                hero_text: "Beyond our core services, Vortexian Tech helps businesses with much more. Explore these services and get a free, no-obligation quote.",
-                hero_button: "Get a Free Quote",
-                quote_label: "Get a Free Quote",
-                learn_more_label: "Learn More",
-                auto_list: true,
-                auto_heading: "More services",
-                auto_intro: "",
-                band_visible: true,
-                band_eyebrow: "Talk to an expert",
-                band_heading: "Need help fast? We're just one call away",
-                band_text: "Tell us what you need and we'll recommend the right service, a timeline and a price. No obligation.",
-                faq_heading: "Frequently asked questions",
-                faq_text: "",
-                faqs: [],
-            },
-        };
-    })(),
-    {
-        key: "other_services",
-        group: "Other Services Page",
-        title: "Service cards",
-        description: "Your own categories and service cards on /other-services: icons, images, links and order.",
-        editor: "/dashboard/other-services",
-        fields: [],
-        defaults: { categories: [] },
     },
 
     // ---------------------------------------------------------- GALLERY PAGE

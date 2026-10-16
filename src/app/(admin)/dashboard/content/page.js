@@ -27,7 +27,7 @@ export default function SiteContentIndex() {
                             {sections.map((section) => (
                                 <Link
                                     key={section.key}
-                                    href={section.editor || `/dashboard/content/${section.key}`}
+                                    href={`/dashboard/content/${section.key}`}
                                     className="flex items-center gap-4 px-6 py-4 hover:bg-slate-50 transition group"
                                 >
                                     <div className="flex-1 min-w-0">
