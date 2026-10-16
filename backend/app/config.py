@@ -14,6 +14,9 @@ class Settings(BaseSettings):
         extra="ignore"
     )
     database_url: str
+    # Connections per backend worker (see app/database.py); 2 workers => at most 10 per release
+    db_pool_size: int = 3
+    db_max_overflow: int = 2
 
     #jwt
     secret_key:SecretStr
