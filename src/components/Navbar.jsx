@@ -21,6 +21,7 @@ const linksToServices = (item) => (item.href || "").replace(/\/+$/, "") === "/se
 // on). Category names aren't links. If the only category is "Others", its
 // services are listed directly. The Header setting "Services dropdown lists
 // your services automatically" turns this off (hand-made links instead).
+// "All Services" (the /our-services catalogue page) comes first.
 function withServicesDropdown(menu, header, groups) {
   if (header.services_menu_auto === false) return menu;
   const serviceLink = (s) => ({ label: s.service_title, href: `/services/${encodeURIComponent(s.url_slug)}` });
@@ -28,7 +29,8 @@ function withServicesDropdown(menu, header, groups) {
     groups.length === 1 && groups[0].name === "Others"
       ? groups[0].services.map(serviceLink)
       : groups.map((g) => ({ label: g.name, children: g.services.map(serviceLink) }));
-  return menu.map((item) => (linksToServices(item) ? { ...item, children } : item));
+  const all = { label: "All Services", href: "/our-services" };
+  return menu.map((item) => (linksToServices(item) ? { ...item, children: [all, ...children] } : item));
 }
 
 // Menu items may have no link of their own (dropdown-only parents)

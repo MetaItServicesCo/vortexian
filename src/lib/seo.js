@@ -16,6 +16,7 @@ export { siteSchemas as schemaScripts, SCHEMA_PLACEHOLDERS } from "@/lib/schema"
 const STATIC_PAGES = [
     { path: "/", priority: 1.0 },
     { path: "/services", priority: 0.9 },
+    { path: "/our-services", priority: 0.9 },
     { path: "/about", priority: 0.8 },
     { path: "/portfolio", priority: 0.8 },
     { path: "/blog", priority: 0.8 },
