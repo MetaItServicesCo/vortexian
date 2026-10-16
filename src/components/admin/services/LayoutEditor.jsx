@@ -4,6 +4,8 @@ import { useState } from "react";
 import { ArrowDown, ArrowUp, ChevronDown, Eye, EyeOff, ImagePlus, LayoutTemplate, Loader2, Lock, Plus, Trash2, Wand2, X } from "lucide-react";
 import toast from "react-hot-toast";
 import { IconField } from "@/components/admin/content/SchemaForm";
+import ColorPicker from "@/components/admin/ColorPicker";
+import { Palette } from "lucide-react";
 import ServiceSections from "@/components/services/ServiceSections";
 import { uploadMedia } from "@/lib/adminApi";
 import { BLOCK_TYPES, BUILT_IN, MAX_CUSTOM, parseLayout } from "@/lib/serviceLayout";
@@ -16,7 +18,7 @@ const newId = () => `s${Date.now().toString(36)}${(counter++).toString(36)}`;
 const CUSTOM_TYPES = Object.keys(BLOCK_TYPES).filter((t) => !BLOCK_TYPES[t].builtIn);
 
 const STARTERS = {
-    cards: () => ({ eyebrow: "What we offer", heading: "", intro: "", items: [0, 1, 2].map(() => ({ icon: "CircleCheck", title: "", text: "", button_text: "", button_link: "/contact" })) }),
+    cards: () => ({ eyebrow: "What we offer", heading: "", intro: "", items: [0, 1, 2].map(() => ({ icon: "CircleCheck", title: "", text: "", button_text: "", button_link: "/contact", color: "auto" })) }),
     steps: () => ({ eyebrow: "How it works", heading: "", intro: "", items: [0, 1, 2, 3].map(() => ({ title: "", text: "" })) }),
     stats: () => ({ eyebrow: "", heading: "", items: [0, 1, 2].map(() => ({ value: "", label: "" })) }),
     checklist: () => ({ eyebrow: "", heading: "", text: "", items: [], itemsText: "", image: "", image_alt: "", image_side: "right", button_text: "", button_link: "/contact" }),
@@ -57,7 +59,7 @@ export function layoutError(blocks) {
     for (const [i, b] of blocks.entries()) {
         if (b.hidden || BLOCK_TYPES[b.type]?.builtIn) continue;
         const name = `${label(b)} section${b.heading ? ` “${b.heading}”` : ` ${i + 1}`}`;
-        const items = (b.items || []).filter((it) => Object.values(it).some((v) => typeof v === "string" && v.trim() && v !== "/contact" && v !== "CircleCheck"));
+        const items = (b.items || []).filter((it) => Object.values(it).some((v) => typeof v === "string" && v.trim() && v !== "/contact" && v !== "CircleCheck" && v !== "auto"));
         if (["cards", "steps", "stats", "faq"].includes(b.type) && !items.length) return `Page sections: the ${name} is empty. Fill it in, hide it or remove it.`;
         if (b.type === "faq" && (b.items || []).some((it) => it.question.trim() && !it.answer.trim())) return `Page sections: every question in the ${name} needs an answer.`;
         if (b.type === "checklist" && b.image && !b.image_alt.trim()) return `Page sections: the image in the ${name} needs alt text.`;
@@ -183,6 +185,43 @@ function ImageField({ b, set }) {
     );
 }
 
+// Look of a section: background, spacing, alignment, card columns/style, accent colour
+const HAS = {
+    align: ["why", "cards", "steps", "stats"],
+    cards: ["why", "cards"],
+    accent: ["steps", "stats", "checklist", "cta"],
+};
+function DesignPanel({ b, set }) {
+    const d = b.design || {};
+    const setD = (patch) => set({ design: { ...d, ...patch } });
+    const sel = "h-9 rounded-lg border border-gray-200 bg-white px-2 text-sm";
+    const defaultBg = { intro: "Default (soft gradient)", cta: "Default (navy gradient)" }[b.type] || "Auto";
+    return (
+        <details className="group rounded-xl border border-violet-200 bg-violet-50/40" data-design-panel="">
+            <summary className="flex items-center gap-2 cursor-pointer list-none px-3 py-2.5 text-sm font-bold text-[#1D1D7E] [&::-webkit-details-marker]:hidden">
+                <Palette size={15} /> Design <span className="font-normal text-slate-500 text-xs">background, spacing{HAS.cards.includes(b.type) ? ", columns, card style" : ""}{HAS.accent.includes(b.type) ? ", accent colour" : ""}</span>
+                <ChevronDown size={15} className="ml-auto transition group-open:rotate-180" />
+            </summary>
+            <div className="px-3 pb-3 space-y-3">
+                <F text="Background"><ColorPicker value={d.background} onChange={(background) => setD({ background })} autoLabel={defaultBg} label={`${label(b)} background`} /></F>
+                <div className="flex flex-wrap gap-3">
+                    <F text="Spacing"><select className={sel} value={d.spacing || "normal"} onChange={(e) => setD({ spacing: e.target.value })} aria-label={`${label(b)} spacing`}>
+                        <option value="compact">Compact</option><option value="normal">Normal</option><option value="spacious">Spacious</option></select></F>
+                    {HAS.align.includes(b.type) && <F text="Heading alignment"><select className={sel} value={d.align || "center"} onChange={(e) => setD({ align: e.target.value })} aria-label={`${label(b)} alignment`}>
+                        <option value="center">Centred</option><option value="left">Left</option></select></F>}
+                    {HAS.cards.includes(b.type) && <F text="Columns"><select className={sel} value={d.columns || "auto"} onChange={(e) => setD({ columns: e.target.value })} aria-label={`${label(b)} columns`}>
+                        <option value="auto">Auto</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></F>}
+                    {HAS.cards.includes(b.type) && <F text="Card style"><select className={sel} value={d.card_style || "tinted"} onChange={(e) => setD({ card_style: e.target.value })} aria-label={`${label(b)} card style`}>
+                        <option value="tinted">Coloured</option><option value="white">White with shadow</option><option value="outline">Outline</option></select></F>}
+                </div>
+                {HAS.accent.includes(b.type) && <F text={b.type === "stats" ? "Number colour" : b.type === "cta" ? "Phone & label colour" : "Accent colour"}>
+                    <ColorPicker value={d.accent} onChange={(accent) => setD({ accent })} label={`${label(b)} accent colour`} /></F>}
+                {HAS.cards.includes(b.type) && <p className="text-[11px] text-slate-400">{b.type === "cards" ? "Each card can also have its own colour (in the card's settings)." : "Coloured cards rotate soft cyan, navy and lavender."}</p>}
+            </div>
+        </details>
+    );
+}
+
 function BlockFields({ b, set }) {
     switch (b.type) {
         case "intro": case "pricing":
@@ -199,9 +238,10 @@ function BlockFields({ b, set }) {
                 </label></>);
         case "cards":
             return (<><Heads b={b} set={set} intro />
-                <Items items={b.items || []} max={9} noun="Card" onChange={(items) => set({ items })} blank={() => ({ icon: "CircleCheck", title: "", text: "", button_text: "", button_link: "/contact" })}
+                <Items items={b.items || []} max={9} noun="Card" onChange={(items) => set({ items })} blank={() => ({ icon: "CircleCheck", title: "", text: "", button_text: "", button_link: "/contact", color: "auto" })}
                     render={(it, s) => (<div className="space-y-2">
                         <div className="grid md:grid-cols-[180px,1fr] gap-2"><IconField value={it.icon} onChange={(icon) => s({ icon })} /><input className={input} placeholder="Title" value={it.title} maxLength={100} onChange={(e) => s({ title: e.target.value })} aria-label="Card title" /></div>
+                        <div className="flex flex-wrap items-center gap-2"><span className={lbl + " mb-0"}>Card colour</span><ColorPicker value={it.color} onChange={(color) => s({ color })} autoLabel="Auto" label="Card colour" /></div>
                         <textarea className={`${input} resize-y`} rows={2} placeholder="Short text" value={it.text} maxLength={300} onChange={(e) => s({ text: e.target.value })} aria-label="Card text" />
                         <div className="grid md:grid-cols-2 gap-2"><input className={input} placeholder="Button text (optional), e.g. Get Started" value={it.button_text} maxLength={40} onChange={(e) => s({ button_text: e.target.value })} aria-label="Card button text" />
                             <input className={input} placeholder="Button link" value={it.button_link} maxLength={300} onChange={(e) => s({ button_link: e.target.value })} aria-label="Card button link" /></div>
@@ -295,7 +335,7 @@ export default function LayoutEditor({ value, onChange, previewService }) {
                                 {!builtIn && <button type="button" onClick={() => remove(i)} aria-label={`Remove ${label(b)}`} className="p-1.5 rounded-md text-red-500 hover:bg-red-50"><Trash2 size={15} /></button>}
                                 <button type="button" onClick={() => set(i, { open: !b.open })} aria-label={b.open ? "Collapse" : "Edit"} className="p-1.5 rounded-md text-slate-500 hover:bg-slate-100"><ChevronDown size={16} className={`transition ${b.open ? "rotate-180" : ""}`} /></button>
                             </div>
-                            {b.open && <div className="border-t border-slate-100 p-4 space-y-3"><BlockFields b={b} set={(patch) => set(i, patch)} /></div>}
+                            {b.open && <div className="border-t border-slate-100 p-4 space-y-3"><BlockFields b={b} set={(patch) => set(i, patch)} /><DesignPanel b={b} set={(patch) => set(i, patch)} /></div>}
                         </li>
                     );
                 })}

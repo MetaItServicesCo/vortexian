@@ -13,12 +13,14 @@ import {
     Code2, Minus, AlignLeft, AlignCenter, AlignRight, AlignJustify, ImagePlus,
     Film, Table as TableIcon, Undo2, Redo2, RemoveFormatting, Loader2,
     ArrowUpToLine, ArrowDownToLine, ArrowLeftToLine, ArrowRightToLine,
-    Rows3, Columns3, Merge, Split, Heading, Trash2, Captions, FileImage,
+    Rows3, Columns3, Merge, Split, Heading, Trash2, Captions, FileImage, LayoutGrid, Plus,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { uploadMedia } from "@/lib/adminApi";
 import { linkAttributes } from "@/lib/links";
 import { isImageHref } from "@/lib/imageLinks";
+import { Card, CardGroup, findAncestor, newCard } from "@/components/editor/cardNodes";
+import ColorPicker from "@/components/admin/ColorPicker";
 
 // <video> blocks (used by the news feed). Sanitised server-side.
 const Video = Node.create({
@@ -115,6 +117,8 @@ export default function RichTextEditor({
             TextAlign.configure({ types: ["heading", "paragraph"] }),
             Placeholder.configure({ placeholder }),
             Video,
+            CardGroup,
+            Card,
         ],
         content: value || "",
         editorProps: {
@@ -159,6 +163,31 @@ export default function RichTextEditor({
 
     const chain = () => editor.chain().focus();
     const inTable = editor.isActive("table");
+    const card = findAncestor(editor.state, "card");
+    const cardGroup = findAncestor(editor.state, "cardGroup");
+
+    // ---------- cards in rich text
+    const CARD_COLORS = ["cyan", "indigo", "lavender"];
+    const insertCards = () => chain().insertContent({
+        type: "cardGroup", attrs: { columns: "3" }, content: [0, 1, 2].map((i) => newCard(CARD_COLORS[i], i + 1)),
+    }).run();
+    const addCard = () => {
+        if (!card) return;
+        const count = cardGroup?.node.childCount || 0;
+        chain().insertContentAt(card.end, newCard(CARD_COLORS[count % 3], count + 1)).run();
+    };
+    const removeCard = () => {
+        if (!card || !cardGroup) return;
+        if (cardGroup.node.childCount <= 1) chain().deleteRange({ from: cardGroup.pos, to: cardGroup.end }).run();
+        else chain().deleteRange({ from: card.pos, to: card.end }).run();
+    };
+    // Applies to the card shown in the card toolbar (by position), even if the picker took focus
+    const setCardColor = (color) => card && editor.chain().command(({ tr }) => {
+        tr.setNodeMarkup(card.pos, undefined, { ...card.node.attrs, color });
+        return true;
+    }).run();
+    const setColumns = (columns) => chain().updateAttributes("cardGroup", { columns }).run();
+    const removeCards = () => cardGroup && chain().deleteRange({ from: cardGroup.pos, to: cardGroup.end }).run();
 
     const setLink = () => {
         const previous = editor.getAttributes("link").href || "";
@@ -313,6 +342,7 @@ export default function RichTextEditor({
                 >
                     <TableIcon size={15} />
                 </ToolbarButton>
+                <ToolbarButton title="Insert cards" active={Boolean(cardGroup)} onClick={insertCards}><LayoutGrid size={15} /></ToolbarButton>
                 <Divider />
                 <ToolbarButton title="Clear formatting" onClick={() => chain().unsetAllMarks().clearNodes().run()}><RemoveFormatting size={15} /></ToolbarButton>
                 <ToolbarButton title="Undo" disabled={!editor.can().undo()} onClick={() => chain().undo().run()}><Undo2 size={15} /></ToolbarButton>
@@ -325,6 +355,23 @@ export default function RichTextEditor({
                 <input ref={videoInput} type="file" accept="video/mp4,video/webm,video/quicktime" className="hidden"
                     onChange={(e) => { handleUpload(e.target.files?.[0], "video"); e.target.value = ""; }} />
             </div>
+
+            {/* ---------- Card controls (only inside cards) ---------- */}
+            {card && (
+                <div className="flex flex-wrap items-center gap-2 px-2 py-2 border-b border-gray-200 bg-violet-50/60 text-xs" data-card-toolbar="">
+                    <span className="font-bold uppercase tracking-wider text-[#1D1D7E]">Card</span>
+                    <ColorPicker value={card.node.attrs.color} onChange={setCardColor} allowAuto={false} label="Card colour" />
+                    <Divider />
+                    <label className="flex items-center gap-1 text-slate-600">Columns
+                        <select value={cardGroup?.node.attrs.columns || "auto"} onChange={(e) => setColumns(e.target.value)} className="h-7 rounded-md border border-slate-300 bg-white px-1" aria-label="Card columns">
+                            <option value="auto">Auto</option><option value="2">2</option><option value="3">3</option><option value="4">4</option>
+                        </select>
+                    </label>
+                    <ToolbarButton title="Add a card after this one" onClick={addCard}><Plus size={14} /></ToolbarButton>
+                    <ToolbarButton title="Remove this card" onClick={removeCard}><Trash2 size={14} className="text-red-500" /></ToolbarButton>
+                    <ToolbarButton title="Remove all these cards" onClick={removeCards}><span className="font-bold text-red-500">Remove cards</span></ToolbarButton>
+                </div>
+            )}
 
             {/* ---------- Table controls (only inside a table) ---------- */}
             {inTable && (

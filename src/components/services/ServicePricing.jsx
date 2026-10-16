@@ -26,7 +26,7 @@ function PlanButton({ plan }) {
         : <Link href={href} className={className}>{plan.button_text}</Link>;
 }
 
-export default function ServicePricing({ pricing, serviceTitle, preview = false }) {
+export default function ServicePricing({ pricing, serviceTitle, preview = false, dark = false }) {
     const data = parsePricing(pricing);
     const plans = (data?.plans || []).filter((p) => p?.name);
     if (!data || (!data.enabled && !preview) || !plans.length) return null;
@@ -34,10 +34,10 @@ export default function ServicePricing({ pricing, serviceTitle, preview = false 
     return (
         <section id="pricing" aria-labelledby="pricing-heading" className={`max-w-[1400px] mx-auto relative z-10 ${preview ? "py-10 px-4 sm:px-6" : "py-20 px-4 sm:px-8 md:px-16 lg:px-24"}`} data-service-pricing="">
             <div className="text-center max-w-2xl mx-auto mb-12">
-                <h2 id="pricing-heading" className="text-3xl md:text-[2.6rem] font-bold text-[#0b0b2e] leading-tight tracking-tight">
+                <h2 id="pricing-heading" className={`text-3xl md:text-[2.6rem] font-bold leading-tight tracking-tight ${dark ? "text-white" : "text-[#0b0b2e]"}`}>
                     {data.heading || (serviceTitle ? `${serviceTitle} Pricing` : "Pricing")}
                 </h2>
-                {data.intro && <p className="mt-4 text-slate-600 text-base md:text-lg">{data.intro}</p>}
+                {data.intro && <p className={`mt-4 text-base md:text-lg ${dark ? "text-white/80" : "text-slate-600"}`}>{data.intro}</p>}
             </div>
 
             <ul className="flex flex-wrap justify-center gap-6 lg:gap-8">
@@ -75,7 +75,7 @@ export default function ServicePricing({ pricing, serviceTitle, preview = false 
                 ))}
             </ul>
 
-            {data.note && <p className="mt-10 text-center text-xs text-slate-500 max-w-2xl mx-auto">{data.note}</p>}
+            {data.note && <p className={`mt-10 text-center text-xs max-w-2xl mx-auto ${dark ? "text-white/60" : "text-slate-500"}`}>{data.note}</p>}
         </section>
     );
 }

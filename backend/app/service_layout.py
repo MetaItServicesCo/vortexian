@@ -26,6 +26,12 @@ LIMITS = {"eyebrow": 60, "heading": 140, "intro": 400, "text": 600, "title": 100
           "value": 20, "label": 60, "button_text": 40, "point": 160, "question": 200, "answer": 1500,
           "phone": 40, "icon": 40, "image_alt": 255}
 MAX_ITEMS = {"cards": 9, "steps": 6, "stats": 4, "checklist": 12, "faq": 15}
+# Colours the admin can pick (src/lib/designPalette.js); any #hex is accepted too
+COLOR_NAMES = {"cyan", "indigo", "lavender", "mint", "peach", "rose", "sand", "slate", "white", "sky",
+               "navy", "purple", "midnight", "gradient"}
+HEX = re.compile(r"^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$")
+DESIGN_CHOICES = {"spacing": ("normal", "compact", "spacious"), "align": ("center", "left"),
+                  "columns": ("auto", "2", "3", "4"), "card_style": ("tinted", "white", "outline")}
 LABELS = {"cards": "Highlight cards", "steps": "Steps", "stats": "Key numbers", "checklist": "Checklist",
           "cta": "Call-to-action band", "faq": "FAQ"}
 
@@ -54,6 +60,21 @@ def _icon(value) -> str:
     return name if re.fullmatch(r"[A-Za-z0-9]{1,40}", name) else ""
 
 
+def _color(value) -> str:
+    """A palette name, a #hex colour, or "auto"."""
+    value = str(value or "").strip()
+    return value if value in COLOR_NAMES or HEX.match(value) else "auto"
+
+
+def _design(value) -> dict:
+    """Look of a section: background, spacing, alignment, card columns/style and accent colour."""
+    d = value if isinstance(value, dict) else {}
+    out = {"background": _color(d.get("background")), "accent": _color(d.get("accent"))}
+    for key, choices in DESIGN_CHOICES.items():
+        out[key] = str(d.get(key)) if str(d.get(key)) in choices else choices[0]
+    return out
+
+
 def _block_id(value, n: int) -> str:
     raw = str(value or "")
     return raw if re.fullmatch(r"[A-Za-z0-9_-]{1,40}", raw) else f"block-{n}"
@@ -79,6 +100,7 @@ def _clean_custom(block: dict, kind: str) -> dict:
         out["intro"] = _t(block.get("intro"), "intro")
         out["items"] = [{
             "icon": _icon(i.get("icon")), "title": _t(i.get("title"), "title"), "text": _t(i.get("text"), "item_text"),
+            "color": _color(i.get("color")),
             "button_text": _t(i.get("button_text"), "button_text"), "button_link": _link(i.get("button_link")),
         } for i in _items(block, kind) if isinstance(i, dict)]
         out["items"] = [i for i in out["items"] if i["title"] or i["text"]]
@@ -142,7 +164,7 @@ def clean_layout(raw) -> str | None:
         if not isinstance(block, dict):
             continue
         kind = block.get("type")
-        base = {"id": _block_id(block.get("id"), n), "type": kind, "hidden": bool(block.get("hidden"))}
+        base = {"id": _block_id(block.get("id"), n), "type": kind, "hidden": bool(block.get("hidden")), "design": _design(block.get("design"))}
         if kind in BUILT_IN:
             if kind in seen:
                 continue
@@ -159,6 +181,6 @@ def clean_layout(raw) -> str | None:
             out.append({**base, **_clean_custom(block, kind)})
     for kind in BUILT_IN:   # built-in blocks are never lost, only hidden
         if kind not in seen:
-            out.append({"id": f"builtin-{kind}", "type": kind, "hidden": False, **({"collapsed": True} if kind == "overview" else {})})
+            out.append({"id": f"builtin-{kind}", "type": kind, "hidden": False, "design": _design(None), **({"collapsed": True} if kind == "overview" else {})})
     return json.dumps({"blocks": out}, ensure_ascii=False)
 
