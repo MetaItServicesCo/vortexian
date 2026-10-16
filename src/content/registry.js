@@ -48,7 +48,7 @@ const linkFields = [
     { name: "href", label: "Link", type: "url", placeholder: "/contact or https://…" },
 ];
 
-export const CONTENT_GROUPS = ["Global", "Home Page", "About Page", "Contact Page", "Career Page", "Services Page", "Portfolio Page", "Blog Page", "News Page", "Gallery Page", "SEO & Tracking", "Newsletter"];
+export const CONTENT_GROUPS = ["Global", "Home Page", "About Page", "Contact Page", "Career Page", "Hiring Impact", "Services Page", "Portfolio Page", "Blog Page", "News Page", "Gallery Page", "SEO & Tracking", "Newsletter"];
 
 export const CONTENT_SECTIONS = [
     // ------------------------------------------------------------------ GLOBAL
@@ -593,6 +593,72 @@ export const CONTENT_SECTIONS = [
         defaults: {
             heading: "Explore Exciting Career Opportunities at Vortexian Tech",
             text_html: "<p>Join the dynamic team at Vortexian Tech and embark on a rewarding career in the forefront of technology innovation.</p>",
+        },
+    },
+    {
+        key: "career.apply_buttons",
+        group: "Career Page",
+        title: "Apply on other platforms",
+        description: "Buttons under the intro that link to your job posts on Indeed, LinkedIn or any other site. They open in a new tab. With no buttons, the section is hidden.",
+        fields: [
+            { name: "heading", label: "Heading (optional)", type: "text" },
+            { name: "text", label: "Short text (optional)", type: "textarea" },
+            {
+                name: "buttons",
+                label: "Buttons",
+                type: "list",
+                itemLabel: "label",
+                fields: [
+                    { name: "label", label: "Button text", type: "text", placeholder: "Apply on LinkedIn", requiredIf: "url" },
+                    {
+                        name: "url",
+                        label: "Link (full web address)",
+                        type: "url",
+                        placeholder: "https://www.linkedin.com/company/…/jobs",
+                        requiredIf: "label",
+                        pattern: "^https?://\\S+$",
+                        patternMessage: "must be a full web address starting with https://",
+                    },
+                ],
+            },
+        ],
+        defaults: { heading: "Prefer to apply on another platform?", text: "", buttons: [] },
+    },
+
+    // ------------------------------------------------- HIRING IMPACT (shared)
+    {
+        key: "hiring_stats",
+        group: "Hiring Impact",
+        title: "Hiring statistics",
+        description: "One table, shown at the bottom of the Career page and on the About page. Changes appear on both pages straight away. With no categories, the section is hidden.",
+        fields: [
+            { name: "heading", label: "Heading", type: "text" },
+            { name: "text", label: "Short text (optional)", type: "textarea" },
+            { name: "category_column", label: "Column title: category", type: "text" },
+            { name: "total_column", label: "Column title: number", type: "text" },
+            {
+                name: "items",
+                label: "Categories",
+                type: "list",
+                itemLabel: "category",
+                fields: [
+                    { name: "category", label: "Service category", type: "text", placeholder: "SEO & Digital Marketing", requiredIf: "total" },
+                    { name: "total", label: "Total hires", type: "number", requiredIf: "category" },
+                ],
+            },
+            { name: "show_total", label: "Show a total row", type: "boolean" },
+            { name: "show_on_career", label: "Show on the Career page", type: "boolean" },
+            { name: "show_on_about", label: "Show on the About page", type: "boolean" },
+        ],
+        defaults: {
+            heading: "Our Hiring Impact",
+            text: "",
+            category_column: "Service Category",
+            total_column: "Total Hires",
+            items: [],
+            show_total: true,
+            show_on_career: true,
+            show_on_about: true,
         },
     },
 

@@ -8,6 +8,7 @@ import WhyChooseUs from "@/components/WhyChooseUs";
 import TeamSlider from "@/components/TeamSlider";
 import { getSection, pageMetadata } from "@/lib/content";
 import SchemaMarkup from "@/components/seo/SchemaMarkup";
+import HiringImpact from "@/components/HiringImpact";
 
 // SEO Metadata
 export function generateMetadata() {
@@ -15,7 +16,7 @@ export function generateMetadata() {
 }
 
 export default async function AboutPage() {
-    const page = await getSection("page.about");
+    const [page, hiring] = await Promise.all([getSection("page.about"), getSection("hiring_stats")]);
     return (
         <main>
             {/* 1. Hero Section (Same as Career but with About Title) */}
@@ -28,6 +29,7 @@ export default async function AboutPage() {
             <CeoMessage />
             <WhoWeAre />
             <WhyChooseUs />
+            <HiringImpact data={hiring} page="about" />
             <TeamSlider />
         </main>
     );

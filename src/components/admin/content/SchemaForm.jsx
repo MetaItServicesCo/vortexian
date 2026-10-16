@@ -51,7 +51,7 @@ export function findInvalid(fields, value, prefix = "") {
         const v = value?.[field.name];
         const label = prefix + field.label;
         const text = typeof v === "string" ? v.trim() : v;
-        if (field.requiredIf && value?.[field.requiredIf] && !text) problems.push(`${label} is required`);
+        if (field.requiredIf && value?.[field.requiredIf] && (text === "" || text == null)) problems.push(`${label} is required`);
         if (field.pattern && text && !new RegExp(field.pattern).test(text)) problems.push(`${label}: ${field.patternMessage || "invalid format"}`);
         if (field.format === "json") {
             const problem = jsonProblem(v);

@@ -5,6 +5,7 @@ import { useContent } from "@/components/content/SiteContentProvider";
 import RichText from "@/components/content/RichText";
 import { useSettings } from "@/components/content/SiteContentProvider";
 import { errorMessage } from "@/lib/adminApi";
+import ApplyButtons from "@/components/career/ApplyButtons";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -27,6 +28,7 @@ const CareerForm = () => {
   const labelStyles = "block text-[#5DB4D1] text-[14px] font-medium mb-2";
 
   const intro = useContent("career.intro");
+  const applyButtons = useContent("career.apply_buttons");
   const [companyName, setCompanyName] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -133,6 +135,8 @@ const CareerForm = () => {
             </p>
           )}
         </motion.div>
+
+        <ApplyButtons data={applyButtons} />
 
         {/* FORM */}
         <motion.div
