@@ -4,6 +4,7 @@ import BreadcrumbHero from "@/components/BreadcrumbHero";
 import GalleryGrid from "@/components/gallery/GalleryGrid";
 import { formatEventDate } from "@/components/gallery/format";
 import { serverApiUrl, SITE_URL } from "@/lib/api";
+import { getSection } from "@/lib/content";
 
 // One event album (Dashboard → Gallery → Albums). Only published albums and photos are shown.
 export const dynamic = "force-dynamic";
@@ -17,9 +18,10 @@ async function getAlbum(slug) {
 
 export async function generateMetadata({ params }) {
     const { slug } = await params;
-    const data = await getAlbum(slug);
-    if (!data) return { title: "Album not found | Vortexian Tech" };
+    const [data, page] = await Promise.all([getAlbum(slug), getSection("page.gallery")]);
+    if (!data) return { title: "Album not found | Vortexian Tech", robots: { index: false, follow: true } };
     const { album } = data;
+    const robots = page.noindex === false ? undefined : { index: false, follow: true };   // same switch as the Gallery page
     const title = `${album.title} | Gallery | Vortexian Tech`;
     const description = album.description || `Photos from ${album.title} at Vortexian Tech.`;
     return {
@@ -27,6 +29,7 @@ export async function generateMetadata({ params }) {
         description: description.slice(0, 160),
         alternates: { canonical: `/gallery/${album.slug}` },
         openGraph: { title, description, url: `/gallery/${album.slug}`, images: album.cover ? [{ url: album.cover.src }] : [] },
+        ...(robots ? { robots } : {}),
     };
 }
 

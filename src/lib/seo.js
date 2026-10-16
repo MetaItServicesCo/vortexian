@@ -22,7 +22,6 @@ const STATIC_PAGES = [
     { path: "/career", priority: 0.7 },
     { path: "/contact", priority: 0.7 },
     { path: "/news", priority: 0.6 },
-    { path: "/gallery", priority: 0.6 },
 ];
 
 const lines = (text) => String(text || "").split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
@@ -51,6 +50,8 @@ export async function sitemapEntries(settings) {
         settings.include_pages ? getJson("/api/pages/published", []) : [],
         getJson("/api/gallery/", { albums: [] }),
     ]);
+    // The gallery is listed only when it isn't hidden from search engines (Site Content → Gallery Page)
+    const galleryIndexed = (await getFreshSiteContent())["page.gallery"]?.noindex === false;
     const list = (v) => (Array.isArray(v) ? v : []);
 
     const entries = [
@@ -59,7 +60,7 @@ export async function sitemapEntries(settings) {
         ...list(blogs).map((b) => ({ path: blogPath(b), priority: 0.7 })),
         ...list(projects).map((p) => ({ path: `/portfolio/${p.slug || p.id}`, priority: 0.6 })),
         ...list(pages).map((p) => ({ path: `/${p.slug}`, priority: 0.4, lastModified: p.updated_at })),
-        ...list(gallery?.albums).map((a) => ({ path: `/gallery/${a.slug}`, priority: 0.5 })),
+        ...(galleryIndexed ? [{ path: "/gallery", priority: 0.6 }, ...list(gallery?.albums).map((a) => ({ path: `/gallery/${a.slug}`, priority: 0.5 }))] : []),
         ...lines(settings.extra_urls).map(toSitePath).filter(Boolean).map((path) => ({ path, priority: 0.5 })),
     ];
 

@@ -640,6 +640,7 @@ export const CONTENT_SECTIONS = [
                 { name: "intro_text", label: "Introduction", type: "textarea" },
                 { name: "albums_heading", label: "Albums heading", type: "text" },
                 { name: "photos_heading", label: "Photos heading", type: "text" },
+                { name: "noindex", label: "Hide from search engines (noindex)", type: "boolean", help: "On: the Gallery and album pages tell Google and other search engines not to list them, and they're left out of the sitemap. Visitors can still open them." },
                 ...meta.fields.slice(1),
             ],
             defaults: {
@@ -648,6 +649,7 @@ export const CONTENT_SECTIONS = [
                 intro_text: "A look inside our company: events, team activities, meetings, training sessions, celebrations and the achievements we're proud of.",
                 albums_heading: "Events & albums",
                 photos_heading: "All photos",
+                noindex: true,
             },
         };
     })(),

@@ -7,8 +7,12 @@ import { getJson, getSection, pageMetadata } from "@/lib/content";
 // Published photos and albums from Dashboard → Gallery; page text from Site Content → Gallery Page.
 export const dynamic = "force-dynamic";
 
+// Search engines are told not to list the gallery while "Hide from search engines" is on (Site Content → Gallery Page)
+const NOINDEX = { index: false, follow: true };
+
 export async function generateMetadata() {
-    return pageMetadata("page.gallery", "/gallery");
+    const [meta, page] = await Promise.all([pageMetadata("page.gallery", "/gallery"), getSection("page.gallery")]);
+    return page.noindex === false ? meta : { ...meta, robots: NOINDEX };
 }
 
 export default async function GalleryPage() {
