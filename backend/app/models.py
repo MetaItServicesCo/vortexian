@@ -41,6 +41,8 @@ class Service(Base):
     schema_json:Mapped[str | None]=mapped_column(Text,nullable=True)
     # Pricing section for this service's page (JSON, see app/pricing.py)
     pricing:Mapped[str | None]=mapped_column(Text,nullable=True)
+    # Page sections, in order (JSON, see app/service_layout.py); NULL = default layout
+    layout:Mapped[str | None]=mapped_column(Text,nullable=True)
     # Listed in the website's Services dropdown (the page stays live either way)
     show_in_menu:Mapped[bool]=mapped_column(Boolean,nullable=False,default=True,server_default="true")
 

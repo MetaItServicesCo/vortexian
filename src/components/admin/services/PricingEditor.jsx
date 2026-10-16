@@ -156,7 +156,7 @@ export default function PricingEditor({ value, onChange, serviceTitle }) {
             </Field>
 
             {preview && (
-                <div className="rounded-2xl overflow-hidden bg-gradient-to-tr from-[#65a8bf] via-[#1f215e] to-[#43165b]" data-pricing-preview="">
+                <div className="rounded-2xl overflow-hidden bg-white border border-slate-200" data-pricing-preview="">
                     <ServicePricing pricing={pricingToStored(value)} serviceTitle={serviceTitle} preview />
                 </div>
             )}

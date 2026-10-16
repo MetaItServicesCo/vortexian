@@ -11,6 +11,7 @@ import MenuToggle from "@/components/admin/services/MenuToggle";
 import CategorySelect from "@/components/admin/CategorySelect";
 import SchemaMarkupField, { schemaJsonError } from "@/components/admin/SchemaMarkupField";
 import PricingEditor, { pricingError, pricingFromStored, pricingToStored } from "@/components/admin/services/PricingEditor";
+import LayoutEditor, { layoutError, layoutFromStored, layoutToStored, previewFromForm } from "@/components/admin/services/LayoutEditor";
 import {
     ArrowLeft,
     Loader2,
@@ -44,6 +45,7 @@ export default function CreateNewService() {
 
 
     const [pricing, setPricing] = useState(() => pricingFromStored(null));
+    const [layout, setLayout] = useState(() => layoutFromStored(null));
     const [formData, setFormData] = useState({
         title: "",
         slug: "",
@@ -135,6 +137,12 @@ export default function CreateNewService() {
             toast.error(`Schema markup is not valid JSON: ${schemaProblem}`);
             return;
         }
+        const layoutProblem = layoutError(layout);
+        if (layoutProblem) {
+            toast.error(layoutProblem, { duration: 6000 });
+            document.querySelector("[data-layout-editor]")?.scrollIntoView({ behavior: "smooth", block: "center" });
+            return;
+        }
         const pricingProblem = pricingError(pricing);
         if (pricingProblem) {
             toast.error(pricingProblem);
@@ -224,6 +232,7 @@ export default function CreateNewService() {
             submitData.append("show_in_menu", formData.showInMenu ? "true" : "false");
             submitData.append("schema_json", formData.schemaJson.trim());
             submitData.append("pricing", pricingToStored(pricing));
+            submitData.append("layout", layoutToStored(layout));
 
             // WHY CHOOSE
             submitData.append(
@@ -723,6 +732,8 @@ export default function CreateNewService() {
                         }
                     />
                 </div>
+
+                <LayoutEditor value={layout} onChange={setLayout} previewService={previewFromForm(formData, previewUrl, pricingToStored(pricing))} />
 
                 <PricingEditor value={pricing} onChange={setPricing} serviceTitle={formData.title} />
 

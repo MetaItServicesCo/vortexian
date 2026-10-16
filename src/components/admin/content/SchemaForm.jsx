@@ -210,7 +210,7 @@ function MediaField({ value, onChange, type }) {
 }
 
 // ------------------------------------------------------------------ icon
-function IconField({ value, onChange }) {
+export function IconField({ value, onChange }) {
     const [open, setOpen] = useState(false);
     return (
         <div>

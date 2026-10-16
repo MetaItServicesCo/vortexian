@@ -12,6 +12,7 @@ import MenuToggle from "@/components/admin/services/MenuToggle";
 import CategorySelect from "@/components/admin/CategorySelect";
 import SchemaMarkupField, { schemaJsonError } from "@/components/admin/SchemaMarkupField";
 import PricingEditor, { pricingError, pricingFromStored, pricingToStored } from "@/components/admin/services/PricingEditor";
+import LayoutEditor, { layoutError, layoutFromStored, layoutToStored, previewFromForm } from "@/components/admin/services/LayoutEditor";
 
 const RichTextEditor = dynamic(() => import("@/components/editor/RichTextEditor"), { ssr: false });
 
@@ -29,6 +30,7 @@ export default function EditServicePage({ params }) {
     const [previewUrl, setPreviewUrl] = useState("");
 
     const [pricing, setPricing] = useState(() => pricingFromStored(null));
+    const [layout, setLayout] = useState(() => layoutFromStored(null));
     const [formData, setFormData] = useState({
         title: "",
         slug: "",
@@ -60,6 +62,7 @@ export default function EditServicePage({ params }) {
                 setPreviewUrl(data.image_showcase_url || "");
 
                 setPricing(pricingFromStored(data.pricing));
+                setLayout(layoutFromStored(data.layout));
                 setFormData({
                     title: data.service_title || "",
                     slug: data.url_slug || "",
@@ -134,6 +137,12 @@ export default function EditServicePage({ params }) {
             toast.error(`Schema markup is not valid JSON: ${schemaProblem}`);
             return;
         }
+        const layoutProblem = layoutError(layout);
+        if (layoutProblem) {
+            toast.error(layoutProblem, { duration: 6000 });
+            document.querySelector("[data-layout-editor]")?.scrollIntoView({ behavior: "smooth", block: "center" });
+            return;
+        }
         const pricingProblem = pricingError(pricing);
         if (pricingProblem) {
             toast.error(pricingProblem);
@@ -169,6 +178,7 @@ export default function EditServicePage({ params }) {
                 show_in_menu: formData.showInMenu,
                 schema_json: formData.schemaJson.trim(),
                 pricing: pricingToStored(pricing),
+                layout: layoutToStored(layout),
             };
 
             const res = await fetch(`${BASE_URL}/update-service/${id}`, {
@@ -401,6 +411,8 @@ export default function EditServicePage({ params }) {
                             onChange={(e) => handleNestedChange("seo", "description", e.target.value)} />
                     </div>
                 </div>
+
+                <LayoutEditor value={layout} onChange={setLayout} previewService={previewFromForm(formData, previewUrl, pricingToStored(pricing))} />
 
                 <PricingEditor value={pricing} onChange={setPricing} serviceTitle={formData.title} />
 
