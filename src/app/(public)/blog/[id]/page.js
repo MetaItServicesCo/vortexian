@@ -81,8 +81,9 @@ export default async function BlogDetailPage({ params }) {
                 {/* ── TWO COLUMN LAYOUT (items-start is important here) ── */}
                 <div className="flex flex-col md:flex-row gap-8 items-start">
 
-                    {/* ── LEFT SIDEBAR (sticky top-24) ────────────────── */}
-                    <aside className="w-full md:w-[280px] flex-shrink-0 sticky top-46">
+                    {/* ── LEFT SIDEBAR: sticky beside the article from md up; on phones it sits
+                         above the article and scrolls with the page (sticky there covered the text) ── */}
+                    <aside className="w-full md:w-[280px] flex-shrink-0 md:sticky md:top-46">
 
                         {/* Connect With Us card */}
                         <div className="bg-[#1D1D7E] rounded-xl p-5 text-center">
