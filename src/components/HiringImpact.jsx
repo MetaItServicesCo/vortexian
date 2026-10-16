@@ -1,11 +1,11 @@
+import CountUp from "@/components/CountUp";
+
 // "Our Hiring Impact" table: one shared list (Site Content → Hiring Impact) shown on the Career
 // and About pages. Hidden when there are no categories or the page's switch is off.
 const rowsOf = (data) =>
     (Array.isArray(data?.items) ? data.items : [])
         .map((r) => ({ category: (r?.category || "").trim(), total: r?.total === "" || r?.total == null ? NaN : Number(r.total) }))
         .filter((r) => r.category && Number.isFinite(r.total));
-
-const fmt = (n) => n.toLocaleString("en-US");
 
 export default function HiringImpact({ data, page }) {
     const rows = rowsOf(data);
@@ -34,7 +34,7 @@ export default function HiringImpact({ data, page }) {
                             {rows.map((r, i) => (
                                 <tr key={i} className="border-t border-slate-100 odd:bg-white even:bg-slate-50/70 transition-colors hover:bg-[#5DB4D1]/10">
                                     <th scope="row" className="px-4 sm:px-8 py-4 align-middle text-[15px] sm:text-base font-semibold text-slate-800">{r.category}</th>
-                                    <td className="px-4 sm:px-8 py-4 align-middle text-right text-lg sm:text-xl font-bold text-[#1D1D7E] tabular-nums">{fmt(r.total)}</td>
+                                    <td className="px-4 sm:px-8 py-4 align-middle text-right text-lg sm:text-xl font-bold text-[#1D1D7E] tabular-nums"><CountUp value={r.total} delay={i * 0.12} /></td>
                                 </tr>
                             ))}
                         </tbody>
@@ -42,7 +42,7 @@ export default function HiringImpact({ data, page }) {
                             <tfoot>
                                 <tr className="border-t-2 border-[#5DB4D1]/50 bg-[#5DB4D1]/10">
                                     <th scope="row" className="px-4 sm:px-8 py-4 text-[15px] sm:text-base font-bold text-[#1D1D7E]">Total</th>
-                                    <td className="px-4 sm:px-8 py-4 text-right text-xl sm:text-2xl font-extrabold text-[#1D1D7E] tabular-nums">{fmt(total)}</td>
+                                    <td className="px-4 sm:px-8 py-4 text-right text-xl sm:text-2xl font-extrabold text-[#1D1D7E] tabular-nums"><CountUp value={total} delay={rows.length * 0.12} duration={2.2} /></td>
                                 </tr>
                             </tfoot>
                         )}
