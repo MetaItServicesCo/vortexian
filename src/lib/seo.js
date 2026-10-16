@@ -2,6 +2,7 @@
 import { SITE_URL } from "@/lib/api";
 import { blogPath } from "@/lib/blog";
 import { getFreshSiteContent, getJson } from "@/lib/content";
+import { OTHERS, OTHER_SERVICES_PATH } from "@/lib/otherServices";
 
 // ---------------------------------------------------------------- tracking
 // IDs end up inside <script>, so only the documented formats are used.
@@ -43,12 +44,13 @@ function excluded(path, rules) {
 }
 
 export async function sitemapEntries(settings) {
-    const [services, blogs, projects, pages, gallery] = await Promise.all([
+    const [services, blogs, projects, pages, gallery, menu] = await Promise.all([
         settings.include_services ? getJson("/api/services/", []) : [],
         settings.include_blog ? getJson("/api/blog/public", []) : [],
         settings.include_portfolio ? getJson("/api/portfolio/", []) : [],
         settings.include_pages ? getJson("/api/pages/published", []) : [],
         getJson("/api/gallery/", { albums: [] }),
+        settings.include_services ? getJson("/api/services/menu-tree", []) : [],
     ]);
     // The gallery is listed only when it isn't hidden from search engines (Site Content → Gallery Page)
     const galleryIndexed = (await getFreshSiteContent())["page.gallery"]?.noindex === false;
@@ -56,6 +58,7 @@ export async function sitemapEntries(settings) {
 
     const entries = [
         ...STATIC_PAGES,
+        ...(list(menu).some((g) => g.name === OTHERS) ? [{ path: OTHER_SERVICES_PATH, priority: 0.7 }] : []),
         ...list(services).filter((s) => s.url_slug).map((s) => ({ path: `/services/${encodeURIComponent(s.url_slug)}`, priority: 0.8 })),
         ...list(blogs).map((b) => ({ path: blogPath(b), priority: 0.7 })),
         ...list(projects).map((p) => ({ path: `/portfolio/${p.slug || p.id}`, priority: 0.6 })),

@@ -17,7 +17,8 @@ const getImageUrl = (url) => {
   return url;
 };
 
-export default function ServicesClient({ servicesData }) {
+// showTabs={false}: no category filter (e.g. the Other Services page, a single category)
+export default function ServicesClient({ servicesData, showTabs = true }) {
   const [activeTab, setActiveTab] = useState("ALL");
 
   const categories = [
@@ -36,7 +37,7 @@ export default function ServicesClient({ servicesData }) {
 
   return (
     <div className="space-y-16">
-      <div className="flex flex-wrap items-center justify-start gap-2 bg-white/[0.08] border border-white/[0.09] p-2 rounded-2xl max-w-max backdrop-blur-md">
+      {showTabs && <div className="flex flex-wrap items-center justify-start gap-2 bg-white/[0.08] border border-white/[0.09] p-2 rounded-2xl max-w-max backdrop-blur-md">
         {categories.map((category) => (
           <button
             key={category}
@@ -57,7 +58,7 @@ export default function ServicesClient({ servicesData }) {
             )}
           </button>
         ))}
-      </div>
+      </div>}
 
       <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         <AnimatePresence mode="popLayout">
