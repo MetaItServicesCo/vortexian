@@ -48,7 +48,7 @@ const linkFields = [
     { name: "href", label: "Link", type: "url", placeholder: "/contact or https://…" },
 ];
 
-export const CONTENT_GROUPS = ["Global", "Home Page", "About Page", "Contact Page", "Career Page", "Hiring Impact", "Services Page", "Portfolio Page", "Blog Page", "News Page", "Gallery Page", "SEO & Tracking", "Newsletter"];
+export const CONTENT_GROUPS = ["Global", "Home Page", "About Page", "Contact Page", "Career Page", "Hiring Impact", "Services Page", "Other Services Page", "Portfolio Page", "Blog Page", "News Page", "Gallery Page", "SEO & Tracking", "Newsletter"];
 
 export const CONTENT_SECTIONS = [
     // ------------------------------------------------------------------ GLOBAL
@@ -686,6 +686,83 @@ export const CONTENT_SECTIONS = [
             text: "We decoupled from standard outdated WordPress frameworks to deliver staggering serverless speed, layout configuration flexibility, and pure organic positioning.",
         },
     },
+
+    // ---------------------------------------------------- OTHER SERVICES PAGE
+    (() => {
+        const meta = pageMeta(
+            "Other Services",
+            "Other Services | Vortexian Tech",
+            "More services from Vortexian Tech beyond our core offering. Talk to our team and get a free, no-obligation quote.",
+            "CollectionPage",
+        );
+        const band = { field: "band_visible", equals: true };
+        return {
+            key: "page.other_services",
+            group: "Other Services Page",
+            title: "Page text, FAQ & SEO",
+            description: "Text of /services/other-services (Services menu → Other Services). The cards are the services in the “Others” category (Dashboard → Manage Services).",
+            viewUrl: "/services/other-services",
+            fields: [
+                meta.fields[0],
+                { name: "eyebrow", label: "Small label above the heading", type: "text" },
+                { name: "hero_text", label: "Banner text", type: "textarea" },
+                { name: "primary_label", label: "Main button text", type: "text" },
+                { name: "primary_link", label: "Main button link", type: "url" },
+                { name: "secondary_label", label: "Second button text (optional)", type: "text" },
+                { name: "secondary_link", label: "Second button link", type: "url" },
+                { name: "services_heading", label: "Cards section: heading", type: "text" },
+                { name: "services_text", label: "Cards section: short text", type: "textarea" },
+                { name: "band_visible", label: "Show the call band", type: "boolean" },
+                { name: "band_eyebrow", label: "Call band: small label", type: "text", showIf: band },
+                { name: "band_heading", label: "Call band: heading", type: "text", showIf: band },
+                { name: "band_text", label: "Call band: text", type: "textarea", help: "The phone number comes from Basic Info.", showIf: band },
+                { name: "band_link_intro", label: "Call band: line under the number", type: "text", showIf: band },
+                { name: "band_link_label", label: "Call band: link text", type: "text", showIf: band },
+                { name: "band_link", label: "Call band: link", type: "url", showIf: band },
+                { name: "faq_eyebrow", label: "FAQ: small label", type: "text" },
+                { name: "faq_heading", label: "FAQ: heading", type: "text" },
+                { name: "faq_text", label: "FAQ: short text", type: "textarea" },
+                { name: "faq_button_label", label: "FAQ: button text", type: "text" },
+                { name: "faq_button_link", label: "FAQ: button link", type: "url" },
+                {
+                    name: "faqs",
+                    label: "Questions",
+                    type: "list",
+                    itemLabel: "question",
+                    help: "The FAQ section appears once you add a question.",
+                    fields: [
+                        { name: "question", label: "Question", type: "text", requiredIf: "answer" },
+                        { name: "answer", label: "Answer", type: "textarea", requiredIf: "question" },
+                    ],
+                },
+                ...meta.fields.slice(1),
+            ],
+            defaults: {
+                ...meta.defaults,
+                eyebrow: "Beyond our core services",
+                hero_text: "Vortexian Tech also helps businesses with a range of specialist services. Tell us what you need and we'll put the right team on it.",
+                primary_label: "Get a Free Quote",
+                primary_link: "/contact",
+                secondary_label: "About Us",
+                secondary_link: "/about",
+                services_heading: "Services We Provide",
+                services_text: "Specialist services delivered by the same experienced Vortexian Tech team.",
+                band_visible: true,
+                band_eyebrow: "Talk to us",
+                band_heading: "Need help fast? We're just one call away",
+                band_text: "Speak to our team about what you need. We'll recommend the right service, a timeline and a price.",
+                band_link_intro: "Consult with an IT advisor?",
+                band_link_label: "Click now",
+                band_link: "/contact",
+                faq_eyebrow: "FAQ",
+                faq_heading: "Frequently asked questions",
+                faq_text: "",
+                faq_button_label: "Get a Free Quote",
+                faq_button_link: "/contact",
+                faqs: [],
+            },
+        };
+    })(),
 
     // ---------------------------------------------------------- GALLERY PAGE
     (() => {
