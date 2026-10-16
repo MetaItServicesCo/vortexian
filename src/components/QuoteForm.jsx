@@ -13,10 +13,7 @@ const QuoteForm = () => {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [contactPref, setContactPref] = useState("Email");
-  const [url, setUrl] = useState("");
-  const [completionDate, setCompletionDate] = useState("");
   const [message, setMessage] = useState("");
-  const [projectFile, setProjectFile] = useState(null);
 
   // Services Dropdown States
   const [selectedServices, setSelectedServices] = useState([
@@ -49,7 +46,6 @@ const QuoteForm = () => {
       !lastName ||
       !phone ||
       !email ||
-      !completionDate ||
       !message
     ) {
       toast.error("Please fill in all mandatory fields marked with (*)");
@@ -75,14 +71,7 @@ const QuoteForm = () => {
       // Backend me service string hai
       formData.append("service", selectedServices.join(", "));
 
-      formData.append("website_url", url || "");
-      formData.append("completion_date", completionDate || "");
       formData.append("message", message);
-
-      // File upload
-      if (projectFile) {
-        formData.append("file", projectFile);
-      }
 
       const response = await fetch("/api/contact/", {
         method: "POST",
@@ -100,10 +89,7 @@ const QuoteForm = () => {
         setPhone("");
         setEmail("");
         setContactPref("Email");
-        setUrl("");
-        setCompletionDate("");
         setMessage("");
-        setProjectFile(null);
         setSelectedServices([]);
       } else {
         toast.error(data.detail || data.message || "Failed to submit form");
@@ -289,56 +275,6 @@ const QuoteForm = () => {
                   </motion.div>
                 )}
               </AnimatePresence>
-            </div>
-
-            {/* 6. URL */}
-            <div>
-              <label className={labelStyles}>Website URL</label>
-              <input
-                type="url"
-                className={inputStyles}
-                placeholder="https://yourwebsite.com"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-              />
-            </div>
-
-            {/* 7. File Upload */}
-            <div>
-              <label className={labelStyles}>
-                Upload Project File <span className="text-red-400">*</span>
-              </label>
-              <div className="mt-2 flex items-center gap-4">
-                <label className="bg-[#666666] text-white px-8 py-3 text-xs font-black uppercase tracking-widest cursor-pointer hover:bg-black transition-all rounded-md inline-block shadow-md">
-                  Choose File
-                  <input
-                    type="file"
-                    className="hidden"
-                    onChange={(e) => setProjectFile(e.target.files[0])}
-                  />
-                </label>
-                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider truncate max-w-xs">
-                  {projectFile
-                    ? `Targeted: ${projectFile.name}`
-                    : "No documentation asset selected"}
-                </span>
-              </div>
-            </div>
-
-            {/* 8. Completion Date */}
-            <div>
-              <label className={labelStyles}>
-                Project Completion Date / Time{" "}
-                <span className="text-red-400">*</span>
-              </label>
-              <input
-                type="text"
-                className={inputStyles}
-                placeholder="e.g. June 2026"
-                value={completionDate}
-                onChange={(e) => setCompletionDate(e.target.value)}
-                required
-              />
             </div>
 
             {/* 9. Message */}
