@@ -2,24 +2,33 @@ import Link from "next/link";
 import { ArrowRight, ChevronDown, Phone } from "lucide-react";
 import SchemaMarkup from "@/components/seo/SchemaMarkup";
 import DynamicIcon from "@/components/content/DynamicIcon";
-import { QuoteProvider, QuoteButton } from "@/components/ourservices/QuoteDialog";
+import { QuoteProvider, QuoteButton } from "@/components/otherservices/QuoteDialog";
 import { getJson, getSection, pageMetadata } from "@/lib/content";
 import { SITE_URL, mediaUrl } from "@/lib/api";
-import { catalogFromServices, colorFor, isExternal, safeLink, visibleCategories } from "@/lib/catalog";
+import { OTHER_SERVICES_PATH, colorFor, isExternal, othersServices, safeLink, serviceCard, visibleCategories } from "@/lib/otherServices";
 
-// "Our Services" catalogue: categories of service cards (Dashboard → Our Services Page).
-// Separate from /services. Until categories are saved there, the live services are listed by category.
+// "Other Services" (/other-services): services in the "Others" category, listed automatically,
+// plus the categories and cards from Dashboard → Other Services Page. See src/lib/otherServices.js.
 export const dynamic = "force-dynamic";
 
-export function generateMetadata() {
-    return pageMetadata("page.our_services", "/our-services");
+// Sections in page order: your own categories, then the automatic "Others" section
+async function loadSections(page) {
+    const own = (await getSection("other_services"))?.categories || [];
+    let auto = [];
+    if (page.auto_list !== false) {
+        const [services, categories] = await Promise.all([getJson("/api/services/", []), getJson("/api/categories/?kind=service", [])]);
+        const linked = new Set(own.flatMap((c) => (c.services || []).map((s) => safeLink(s.link))));
+        const cards = othersServices(services, categories).map(serviceCard).filter((s) => !linked.has(s.link));
+        if (cards.length) auto = [{ id: "others", name: page.auto_heading || "More services", intro: page.auto_intro || "", color: "auto", services: cards }];
+    }
+    return visibleCategories([...own, ...auto]);
 }
 
-async function loadCatalog() {
-    const saved = await getSection("catalog");
-    if (Array.isArray(saved?.categories) && saved.categories.length) return saved;
-    const [menu, services] = await Promise.all([getJson("/api/services/menu-tree", []), getJson("/api/services/", [])]);
-    return catalogFromServices(menu, services);
+export async function generateMetadata() {
+    const page = await getSection("page.other_services");
+    const [meta, sections] = await Promise.all([pageMetadata("page.other_services", OTHER_SERVICES_PATH), loadSections(page)]);
+    // An empty page isn't worth indexing; it's listed once it has services
+    return sections.length ? meta : { ...meta, robots: { index: false, follow: true } };
 }
 
 const telHref = (phone) => `tel:${(phone || "").replace(/[^\d+]/g, "")}`;
@@ -61,8 +70,8 @@ function ServiceCard({ service, color, learnMore }) {
 }
 
 export default async function OurServicesPage() {
-    const [page, settings, catalog] = await Promise.all([getSection("page.our_services"), getSection("settings"), loadCatalog()]);
-    const categories = visibleCategories(catalog);
+    const [page, settings] = await Promise.all([getSection("page.other_services"), getSection("settings")]);
+    const categories = await loadSections(page);
     const faqs = (page.faqs || []).filter((f) => (f.question || "").trim() && (f.answer || "").trim());
     const phone = (settings.phone || "").trim();
     const faqSchema = faqs.length && {
@@ -74,7 +83,7 @@ export default async function OurServicesPage() {
         "@context": "https://schema.org",
         "@type": "ItemList",
         name: page.hero_title,
-        url: `${SITE_URL}/our-services`,
+        url: `${SITE_URL}${OTHER_SERVICES_PATH}`,
         itemListElement: categories.flatMap((c) => c.services).map((s, i) => ({ "@type": "ListItem", position: i + 1, name: s.title, ...(safeLink(s.link).startsWith("/") ? { url: `${SITE_URL}${safeLink(s.link)}` } : {}) })),
     };
     const json = (o) => JSON.stringify(o).replace(/</g, "\\u003c");
@@ -82,7 +91,7 @@ export default async function OurServicesPage() {
     return (
         <QuoteProvider categories={categories.map((c) => c.name)}>
             <div className="bg-white">
-                <SchemaMarkup sectionKey="page.our_services" path="/our-services" />
+                <SchemaMarkup sectionKey="page.other_services" path={OTHER_SERVICES_PATH} />
                 {listSchema ? <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: json(listSchema) }} /> : null}
                 {faqSchema ? <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: json(faqSchema) }} /> : null}
 

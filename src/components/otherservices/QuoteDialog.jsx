@@ -2,7 +2,7 @@
 import { createContext, useContext, useRef, useState } from "react";
 import { CheckCircle2, Loader2, X } from "lucide-react";
 
-// Quote form in a dialog for /our-services. Sends the same request as the Contact page form
+// Quote form in a dialog for /other-services. Sends the same request as the Contact page form
 // (Dashboard → Quote Requests), with the category the visitor picked filled in.
 const QuoteContext = createContext(() => {});
 

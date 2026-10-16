@@ -5,6 +5,7 @@ import { FaFacebook, FaLinkedinIn, FaInstagram, FaXTwitter, FaYoutube } from "re
 import { Mail, Menu, X, ChevronDown, ChevronRight } from "lucide-react";
 import { useContent, useServicesMenu, useSettings } from "@/components/content/SiteContentProvider";
 import { mediaUrl } from "@/lib/api";
+import { OTHER_SERVICES_PATH, hasOwnCards } from "@/lib/otherServices";
 
 const TOP_BAR_SOCIALS = [
   { key: "facebook", Icon: FaFacebook, label: "Facebook" },
@@ -18,19 +19,17 @@ const linksToServices = (item) => (item.href || "").replace(/\/+$/, "") === "/se
 
 // The menu item linking to /services lists the categories switched on in
 // Dashboard → Categories, each opening its services ("Show in Services menu"
-// on). Category names aren't links. If the only category is "Others", its
-// services are listed directly. The Header setting "Services dropdown lists
+// on). Category names aren't links. "Others" is one "Other Services" link to
+// /other-services, which lists those services (and the cards added in
+// Dashboard → Other Services Page). The Header setting "Services dropdown lists
 // your services automatically" turns this off (hand-made links instead).
-// "All Services" (the /our-services catalogue page) comes first.
-function withServicesDropdown(menu, header, groups) {
+function withServicesDropdown(menu, header, groups, hasOwnOtherCards) {
   if (header.services_menu_auto === false) return menu;
   const serviceLink = (s) => ({ label: s.service_title, href: `/services/${encodeURIComponent(s.url_slug)}` });
-  const children =
-    groups.length === 1 && groups[0].name === "Others"
-      ? groups[0].services.map(serviceLink)
-      : groups.map((g) => ({ label: g.name, children: g.services.map(serviceLink) }));
-  const all = { label: "All Services", href: "/our-services" };
-  return menu.map((item) => (linksToServices(item) ? { ...item, children: [all, ...children] } : item));
+  const main = groups.filter((g) => g.name !== "Others");
+  const children = main.map((g) => ({ label: g.name, children: g.services.map(serviceLink) }));
+  if (main.length < groups.length || hasOwnOtherCards) children.push({ label: "Other Services", href: OTHER_SERVICES_PATH });
+  return menu.map((item) => (linksToServices(item) ? { ...item, children } : item));
 }
 
 // Menu items may have no link of their own (dropdown-only parents)
@@ -44,7 +43,8 @@ const Navbar = () => {
   const settings = useSettings();
   const header = useContent("header");
   const servicesMenu = useServicesMenu();
-  const menu = withServicesDropdown(header.menu || [], header, servicesMenu);
+  const otherServices = useContent("other_services");
+  const menu = withServicesDropdown(header.menu || [], header, servicesMenu, hasOwnCards(otherServices));
   const socials = TOP_BAR_SOCIALS.filter((s) => settings[s.key]);
 
   return (

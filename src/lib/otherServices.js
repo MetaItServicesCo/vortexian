@@ -1,9 +1,13 @@
-// "Our Services" page (/our-services): categories of service cards.
-// Edited in Dashboard → Our Services Page and saved as the "catalog" site-content section:
-//   { categories: [{ id, name, intro, color, quote_label, visible,
-//                    services: [{ id, title, description, icon, image, image_alt, link, visible }] }] }
-// Until categories are saved, the page lists the live services (Manage Services) by category.
+// "Other Services" page (/other-services). It shows:
+//   1. every service in the "Others" category (Dashboard → Manage Services), automatically;
+//   2. the categories and service cards added in Dashboard → Other Services Page, saved as the
+//      "other_services" site-content section:
+//      { categories: [{ id, name, intro, color, quote_label, visible,
+//                       services: [{ id, title, description, icon, image, image_alt, link, visible }] }] }
+// In the Services menu, "Others" is one "Other Services" link to this page.
 import { ICONS } from "@/components/content/DynamicIcon";
+
+export const OTHER_SERVICES_PATH = "/other-services";
 
 // Card tints in the site's palette. Keys are stored, so only ever add to this list.
 export const CARD_COLORS = {
@@ -16,7 +20,7 @@ export const CARD_COLORS = {
 };
 const AUTO_ORDER = ["sky", "lavender", "mint", "sand", "rose"];
 
-// "auto" (or unknown) cycles through the tints by category position
+// "auto" (or unknown) cycles through the tints by section position
 export const colorFor = (category, index) => CARD_COLORS[category?.color] || CARD_COLORS[AUTO_ORDER[index % AUTO_ORDER.length]];
 
 export const newId = () => Math.random().toString(36).slice(2, 10);
@@ -34,9 +38,9 @@ export function slugify(text) {
 }
 
 // Visible categories with at least one visible, titled service; unique anchor ids
-export function visibleCategories(catalog) {
+export function visibleCategories(categories) {
     const used = new Set();
-    return (Array.isArray(catalog?.categories) ? catalog.categories : [])
+    return (Array.isArray(categories) ? categories : [])
         .filter((c) => c && c.visible !== false && (c.name || "").trim())
         .map((c) => {
             let anchor = slugify(c.name), n = 2;
@@ -48,33 +52,29 @@ export function visibleCategories(catalog) {
         .filter((c) => c.services.length);
 }
 
-const iconName = (name) => (ICONS[name] ? name : "Layers");
+export const hasOwnCards = (content) => visibleCategories(content?.categories).length > 0;
 
-// Categories built from the live services: the Services menu groups (order and visibility from
-// Dashboard → Categories), with each service's icon and short description, linking to its page.
-export function catalogFromServices(menuTree, services) {
-    const byId = new Map((Array.isArray(services) ? services : []).map((s) => [s.id, s]));
+// A service (Manage Services) as a card linking to its page
+export function serviceCard(s) {
     return {
-        categories: (Array.isArray(menuTree) ? menuTree : []).map((group) => ({
-            id: newId(),
-            name: group.name,
-            intro: "",
-            color: "auto",
-            quote_label: "",
-            visible: true,
-            services: (group.services || []).map((item) => {
-                const s = byId.get(item.id) || item;
-                return {
-                    id: newId(),
-                    title: s.service_title || item.service_title,
-                    description: (s.short_description || "").trim(),
-                    icon: iconName(s.lucide_icon),
-                    image: "",
-                    image_alt: "",
-                    link: `/services/${encodeURIComponent(item.url_slug)}`,
-                    visible: true,
-                };
-            }),
-        })),
+        id: `service-${s.id}`,
+        title: s.service_title,
+        description: (s.short_description || "").trim(),
+        icon: ICONS[s.lucide_icon] ? s.lucide_icon : "Layers",
+        image: "",
+        image_alt: "",
+        link: `/services/${encodeURIComponent(s.url_slug)}`,
+        visible: true,
     };
+}
+
+// Services whose category is "Others", or whose category no longer exists (the menu treats both as Others)
+export function othersServices(services, categories) {
+    const list = Array.isArray(categories) ? categories : [];
+    const others = list.find((c) => c.is_system);
+    if (!others) return []; // categories unavailable: don't guess
+    const known = new Set(list.map((c) => c.id));
+    return (Array.isArray(services) ? services : [])
+        .filter((s) => (others && s.category_id === others.id) || !known.has(s.category_id))
+        .sort((a, b) => a.id - b.id);
 }

@@ -2,6 +2,7 @@
 import { SITE_URL } from "@/lib/api";
 import { blogPath } from "@/lib/blog";
 import { getFreshSiteContent, getJson } from "@/lib/content";
+import { OTHER_SERVICES_PATH, hasOwnCards, othersServices } from "@/lib/otherServices";
 
 // ---------------------------------------------------------------- tracking
 // IDs end up inside <script>, so only the documented formats are used.
@@ -16,7 +17,6 @@ export { siteSchemas as schemaScripts, SCHEMA_PLACEHOLDERS } from "@/lib/schema"
 const STATIC_PAGES = [
     { path: "/", priority: 1.0 },
     { path: "/services", priority: 0.9 },
-    { path: "/our-services", priority: 0.9 },
     { path: "/about", priority: 0.8 },
     { path: "/portfolio", priority: 0.8 },
     { path: "/blog", priority: 0.8 },
@@ -44,20 +44,26 @@ function excluded(path, rules) {
 }
 
 export async function sitemapEntries(settings) {
-    const [services, blogs, projects, pages, gallery] = await Promise.all([
-        settings.include_services ? getJson("/api/services/", []) : [],
+    const [services, blogs, projects, pages, gallery, serviceCats, content] = await Promise.all([
+        getJson("/api/services/", []),
         settings.include_blog ? getJson("/api/blog/public", []) : [],
         settings.include_portfolio ? getJson("/api/portfolio/", []) : [],
         settings.include_pages ? getJson("/api/pages/published", []) : [],
         getJson("/api/gallery/", { albums: [] }),
+        getJson("/api/categories/?kind=service", []),
+        getFreshSiteContent(),
     ]);
     // The gallery is listed only when it isn't hidden from search engines (Site Content → Gallery Page)
-    const galleryIndexed = (await getFreshSiteContent())["page.gallery"]?.noindex === false;
+    const galleryIndexed = content["page.gallery"]?.noindex === false;
+    // Other Services is listed once it has something on it (an "Others" service or own cards)
+    const otherServicesShown = hasOwnCards(content.other_services)
+        || (content["page.other_services"]?.auto_list !== false && othersServices(services, serviceCats).length > 0);
     const list = (v) => (Array.isArray(v) ? v : []);
 
     const entries = [
         ...STATIC_PAGES,
-        ...list(services).filter((s) => s.url_slug).map((s) => ({ path: `/services/${encodeURIComponent(s.url_slug)}`, priority: 0.8 })),
+        ...(otherServicesShown ? [{ path: OTHER_SERVICES_PATH, priority: 0.7 }] : []),
+        ...(settings.include_services ? list(services) : []).filter((s) => s.url_slug).map((s) => ({ path: `/services/${encodeURIComponent(s.url_slug)}`, priority: 0.8 })),
         ...list(blogs).map((b) => ({ path: blogPath(b), priority: 0.7 })),
         ...list(projects).map((p) => ({ path: `/portfolio/${p.slug || p.id}`, priority: 0.6 })),
         ...list(pages).map((p) => ({ path: `/${p.slug}`, priority: 0.4, lastModified: p.updated_at })),

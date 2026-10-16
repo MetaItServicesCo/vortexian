@@ -3,15 +3,16 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import toast, { Toaster } from "react-hot-toast";
-import { ArrowDown, ArrowUp, ChevronDown, ChevronUp, ExternalLink, Eye, EyeOff, Loader2, Pencil, Plus, RotateCcw, Save, Settings2, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronDown, ChevronUp, ExternalLink, Eye, EyeOff, Info, Loader2, Pencil, Plus, Save, Settings2, Trash2 } from "lucide-react";
 import { adminFetch } from "@/lib/adminApi";
 import { mediaUrl } from "@/lib/api";
 import DynamicIcon from "@/components/content/DynamicIcon";
 import { FieldList, IconField, findMissingAlt } from "@/components/admin/content/SchemaForm";
-import { CARD_COLORS, catalogFromServices, colorFor, newId, safeLink } from "@/lib/catalog";
+import { CARD_COLORS, OTHER_SERVICES_PATH, colorFor, newId, othersServices, safeLink, serviceCard } from "@/lib/otherServices";
 
-// Dashboard → Our Services Page: categories and service cards of /our-services
-// (saved as the "catalog" site-content section; see src/lib/catalog.js).
+// Dashboard → Other Services Page: your own categories and service cards on /other-services
+// (saved as the "other_services" site-content section; see src/lib/otherServices.js).
+// Services in the "Others" category are listed on the page automatically, after these.
 const inputClass = "w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-sm text-slate-800 outline-none focus:ring-2 focus:ring-[#5DB4D1]";
 const labelClass = "block text-xs font-black uppercase tracking-wider text-slate-500 mb-2";
 const IMAGE_FIELD = [{ name: "image", label: "Image (optional — replaces the icon)", type: "image", altKey: "image_alt" }];
@@ -201,21 +202,23 @@ function CategoryPanel({ category, index, count, color, onChange, onMove, onRemo
     );
 }
 
-export default function OurServicesAdmin() {
+export default function OtherServicesAdmin() {
     const [categories, setCategories] = useState(null);
-    const [autoPreview, setAutoPreview] = useState([]);
+    const [allServices, setAllServices] = useState([]);
+    const [othersNow, setOthersNow] = useState([]);
+    const [page, setPage] = useState({});
     const [saving, setSaving] = useState(false);
     const [dirty, setDirty] = useState(false);
-    const [defaultQuote, setDefaultQuote] = useState("Get a Free Quote");
 
     useEffect(() => {
         let cancelled = false;
         const get = (url, fallback) => fetch(url).then((r) => (r.ok ? r.json() : fallback)).catch(() => fallback);
-        Promise.all([get("/api/content/catalog", {}), get("/api/services/menu-tree", []), get("/api/services/", []), get("/api/content/page.our_services", {})]).then(([saved, menu, services, page]) => {
+        Promise.all([get("/api/content/other_services", {}), get("/api/services/", []), get("/api/categories/?kind=service", []), get("/api/content/page.other_services", {})]).then(([saved, services, cats, pageText]) => {
             if (cancelled) return;
-            setAutoPreview(catalogFromServices(menu, services).categories);
+            setAllServices([...services].sort((a, b) => a.service_title.localeCompare(b.service_title)).map(serviceCard));
+            setOthersNow(othersServices(services, cats).map(serviceCard));
+            setPage(pageText || {});
             setCategories(Array.isArray(saved?.categories) ? saved.categories : []);
-            if (page?.quote_label) setDefaultQuote(page.quote_label);
         });
         return () => { cancelled = true; };
     }, []);
@@ -227,8 +230,8 @@ export default function OurServicesAdmin() {
         return () => window.removeEventListener("beforeunload", handler);
     }, [dirty]);
 
-    const existing = useMemo(() => autoPreview.flatMap((c) => c.services), [autoPreview]);
-    const servicePages = useMemo(() => existing.map((s) => ({ href: s.link, label: s.title })), [existing]);
+    const servicePages = useMemo(() => allServices.map((s) => ({ href: s.link, label: s.title })), [allServices]);
+    const autoOn = page.auto_list !== false;
 
     const update = (next) => { setCategories(next); setDirty(true); };
 
@@ -253,7 +256,7 @@ export default function OurServicesAdmin() {
         setSaving(true);
         try {
             const clean = categories.map((c) => ({ ...c, name: c.name.trim(), services: (c.services || []).map((s) => ({ ...s, title: s.title.trim(), link: safeLink(s.link) })) }));
-            const saved = await adminFetch("/api/content/catalog", { method: "PUT", body: { categories: clean } });
+            const saved = await adminFetch("/api/content/other_services", { method: "PUT", body: { categories: clean } });
             setCategories(saved.categories || []);
             setDirty(false);
             toast.success("Saved — the page is updated");
@@ -264,32 +267,20 @@ export default function OurServicesAdmin() {
         }
     };
 
-    const backToAutomatic = async () => {
-        if (!confirm("Remove your categories and cards and list your services automatically again?")) return;
-        try {
-            await adminFetch("/api/content/catalog", { method: "DELETE" });
-            setCategories([]);
-            setDirty(false);
-            toast.success("The page lists your services automatically again");
-        } catch (err) {
-            toast.error(err.message);
-        }
-    };
-
     return (
         <div className="max-w-5xl pb-28">
             <Toaster position="top-center" />
             <div className="flex flex-col md:flex-row md:items-start gap-4 mb-8">
                 <div className="flex-1">
                     <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Website</p>
-                    <h1 className="text-2xl font-black text-[#1D1D7E] uppercase tracking-tight">Our Services Page</h1>
-                    <p className="text-sm text-slate-500 mt-1">Categories and service cards on <span className="font-semibold">/our-services</span>. Changes go live when you save.</p>
+                    <h1 className="text-2xl font-black text-[#1D1D7E] uppercase tracking-tight">Other Services Page</h1>
+                    <p className="text-sm text-slate-500 mt-1">The page <span className="font-semibold">{OTHER_SERVICES_PATH}</span>, opened from <span className="font-semibold">Services → Other Services</span> in the menu.</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                    <Link href="/dashboard/content/page.our_services" className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-xs font-bold uppercase tracking-wider text-slate-600 hover:text-[#1D1D7E]">
+                    <Link href="/dashboard/content/page.other_services" className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-xs font-bold uppercase tracking-wider text-slate-600 hover:text-[#1D1D7E]">
                         <Settings2 size={14} /> Page text, FAQ &amp; SEO
                     </Link>
-                    <a href="/our-services" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-xs font-bold uppercase tracking-wider text-slate-600 hover:text-[#1D1D7E]">
+                    <a href={OTHER_SERVICES_PATH} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-xs font-bold uppercase tracking-wider text-slate-600 hover:text-[#1D1D7E]">
                         View page <ExternalLink size={14} />
                     </a>
                 </div>
@@ -299,25 +290,29 @@ export default function OurServicesAdmin() {
                 <div className="py-24 flex justify-center"><Loader2 className="w-6 h-6 animate-spin text-[#1D1D7E]" /></div>
             ) : (
                 <>
-                    {categories.length === 0 && (
-                        <div className="mb-6 rounded-2xl border border-[#5DB4D1]/40 bg-[#F3F9FC] p-6">
-                            <p className="font-black text-[#1D1D7E]">The page currently lists your services automatically</p>
-                            <p className="mt-1 text-sm text-slate-600">
-                                Right now it shows {existing.length} service{existing.length === 1 ? "" : "s"} from Manage Services, grouped by category ({autoPreview.map((c) => c.name).join(", ") || "none yet"}).
-                                To choose exactly what&apos;s shown — names, descriptions, icons, images, links and order — start from those services or from scratch.
-                            </p>
-                            <div className="mt-4 flex flex-wrap gap-2">
-                                <button type="button" disabled={!autoPreview.length} onClick={() => update(autoPreview.map((c) => ({ ...c, id: newId(), services: c.services.map((s) => ({ ...s, id: newId() })) })))}
-                                    className="px-5 py-3 rounded-xl bg-[#1D1D7E] text-white text-sm font-bold hover:bg-[#5DB4D1] disabled:opacity-40">
-                                    Start from my current services
-                                </button>
-                                <button type="button" onClick={() => update([newCategory()])} className="px-5 py-3 rounded-xl border border-gray-200 bg-white text-sm font-bold text-slate-600 hover:text-[#1D1D7E]">
-                                    Start from scratch
-                                </button>
-                            </div>
-                        </div>
-                    )}
+                    {/* ---- automatic part */}
+                    <div className="mb-8 rounded-2xl border border-[#5DB4D1]/40 bg-[#F3F9FC] p-6" data-auto-box>
+                        <p className="flex items-center gap-2 font-black text-[#1D1D7E]"><Info size={18} aria-hidden="true" /> Added automatically: services in the “Others” category</p>
+                        {!autoOn ? (
+                            <p className="mt-2 text-sm text-slate-600">Switched off in <Link href="/dashboard/content/page.other_services" className="font-bold text-[#1D1D7E] underline">Page text, FAQ &amp; SEO</Link>.</p>
+                        ) : othersNow.length ? (
+                            <>
+                                <p className="mt-2 text-sm text-slate-600">These {othersNow.length} service{othersNow.length === 1 ? " is" : "s are"} shown in the “{page.auto_heading || "More services"}” section, after your own categories below:</p>
+                                <ul className="mt-3 flex flex-wrap gap-2">
+                                    {othersNow.map((s) => <li key={s.id} className="rounded-full bg-white border border-slate-200 px-3 py-1 text-sm font-semibold text-slate-700">{s.title}</li>)}
+                                </ul>
+                            </>
+                        ) : (
+                            <p className="mt-2 text-sm text-slate-600">No service is in “Others” right now.</p>
+                        )}
+                        <p className="mt-3 text-xs text-slate-500">To add or remove one, change the service&apos;s category in <Link href="/dashboard/services" className="font-bold text-[#1D1D7E] underline">Manage Services</Link>.</p>
+                    </div>
 
+                    {/* ---- own categories and cards */}
+                    <h2 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400 mb-3">Your own categories &amp; cards</h2>
+                    {categories.length === 0 && (
+                        <p className="mb-4 text-sm text-slate-500">Optional. Add categories of service cards — with their own text, icons or images, links and a quote button — for services that aren&apos;t in Manage Services, or to group things your way.</p>
+                    )}
                     <div className="space-y-4">
                         {categories.map((c, i) => (
                             <CategoryPanel
@@ -327,8 +322,8 @@ export default function OurServicesAdmin() {
                                 count={categories.length}
                                 color={colorFor(c, i)}
                                 servicePages={servicePages}
-                                existing={existing}
-                                defaultQuote={defaultQuote}
+                                existing={allServices}
+                                defaultQuote={page.quote_label || "Get a Free Quote"}
                                 onChange={(next) => update(categories.map((x, j) => (j === i ? next : x)))}
                                 onMove={(d) => update(move(categories, i, d))}
                                 onRemove={() => update(categories.filter((_, j) => j !== i))}
@@ -336,22 +331,16 @@ export default function OurServicesAdmin() {
                         ))}
                     </div>
 
-                    {categories.length > 0 && (
-                        <button type="button" onClick={() => update([...categories, newCategory()])}
-                            className="mt-4 w-full py-3.5 border-2 border-dashed border-gray-200 rounded-2xl text-sm font-bold text-slate-500 hover:border-[#1D1D7E] hover:text-[#1D1D7E] flex items-center justify-center gap-2">
-                            <Plus size={16} /> Add category
-                        </button>
-                    )}
+                    <button type="button" onClick={() => update([...categories, newCategory()])}
+                        className="mt-4 w-full py-3.5 border-2 border-dashed border-gray-200 rounded-2xl text-sm font-bold text-slate-500 hover:border-[#1D1D7E] hover:text-[#1D1D7E] flex items-center justify-center gap-2">
+                        <Plus size={16} /> Add category
+                    </button>
 
                     <div className="sticky bottom-4 mt-8 flex items-center gap-3 bg-white/90 backdrop-blur p-3 rounded-2xl border border-gray-100 shadow-lg">
                         <button type="button" onClick={save} disabled={saving || !dirty}
                             className="flex-1 bg-[#1D1D7E] text-white py-3.5 rounded-xl font-black uppercase tracking-widest text-xs hover:bg-[#5DB4D1] transition flex items-center justify-center gap-2 disabled:opacity-50">
                             {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
                             {saving ? "Saving…" : dirty ? "Save changes" : "Saved"}
-                        </button>
-                        <button type="button" onClick={backToAutomatic}
-                            className="px-5 py-3.5 rounded-xl border border-gray-200 text-xs font-bold uppercase tracking-wider text-slate-500 hover:text-red-600 hover:border-red-200 flex items-center gap-2">
-                            <RotateCcw size={14} /> <span className="hidden sm:inline">List services automatically</span><span className="sm:hidden">Automatic</span>
                         </button>
                     </div>
                 </>
