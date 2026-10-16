@@ -49,6 +49,7 @@ class CreateService(BaseService):
 
 class ServiceResponse(BaseService):
     id:int
+    sort_order:int=0
 
     class Config:
         from_attributes=True

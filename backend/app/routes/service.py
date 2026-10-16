@@ -1,4 +1,6 @@
 from fastapi import APIRouter, status, Depends, HTTPException, UploadFile, File, Form
+from pydantic import BaseModel
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from typing import Annotated
 
@@ -15,6 +17,13 @@ from app.pricing import clean_pricing
 from app.service_layout import clean_layout
 
 router = APIRouter()
+
+# Display order everywhere services are listed (Dashboard → Manage Services ↑ ↓)
+ORDER = (models.Service.sort_order, models.Service.id)
+
+
+class ServiceOrder(BaseModel):
+    ids: list[int]
 
 @router.post("/create-service", response_model=ServiceResponse, status_code=status.HTTP_201_CREATED)
 def create_service(
@@ -96,6 +105,7 @@ def create_service(
         keywords=keywords,
         meta_description=meta_description,
         show_in_menu=show_in_menu,
+        sort_order=(db.query(func.max(models.Service.sort_order)).scalar() or 0) + 1,  # new services go last
         schema_json=clean_schema_json(schema_json),
         pricing=clean_pricing(pricing),
         layout=clean_layout(layout),
@@ -109,14 +119,31 @@ def create_service(
 
 @router.get("/", response_model=list[ServiceResponse])
 def get_all_services(db: Annotated[Session, Depends(get_db)]):
-    return db.query(models.Service).all()
+    return db.query(models.Service).order_by(*ORDER).all()
+
+
+# Save the order from Dashboard → Manage Services: ids in their new order (all services)
+@router.post("/reorder", response_model=list[ServiceResponse])
+def reorder_services(data: ServiceOrder, db: Annotated[Session, Depends(get_db)], admin=Depends(get_current_admin_dependence)):
+    rows = {s.id: s for s in db.query(models.Service)}
+    position = 0
+    for sid in data.ids:
+        if sid in rows:
+            position += 1
+            rows[sid].sort_order = position
+            del rows[sid]
+    for s in sorted(rows.values(), key=lambda s: (s.sort_order, s.id)):  # any not sent keep their place after
+        position += 1
+        s.sort_order = position
+    db.commit()
+    return db.query(models.Service).order_by(*ORDER).all()
 
 
 # Services for the website's Services dropdown (title + address only).
 # Declared before "/{slug}" so "menu" isn't read as a service slug.
 @router.get("/menu", response_model=list[ServiceMenuItem])
 def get_menu_services(db: Annotated[Session, Depends(get_db)]):
-    return db.query(models.Service).filter(models.Service.show_in_menu.is_(True)).order_by(models.Service.id).all()
+    return db.query(models.Service).filter(models.Service.show_in_menu.is_(True)).order_by(*ORDER).all()
 
 
 # Services dropdown grouped by category: categories switched on for the menu,
@@ -129,7 +156,7 @@ def get_menu_tree(db: Annotated[Session, Depends(get_db)]):
     categories = cats.ordered(db, "service")
     known = {c.id for c in categories}
     groups = {c.id: [] for c in categories}
-    for s in db.query(models.Service).filter(models.Service.show_in_menu.is_(True)).order_by(models.Service.id):
+    for s in db.query(models.Service).filter(models.Service.show_in_menu.is_(True)).order_by(*ORDER):
         groups[s.category_id if s.category_id in known else others.id].append({"id": s.id, "service_title": s.service_title, "url_slug": s.url_slug})
     return [
         {"id": c.id, "name": c.name, "services": groups[c.id]}

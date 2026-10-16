@@ -45,6 +45,8 @@ class Service(Base):
     layout:Mapped[str | None]=mapped_column(Text,nullable=True)
     # Listed in the website's Services dropdown (the page stays live either way)
     show_in_menu:Mapped[bool]=mapped_column(Boolean,nullable=False,default=True,server_default="true")
+    # Display order (Dashboard → Manage Services ↑ ↓): Services menu, /services page, home page
+    sort_order:Mapped[int]=mapped_column(Integer,nullable=False,default=0,server_default="0")
 
     meta_description:Mapped[str]=mapped_column(Text,nullable=False)
 

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import axios from "axios";
-import { Plus, Pencil, Trash2, Layers, Code, Share2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Layers, Code, Share2, ArrowUp, ArrowDown } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import { adminFetch } from "@/lib/adminApi";
 import { useSelection } from "@/lib/useSelection";
@@ -60,6 +60,27 @@ export default function AdminServicesList() {
         }
     };
 
+    // Display order (Services menu within each category, /services page, home page): saved on every move
+    const [orderBusy, setOrderBusy] = useState(false);
+    const move = async (index, delta) => {
+        const target = index + delta;
+        if (target < 0 || target >= services.length || orderBusy) return;
+        const before = services;
+        const next = [...services];
+        [next[index], next[target]] = [next[target], next[index]];
+        setServices(next);
+        setOrderBusy(true);
+        try {
+            setServices(await adminFetch("/api/services/reorder", { method: "POST", body: { ids: next.map((s) => s.id) } }));
+            toast.success("Order saved", { id: "service-order" });
+        } catch (err) {
+            setServices(before);
+            toast.error(`Could not save the order: ${err.message}`);
+        } finally {
+            setOrderBusy(false);
+        }
+    };
+
     const handleDelete = async (id) => {
         if (!confirm("Delete this service? Its page will stop working.\n\nYou can restore it from Recently deleted for 7 days.")) return;
 
@@ -102,6 +123,10 @@ export default function AdminServicesList() {
                 </Link>
             </div>
 
+            <p className="mb-4 text-xs text-slate-500">
+                Use the <span className="font-bold">↑ ↓ arrows</span>{" "}to set the order of your services. It&apos;s used on the Services page, the home page and inside each category of the Services menu.
+            </p>
+
             <BulkActions
                 resource="services"
                 selection={selection}
@@ -117,6 +142,7 @@ export default function AdminServicesList() {
                         <thead>
                             <tr className="bg-slate-100/70 border-b border-gray-200 text-slate-400 text-[10px] font-black uppercase tracking-widest">
                                 <th className="p-4 pl-6 w-10"><SelectAllCheckbox selection={selection} label="Select all services" /></th>
+                                <th className="p-4 w-24">Order</th>
                                 <th className="p-4">
                                     Service Overview
                                 </th>
@@ -139,7 +165,7 @@ export default function AdminServicesList() {
                             {loading ? (
                                 <tr>
                                     <td
-                                        colSpan="5"
+                                        colSpan="7"
                                         className="text-center py-10 text-xs font-bold text-gray-400 uppercase tracking-widest"
                                     >
                                         Loading core capabilities schema...
@@ -148,7 +174,7 @@ export default function AdminServicesList() {
                             ) : services.length === 0 ? (
                                 <tr>
                                     <td
-                                        colSpan="5"
+                                        colSpan="7"
                                         className="text-center py-10 text-xs font-bold text-gray-400 uppercase tracking-widest"
                                     >
                                         No active services registered inside
@@ -156,12 +182,28 @@ export default function AdminServicesList() {
                                     </td>
                                 </tr>
                             ) : (
-                                services.map((service) => (
+                                services.map((service, index) => (
                                     <tr
                                         key={service.id}
                                         className={`transition-colors ${selection.isSelected(service.id) ? "bg-indigo-50/60" : "hover:bg-slate-50/50"}`}
                                     >
                                         <td className="p-4 pl-6"><SelectRowCheckbox selection={selection} id={service.id} label={`Select “${service.service_title}”`} /></td>
+                                        {/* ORDER */}
+                                        <td className="p-4">
+                                            <div className="flex items-center gap-1">
+                                                <span className="w-6 text-xs font-black text-slate-400 tabular-nums">{index + 1}</span>
+                                                <button type="button" onClick={() => move(index, -1)} disabled={index === 0 || orderBusy}
+                                                    aria-label={`Move “${service.service_title}” up`} title="Move up"
+                                                    className="w-7 h-7 rounded-md border border-gray-200 text-slate-500 hover:text-[#1D1D7E] hover:bg-slate-50 flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed">
+                                                    <ArrowUp size={13} />
+                                                </button>
+                                                <button type="button" onClick={() => move(index, 1)} disabled={index === services.length - 1 || orderBusy}
+                                                    aria-label={`Move “${service.service_title}” down`} title="Move down"
+                                                    className="w-7 h-7 rounded-md border border-gray-200 text-slate-500 hover:text-[#1D1D7E] hover:bg-slate-50 flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed">
+                                                    <ArrowDown size={13} />
+                                                </button>
+                                            </div>
+                                        </td>
                                         {/* SERVICE INFO */}
                                         <td className="p-4 max-w-xs">
                                             <div className="flex items-center gap-3">
