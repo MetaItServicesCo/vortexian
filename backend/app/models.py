@@ -39,6 +39,8 @@ class Service(Base):
     keywords:Mapped[str]=mapped_column(Text,nullable=False)
     # Own schema markup (JSON-LD) for this item's page; replaces the automatic one
     schema_json:Mapped[str | None]=mapped_column(Text,nullable=True)
+    # Pricing section for this service's page (JSON, see app/pricing.py)
+    pricing:Mapped[str | None]=mapped_column(Text,nullable=True)
     # Listed in the website's Services dropdown (the page stays live either way)
     show_in_menu:Mapped[bool]=mapped_column(Boolean,nullable=False,default=True,server_default="true")
 

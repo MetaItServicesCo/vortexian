@@ -39,6 +39,7 @@ class BaseService(BaseModel):
     meta_description:str
     show_in_menu:bool=True
     schema_json:Optional[str]=None
+    pricing:Optional[str]=None
 
 
 class CreateService(BaseService):
@@ -89,6 +90,7 @@ class UpdateService(BaseModel):
     keywords: Optional[str] = None
     show_in_menu: Optional[bool] = None
     schema_json: Optional[str] = None
+    pricing: Optional[str] = None
 
     meta_description: Optional[str] = None
 

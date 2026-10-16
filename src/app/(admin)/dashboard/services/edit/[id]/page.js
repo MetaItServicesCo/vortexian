@@ -11,6 +11,7 @@ import dynamic from "next/dynamic";
 import MenuToggle from "@/components/admin/services/MenuToggle";
 import CategorySelect from "@/components/admin/CategorySelect";
 import SchemaMarkupField, { schemaJsonError } from "@/components/admin/SchemaMarkupField";
+import PricingEditor, { pricingError, pricingFromStored, pricingToStored } from "@/components/admin/services/PricingEditor";
 
 const RichTextEditor = dynamic(() => import("@/components/editor/RichTextEditor"), { ssr: false });
 
@@ -27,6 +28,7 @@ export default function EditServicePage({ params }) {
     const [selectedFile, setSelectedFile] = useState(null);
     const [previewUrl, setPreviewUrl] = useState("");
 
+    const [pricing, setPricing] = useState(() => pricingFromStored(null));
     const [formData, setFormData] = useState({
         title: "",
         slug: "",
@@ -57,6 +59,7 @@ export default function EditServicePage({ params }) {
                 setUploadType(isLocalUpload ? "file" : "url");
                 setPreviewUrl(data.image_showcase_url || "");
 
+                setPricing(pricingFromStored(data.pricing));
                 setFormData({
                     title: data.service_title || "",
                     slug: data.url_slug || "",
@@ -131,6 +134,12 @@ export default function EditServicePage({ params }) {
             toast.error(`Schema markup is not valid JSON: ${schemaProblem}`);
             return;
         }
+        const pricingProblem = pricingError(pricing);
+        if (pricingProblem) {
+            toast.error(pricingProblem);
+            document.querySelector("[data-pricing-editor]")?.scrollIntoView({ behavior: "smooth", block: "center" });
+            return;
+        }
         setLoading(true);
 
         try {
@@ -159,6 +168,7 @@ export default function EditServicePage({ params }) {
                 keywords: formData.seo.keywords,
                 show_in_menu: formData.showInMenu,
                 schema_json: formData.schemaJson.trim(),
+                pricing: pricingToStored(pricing),
             };
 
             const res = await fetch(`${BASE_URL}/update-service/${id}`, {
@@ -391,6 +401,8 @@ export default function EditServicePage({ params }) {
                             onChange={(e) => handleNestedChange("seo", "description", e.target.value)} />
                     </div>
                 </div>
+
+                <PricingEditor value={pricing} onChange={setPricing} serviceTitle={formData.title} />
 
                 <SchemaMarkupField kind="service" id="service-schema-json" value={formData.schemaJson} onChange={(value) => setFormData((prev) => ({ ...prev, schemaJson: value }))} />
 

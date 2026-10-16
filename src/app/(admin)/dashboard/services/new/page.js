@@ -10,6 +10,7 @@ import axios from "axios";
 import MenuToggle from "@/components/admin/services/MenuToggle";
 import CategorySelect from "@/components/admin/CategorySelect";
 import SchemaMarkupField, { schemaJsonError } from "@/components/admin/SchemaMarkupField";
+import PricingEditor, { pricingError, pricingFromStored, pricingToStored } from "@/components/admin/services/PricingEditor";
 import {
     ArrowLeft,
     Loader2,
@@ -42,6 +43,7 @@ export default function CreateNewService() {
     const API_URL = "/api/services/create-service";
 
 
+    const [pricing, setPricing] = useState(() => pricingFromStored(null));
     const [formData, setFormData] = useState({
         title: "",
         slug: "",
@@ -133,6 +135,12 @@ export default function CreateNewService() {
             toast.error(`Schema markup is not valid JSON: ${schemaProblem}`);
             return;
         }
+        const pricingProblem = pricingError(pricing);
+        if (pricingProblem) {
+            toast.error(pricingProblem);
+            document.querySelector("[data-pricing-editor]")?.scrollIntoView({ behavior: "smooth", block: "center" });
+            return;
+        }
 
         setLoading(true);
 
@@ -215,6 +223,7 @@ export default function CreateNewService() {
 
             submitData.append("show_in_menu", formData.showInMenu ? "true" : "false");
             submitData.append("schema_json", formData.schemaJson.trim());
+            submitData.append("pricing", pricingToStored(pricing));
 
             // WHY CHOOSE
             submitData.append(
@@ -714,6 +723,8 @@ export default function CreateNewService() {
                         }
                     />
                 </div>
+
+                <PricingEditor value={pricing} onChange={setPricing} serviceTitle={formData.title} />
 
                 <SchemaMarkupField kind="service" id="service-schema-json" value={formData.schemaJson} onChange={(value) => setFormData((prev) => ({ ...prev, schemaJson: value }))} />
 

@@ -11,6 +11,7 @@ from app.schema_markup import clean_schema_json
 from app import categories as cats
 from app.uploads import IMAGE_EXTENSIONS, MAX_IMAGE_BYTES, delete_upload, has_file, require_alt, save_upload
 from app.trash import move_to_trash
+from app.pricing import clean_pricing
 
 router = APIRouter()
 
@@ -39,6 +40,7 @@ def create_service(
     show_in_menu: bool = Form(True),
     schema_json: str = Form(None),
     category_id: str = Form(None),
+    pricing: str = Form(None),
     db: Session = Depends(get_db),
     admin: models.Admin = Depends(get_current_admin_dependence)
 ):
@@ -93,6 +95,7 @@ def create_service(
         meta_description=meta_description,
         show_in_menu=show_in_menu,
         schema_json=clean_schema_json(schema_json),
+        pricing=clean_pricing(pricing),
     )
 
     db.add(new_service)
@@ -175,6 +178,8 @@ def update_service(
         del update_data["show_in_menu"]  # never store NULL
     if "schema_json" in update_data:
         update_data["schema_json"] = clean_schema_json(update_data["schema_json"])
+    if "pricing" in update_data:
+        update_data["pricing"] = clean_pricing(update_data["pricing"])
     if update_data.get("category_id") is not None or update_data.get("category_stack"):
         category = cats.resolve(db, "service", update_data.get("category_id"), name=update_data.get("category_stack"), create=True)
         update_data["category_id"], update_data["category_stack"] = category.id, category.name

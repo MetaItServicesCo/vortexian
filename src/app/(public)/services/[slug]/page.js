@@ -10,6 +10,7 @@ import BreadcrumbHero from "@/components/BreadcrumbHero";
 import { serverApiUrl } from "@/lib/api";
 import RichText from "@/components/content/RichText";
 import SchemaMarkup from "@/components/seo/SchemaMarkup";
+import ServicePricing from "@/components/services/ServicePricing";
 
 // Next.js passes the segment still percent-encoded ("web%20dev"); decode before
 // re-encoding or the backend receives "web%2520dev" and returns 404.
@@ -188,6 +189,8 @@ export default async function ServiceDetailPage({ params }) {
                     </div>
                 </div>
             </section>
+
+            <ServicePricing pricing={service.pricing} serviceTitle={service.service_title} />
         </main>
     );
 }
