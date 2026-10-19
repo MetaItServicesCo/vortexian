@@ -191,7 +191,7 @@ const ServicesSection = ({ services: apiServices = [] }) => {
           {/* Controls: progress, previous / next */}
           <div className="mt-8 flex items-center gap-5">
             <div className="relative h-[3px] flex-1 overflow-hidden rounded-full bg-gray-300/70" aria-hidden="true">
-              <span ref={progressRef} className="absolute inset-y-0 left-0 w-full origin-left bg-[#1D1D7E] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]" style={{ transform: "scaleX(0.04)" }} />
+              <span ref={progressRef} className="absolute inset-y-0 left-0 w-full origin-left bg-[#5DB4D1] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]" style={{ transform: "scaleX(0.04)" }} />
             </div>
             <div className="flex shrink-0 gap-3">
               <button type="button" aria-label="Previous services" disabled={position.start}
