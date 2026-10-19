@@ -11,16 +11,16 @@ import DynamicIcon, { ICONS } from "@/components/content/DynamicIcon";
 
 const ServicesSection = ({ services: apiServices = [] }) => {
   const section = useContent("home.services");
-  // Carousel state: progress bar + "01 / 05" counter, buttons disabled at the ends
+  // Carousel state: progress bar, buttons disabled at the ends
   const reduceMotion = useReducedMotion();
   const progressRef = useRef(null);
   // Cards rise in once, together, when the section first scrolls into view (cards off to the side are ready when swiped to)
   const carouselRef = useRef(null);
   const shown = useInView(carouselRef, { once: true, margin: "-80px" });
-  const [position, setPosition] = useState({ index: 0, start: true, end: false });
+  const [position, setPosition] = useState({ start: true, end: false });
   const syncCarousel = (swiper) => {
     if (progressRef.current) progressRef.current.style.transform = `scaleX(${Math.max(0.04, Math.min(1, swiper.progress || 0))})`;
-    setPosition({ index: swiper.activeIndex, start: swiper.isBeginning, end: swiper.isEnd });
+    setPosition({ start: swiper.isBeginning, end: swiper.isEnd });
   };
   const fallbackServices = [
     {
@@ -188,12 +188,8 @@ const ServicesSection = ({ services: apiServices = [] }) => {
             ))}
           </Swiper>
 
-          {/* Controls: progress, counter, previous / next */}
+          {/* Controls: progress, previous / next */}
           <div className="mt-8 flex items-center gap-5">
-            <p className="shrink-0 text-sm font-bold tabular-nums text-[#1D1D7E]" aria-hidden="true">
-              {String(Math.min(position.index + 1, services.length)).padStart(2, "0")}
-              <span className="text-gray-400"> / {String(services.length).padStart(2, "0")}</span>
-            </p>
             <div className="relative h-[3px] flex-1 overflow-hidden rounded-full bg-gray-300/70" aria-hidden="true">
               <span ref={progressRef} className="absolute inset-y-0 left-0 w-full origin-left bg-[#1D1D7E] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]" style={{ transform: "scaleX(0.04)" }} />
             </div>
