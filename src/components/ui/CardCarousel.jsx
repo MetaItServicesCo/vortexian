@@ -2,9 +2,9 @@
 import { useRef, useState } from "react";
 import { motion, useInView, useReducedMotion } from "framer-motion";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { A11y, Keyboard, Parallax } from "swiper/modules";
+import { A11y, Autoplay, Keyboard, Parallax } from "swiper/modules";
 import "swiper/css";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, Pause, Play } from "lucide-react";
 
 // Swipeable row of cards used by the home page sections (Our Services, Employee Perks):
 // 3 cards on desktop, 2 on tablet, 1 + a peek of the next on phones; drag/swipe, arrows,
@@ -12,19 +12,30 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 // view; cards out of view wait smaller and fainter and grow in as they arrive (globals.css).
 // Elements with data-swiper-parallax inside a card drift while swiping. Reduced motion: still.
 // tone: "light" (on light backgrounds) or "dark" (on the navy background).
+// perView: cards in view on desktop (3, or 2 for a narrower column).
+// autoplay: ms between moves; it pauses on hover/focus, has a pause button, wraps back to the
+// start after the last card, and is off for visitors who prefer reduced motion.
 const BUTTON = {
   light: "border-gray-300 bg-white text-[#1D1D7E] shadow-sm hover:bg-[#1D1D7E] hover:text-white hover:border-[#1D1D7E] disabled:hover:bg-white disabled:hover:text-[#1D1D7E] disabled:hover:border-gray-300",
   dark: "border-white/30 bg-white/5 text-white hover:bg-white hover:text-[#1D1D7E] hover:border-white disabled:hover:bg-white/5 disabled:hover:text-white disabled:hover:border-white/30",
 };
 const TRACK = { light: "bg-gray-300/70", dark: "bg-white/20" };
 
-export default function CardCarousel({ items, renderItem, label, itemName = "items", tone = "light", getKey = (_, i) => i }) {
+export default function CardCarousel({ items, renderItem, label, itemName = "items", tone = "light", perView = 3, autoplay = 0, getKey = (_, i) => i }) {
   const reduceMotion = useReducedMotion();
   const rootRef = useRef(null);
   const swiperRef = useRef(null);
   const progressRef = useRef(null);
   const shown = useInView(rootRef, { once: true, margin: "-80px" });
   const [ends, setEnds] = useState({ start: true, end: false });
+  const auto = autoplay > 0 && !reduceMotion;
+  const [paused, setPaused] = useState(false);
+  const togglePause = () => {
+    const a = swiperRef.current?.autoplay;
+    if (!a) return;
+    if (paused) a.start(); else a.stop();
+    setPaused(!paused);
+  };
 
   const sync = (swiper) => {
     if (progressRef.current) progressRef.current.style.transform = `scaleX(${Math.max(0.04, Math.min(1, swiper.progress || 0))})`;
@@ -33,9 +44,13 @@ export default function CardCarousel({ items, renderItem, label, itemName = "ite
   const buttonClass = `w-12 h-12 flex items-center justify-center rounded-full border transition-all duration-300 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#5DB4D1]/50 disabled:opacity-35 disabled:cursor-not-allowed ${BUTTON[tone]}`;
 
   return (
-    <div ref={rootRef} className="card-carousel" role="region" aria-roledescription="carousel" aria-label={label}>
+    <div ref={rootRef} className={`card-carousel${perView === 2 ? " card-carousel--two" : ""}`} role="region" aria-roledescription="carousel" aria-label={label}
+      onFocus={() => auto && !paused && swiperRef.current?.autoplay?.pause()}
+      onBlur={(e) => auto && !paused && !e.currentTarget.contains(e.relatedTarget) && swiperRef.current?.autoplay?.resume()}>
       <Swiper
-        modules={[Keyboard, A11y, Parallax]}
+        modules={[Keyboard, A11y, Parallax, Autoplay]}
+        autoplay={auto ? { delay: autoplay, pauseOnMouseEnter: true, disableOnInteraction: false } : false}
+        rewind={auto}
         slidesPerView="auto"
         spaceBetween={16}
         breakpoints={{ 768: { spaceBetween: 20 } }}
@@ -70,10 +85,15 @@ export default function CardCarousel({ items, renderItem, label, itemName = "ite
           <span ref={progressRef} className="absolute inset-y-0 left-0 w-full origin-left bg-[#5DB4D1] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]" style={{ transform: "scaleX(0.04)" }} />
         </div>
         <div className="flex shrink-0 gap-3">
-          <button type="button" aria-label={`Previous ${itemName}`} disabled={ends.start} onClick={() => swiperRef.current?.slidePrev()} className={buttonClass}>
+          {auto && (
+            <button type="button" aria-label={paused ? `Play ${itemName}` : `Pause ${itemName}`} onClick={togglePause} className={buttonClass}>
+              {paused ? <Play size={18} /> : <Pause size={18} />}
+            </button>
+          )}
+          <button type="button" aria-label={`Previous ${itemName}`} disabled={!auto && ends.start} onClick={() => swiperRef.current?.slidePrev()} className={buttonClass}>
             <ArrowLeft size={20} />
           </button>
-          <button type="button" aria-label={`Next ${itemName}`} disabled={ends.end} onClick={() => swiperRef.current?.slideNext()} className={buttonClass}>
+          <button type="button" aria-label={`Next ${itemName}`} disabled={!auto && ends.end} onClick={() => swiperRef.current?.slideNext()} className={buttonClass}>
             <ArrowRight size={20} />
           </button>
         </div>

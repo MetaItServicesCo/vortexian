@@ -1,15 +1,9 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { ArrowLeft, ArrowRight } from "lucide-react";
 import { mediaUrl } from "@/lib/api";
 import { useContent } from "@/components/content/SiteContentProvider";
-
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Autoplay } from "swiper/modules";
-
-import "swiper/css";
-import "swiper/css/navigation";
+import CardCarousel from "@/components/ui/CardCarousel";
 
 // Shown until testimonials are added from the admin dashboard
 const fallbackTestimonials = [
@@ -81,7 +75,7 @@ export default function TestimonialSlider() {
         <div className="lg:col-span-4 space-y-8">
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-[2px] bg-[#1D1D7E]"></div>
+              <div className="w-8 h-[2px] bg-[#5DB4D1]"></div>
 
               <span className="text-[#5DB4D1] font-bold text-sm uppercase tracking-widest">
                 {section.eyebrow}
@@ -92,49 +86,23 @@ export default function TestimonialSlider() {
               {section.heading}
             </h2>
           </div>
-
-          {/* Navigation */}
-          <div className="flex gap-4">
-            <button className="testimonial-prev w-14 h-14 flex items-center justify-center bg-white border border-gray-200 hover:bg-[#1D1D7E] hover:text-white transition-all duration-300 shadow-sm">
-              <ArrowLeft size={24} />
-            </button>
-
-            <button className="testimonial-next w-14 h-14 flex items-center justify-center bg-gray-500 text-white hover:bg-[#1D1D7E] transition-all duration-300 shadow-sm">
-              <ArrowRight size={24} />
-            </button>
-          </div>
         </div>
 
-        {/* RIGHT SIDE */}
-        <div className="lg:col-span-8 relative h-[450px] md:h-[350px]">
-          <Swiper
+        {/* RIGHT SIDE: same carousel as the other home sections; moves on its own (pause button, pauses on hover) */}
+        <div className="lg:col-span-8 min-w-0">
+          <CardCarousel
             key={testimonials.map((t) => t.id).join("-")}
-            modules={[Navigation, Autoplay]}
-            navigation={{
-              prevEl: ".testimonial-prev",
-              nextEl: ".testimonial-next",
-            }}
-            autoplay={{
-              delay: 4000,
-              disableOnInteraction: false,
-            }}
-            loop={true}
-            speed={800}
-            spaceBetween={24}
-            breakpoints={{
-              0: {
-                slidesPerView: 1,
-              },
-              768: {
-                slidesPerView: 2,
-              },
-            }}
-          >
-            {testimonials.map((item) => (
-              <SwiperSlide key={item.id} className="pb-8">
-                <div className="bg-white p-8 rounded-sm shadow-xl relative flex flex-col justify-between h-[320px]">
+            items={testimonials}
+            getKey={(item) => item.id}
+            label={(section.heading || "Testimonials").replace(/\s+/g, " ")}
+            itemName="testimonials"
+            perView={2}
+            autoplay={5000}
+            renderItem={(item) => (
+              <div className="h-full pb-6">
+                <div className="bg-white p-8 rounded-sm shadow-xl relative flex flex-col justify-between h-full min-h-[320px]" data-testimonial-card="">
                   {/* Quote Icon Watermark */}
-                  <div className="absolute bottom-10 right-8 text-gray-100 font-serif text-8xl opacity-30 select-none">
+                  <div className="absolute bottom-10 right-8 text-gray-100 font-serif text-8xl opacity-30 select-none" aria-hidden="true">
                     &rdquo;&rdquo;
                   </div>
 
@@ -147,6 +115,7 @@ export default function TestimonialSlider() {
                     <div className="relative w-16 h-16 shrink-0">
                       <div className="absolute inset-0 bg-[#E87B35] rotate-45 rounded-xl"></div>
 
+                      {/* eslint-disable-next-line @next/next/no-img-element -- admin-uploaded or external avatar */}
                       <img
                         src={item.image}
                         alt={item.imageAlt || item.name}
@@ -166,9 +135,9 @@ export default function TestimonialSlider() {
                   {/* EXACT SAME BOTTOM ARROW */}
                   <div className="absolute -bottom-4 left-10 w-0 h-0 border-l-[15px] border-l-transparent border-t-[20px] border-t-white border-r-[15px] border-r-transparent"></div>
                 </div>
-              </SwiperSlide>
-            ))}
-          </Swiper>
+              </div>
+            )}
+          />
         </div>
       </div>
     </section>
