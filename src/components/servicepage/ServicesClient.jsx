@@ -29,9 +29,10 @@ export default function ServicesClient({ servicesData, showTabs = true }) {
     ),
   ].filter((c) => c !== "OTHERS");
 
+  // "All" leaves out the Others services too (they're listed on the Other Services page)
   const filteredServices =
     activeTab === "ALL"
-      ? servicesData
+      ? servicesData.filter((s) => s.category_stack?.toUpperCase() !== "OTHERS")
       : servicesData.filter(
           (s) => s.category_stack?.toUpperCase() === activeTab,
         );
