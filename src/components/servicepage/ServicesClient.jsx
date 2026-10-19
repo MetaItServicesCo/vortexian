@@ -21,12 +21,13 @@ const getImageUrl = (url) => {
 export default function ServicesClient({ servicesData, showTabs = true }) {
   const [activeTab, setActiveTab] = useState("ALL");
 
+  // No "Others" tab: those services have their own page (Services menu → Other Services)
   const categories = [
     "ALL",
     ...new Set(
       servicesData.map((s) => s.category_stack?.toUpperCase() || "MARKETING"),
     ),
-  ];
+  ].filter((c) => c !== "OTHERS");
 
   const filteredServices =
     activeTab === "ALL"
