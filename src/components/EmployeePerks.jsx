@@ -1,21 +1,18 @@
 "use client";
 import React from "react";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
+import CardCarousel from "@/components/ui/CardCarousel";
 import { useContent } from "@/components/content/SiteContentProvider";
 import DynamicIcon from "@/components/content/DynamicIcon";
 
 const EmployeePerks = () => {
   const section = useContent("home.perks");
+  const reduceMotion = useReducedMotion();
   if (!section.visible) return null;
-
-  // First six cards take a third of the row, the rest half (matches the original layout)
-  const perks = (section.items || []).map((perk, index) => ({
-    ...perk,
-    span: index < 6 ? "lg:col-span-2" : "lg:col-span-3",
-  }));
+  const perks = section.items || [];
 
   return (
-    <section className="bg-[#1D1D7E] py-20 px-6 md:px-20 lg:px-32">
+    <section className="bg-[#1D1D7E] py-20 px-6 md:px-20 lg:px-32 overflow-hidden">
       <div className="max-w-7xl mx-auto">
         {/* --- HEADER --- */}
         <motion.div
@@ -30,17 +27,17 @@ const EmployeePerks = () => {
           </h2>
         </motion.div>
 
-        {/* --- GRID --- */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-          {perks.map((perk, index) => (
+        {/* --- CAROUSEL: grows sideways as perks are added --- */}
+        <CardCarousel
+          items={perks}
+          label={(section.heading || "Employee perks").replace(/\s+/g, " ")}
+          itemName="perks"
+          tone="dark"
+          renderItem={(perk) => (
             <motion.div
-              key={index}
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: false }}
-              transition={{ delay: index * 0.1, duration: 0.5 }}
-              whileHover={{ y: -10 }}
-              className={`group relative bg-white p-8 pt-20 flex flex-col min-h-[280px] shadow-lg transition-all duration-500 ease-out overflow-hidden ${perk.span} hover:shadow-2xl`}
+              whileHover={reduceMotion ? undefined : { y: -10 }}
+              className={`group relative bg-white p-8 pt-20 flex flex-col min-h-[280px] shadow-lg transition-all duration-500 ease-out overflow-hidden h-full hover:shadow-2xl`}
+              data-perk-card=""
             >
               {/* --- INDUSTRY LEVEL GRADIENT BG (Hidden by default, shows on hover) --- */}
               <div className="absolute inset-0 bg-gradient-to-br from-[#5DB4D1] via-[#2A2A8E] to-[#5DB4D1] opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-0" />
@@ -66,8 +63,8 @@ const EmployeePerks = () => {
               {/* Decorative Corner Light (Hover only) */}
               <div className="absolute -bottom-10 -right-10 w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:bg-[#5DB4D1]/40 transition-all duration-500" />
             </motion.div>
-          ))}
-        </div>
+          )}
+        />
       </div>
     </section>
   );
