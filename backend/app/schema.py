@@ -151,6 +151,10 @@ class BasePortfolio(BaseModel):
     meta_description: Optional[str] = None
     meta_keywords: Optional[str] = None
     schema_json: Optional[str] = None
+    overview_label: Optional[str] = None
+    overview_text: Optional[str] = None
+    challenge_heading: Optional[str] = None
+    solution_heading: Optional[str] = None
 
 
 class CreatePortfolio(BasePortfolio):

@@ -87,6 +87,12 @@ class Portfolio(Base):
     meta_keywords = mapped_column(Text, nullable=True)
     # Own schema markup (JSON-LD) for this item's page; replaces the automatic one
     schema_json = mapped_column(Text, nullable=True)
+    # Texts around the case study (portfolio editor → Page texts). NULL = standard wording;
+    # an empty label/intro hides it (the title then uses the full width).
+    overview_label = mapped_column(String(120), nullable=True)
+    overview_text = mapped_column(Text, nullable=True)
+    challenge_heading = mapped_column(String(200), nullable=True)
+    solution_heading = mapped_column(String(200), nullable=True)
 
 
 # //////////////contact //////////////

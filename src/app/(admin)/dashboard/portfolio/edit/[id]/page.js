@@ -8,6 +8,7 @@ import ImageAltField, { altError } from "@/components/admin/ImageAltField";
 import SchemaMarkupField, { schemaJsonError } from "@/components/admin/SchemaMarkupField";
 import { adminFetch } from "@/lib/adminApi";
 import CategorySelect from "@/components/admin/CategorySelect";
+import PortfolioPageTexts, { pageTextsFrom } from "@/components/admin/portfolio/PortfolioPageTexts";
 import { slugify, slugifyTyping } from "@/lib/slugify";
 import dynamic from "next/dynamic";
 import { richTextAltError, isBlankHtml, toEditorHtml } from "@/lib/richText";
@@ -25,6 +26,7 @@ export default function EditPortfolioAssetForm() {
     const [imageAlt, setImageAlt] = useState("");
     const [slugTouched, setSlugTouched] = useState(true);   // existing projects keep their address unless edited
     const [originalSlug, setOriginalSlug] = useState("");
+    const [texts, setTexts] = useState(() => pageTextsFrom(null));   // Page texts
 
     const [form, setForm] = useState({
         project_title: "",
@@ -67,6 +69,7 @@ export default function EditPortfolioAssetForm() {
                     schema_json: data.schema_json || ""
                 });
 
+                setTexts(pageTextsFrom(data));
                 setOriginalSlug(data.slug || "");
                 setPreview(data.primary_image ? mediaUrl(data.primary_image) : "");
                 setImageAlt(data.primary_image_alt || "");
@@ -135,6 +138,7 @@ export default function EditPortfolioAssetForm() {
             formData.append("meta_keywords", form.meta_keywords || "");
             formData.append("schema_json", (form.schema_json || "").trim());
 
+            formData.append("page_texts", JSON.stringify(texts));
             formData.append("primary_image_alt", imageAlt.trim());
             // The API expects the new file as "image_file" (it was sent as "primary_image", so changes were ignored)
             if (fileObj) {
@@ -223,6 +227,8 @@ export default function EditPortfolioAssetForm() {
                         <ImageAltField id="portfolio-image-alt" value={imageAlt} onChange={setImageAlt} />
                     </div>
                 </div>
+
+                <PortfolioPageTexts value={texts} onChange={setTexts} />
 
                 <div>
                     <label className={labelStyles}>The Business Challenge Statement *</label>

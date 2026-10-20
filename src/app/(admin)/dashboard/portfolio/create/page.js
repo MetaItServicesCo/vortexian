@@ -8,6 +8,7 @@ import ImageAltField, { altError } from "@/components/admin/ImageAltField";
 import SchemaMarkupField, { schemaJsonError } from "@/components/admin/SchemaMarkupField";
 import { adminFetch } from "@/lib/adminApi";
 import CategorySelect from "@/components/admin/CategorySelect";
+import PortfolioPageTexts, { pageTextsFrom } from "@/components/admin/portfolio/PortfolioPageTexts";
 import { slugify, slugifyTyping } from "@/lib/slugify";
 import dynamic from "next/dynamic";
 import { richTextAltError, isBlankHtml } from "@/lib/richText";
@@ -22,6 +23,7 @@ export default function CreatePortfolioAssetForm() {
     const [fileObj, setFileObj] = useState(null);
     const [imageAlt, setImageAlt] = useState("");
     const [slugTouched, setSlugTouched] = useState(false);
+    const [texts, setTexts] = useState(() => pageTextsFrom(null));   // Page texts (standard wording to start)
 
     // ✅ CHANGED: field names API ke mutabiq
     const [form, setForm] = useState({
@@ -71,6 +73,7 @@ export default function CreatePortfolioAssetForm() {
         setLoading(true);
         const bundle = new FormData();
         Object.keys(form).forEach(key => bundle.append(key, key === "slug" ? (slugify(form.slug) || slugify(form.project_title)) : form[key]));
+        bundle.append("page_texts", JSON.stringify(texts));
         bundle.append("image_file", fileObj);
         bundle.append("primary_image_alt", imageAlt.trim());
 
@@ -152,6 +155,8 @@ export default function CreatePortfolioAssetForm() {
                         </div>
                     )}
                 </div>
+
+                <PortfolioPageTexts value={texts} onChange={setTexts} />
 
                 <div>
                     <label className={labelStyles}>The Business Challenge Statement *</label>

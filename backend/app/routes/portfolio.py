@@ -1,3 +1,4 @@
+import json
 import re
 from fastapi import APIRouter, Depends, HTTPException, Form, File, UploadFile
 from sqlalchemy.orm import Session
@@ -45,6 +46,24 @@ def resolve_slug(db: Session, requested: str | None, title: str, exclude_id: int
     return slug
 
 
+# Page texts (label, intro, section headings), sent together as one JSON object in the
+# "page_texts" form field (a plain empty form field would arrive as "not sent"). Plain text,
+# trimmed and length-capped; "" = cleared by the admin; a missing key = keep what's saved.
+PAGE_TEXT_LIMITS = {"overview_label": 120, "overview_text": 2000, "challenge_heading": 200, "solution_heading": 200}
+
+
+def page_texts(raw: Optional[str]) -> dict:
+    if not raw:
+        return {}
+    try:
+        data = json.loads(raw)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Page texts could not be read.")
+    if not isinstance(data, dict):
+        raise HTTPException(status_code=400, detail="Page texts could not be read.")
+    return {k: str(data[k] or "").strip()[:limit] for k, limit in PAGE_TEXT_LIMITS.items() if k in data}
+
+
 # -------------------------------------------------------------
 # CREATE PORTFOLIO
 # -------------------------------------------------------------
@@ -66,6 +85,7 @@ def create_portfolio(
     image_file: UploadFile = File(...),
     primary_image_alt: str = Form(None),
     schema_json: Optional[str] = Form(None),
+    page_texts_json: Optional[str] = Form(None, alias="page_texts"),
 
     db: Session = Depends(get_db),
     admin=Depends(get_current_admin_dependence)
@@ -90,6 +110,7 @@ def create_portfolio(
         meta_description=meta_description,
         meta_keywords=meta_keywords,
         schema_json=schema_json,
+        **page_texts(page_texts_json),
     )
 
     db.add(new_portfolio)
@@ -142,6 +163,7 @@ def update_portfolio(
     image_file: Optional[UploadFile] = File(None),  # 🔴 Sync with frontend and Create route name
     primary_image_alt: Optional[str] = Form(None),
     schema_json: Optional[str] = Form(None),  # full replace like the other fields: empty removes it
+    page_texts_json: Optional[str] = Form(None, alias="page_texts"),
     db: Session = Depends(get_db),
     admin = Depends(get_current_admin_dependence)
 ):
@@ -167,6 +189,8 @@ def update_portfolio(
     item.meta_description = meta_description
     item.meta_keywords = meta_keywords
     item.schema_json = clean_schema_json(schema_json)
+    for field, value in page_texts(page_texts_json).items():  # older clients don't send them: keep what's saved
+        setattr(item, field, value)
 
     # Replace the image only when a new one is uploaded
     # Every portfolio item has an image, so alt text is always required

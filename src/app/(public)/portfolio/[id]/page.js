@@ -7,7 +7,7 @@ import BreadcrumbHero from "@/components/BreadcrumbHero";
 import { serverApiUrl } from "@/lib/api";
 import SchemaMarkup from "@/components/seo/SchemaMarkup";
 import RichText from "@/components/content/RichText";
-import { portfolioPath } from "@/lib/portfolio";
+import { portfolioPath, portfolioTexts } from "@/lib/portfolio";
 
 const API_BASE = "";
 
@@ -73,6 +73,8 @@ export default async function PortfolioDetailPage({ params }) {
 
     // Short node ID for display
     const nodeId = String(project.id).padStart(8, "0");
+    // Label, intro and section headings (portfolio editor → Page texts)
+    const texts = portfolioTexts(project);
 
     return (
         <main className="min-h-screen bg-[#0d0e12] text-white font-sans pb-32 relative overflow-hidden selection:bg-[#5DB4D1]/30">
@@ -116,22 +118,25 @@ export default async function PortfolioDetailPage({ params }) {
                 </Link>
 
                 {/* ── HERO HEADER BLOCK ─────────────────────────────── */}
+                {/* No intro paragraph → the title uses the full width */}
                 <header className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-20 items-end mb-20">
-                    <div className="lg:col-span-7 space-y-3">
-                        <span className="text-[#5DB4D1] text-xs font-black uppercase tracking-[0.3em] block">
-                            {"// Project overview case"}
-                        </span>
+                    <div className={`${texts.overview_text ? "lg:col-span-7" : "lg:col-span-12"} space-y-3`}>
+                        {texts.overview_label && (
+                            <span className="text-[#5DB4D1] text-xs font-black uppercase tracking-[0.3em] block">
+                                {texts.overview_label}
+                            </span>
+                        )}
                         <h1 className="text-4xl md:text-6xl lg:text-7xl font-black uppercase tracking-tighter text-white leading-[0.95]">
                             {project.project_title}
                         </h1>
                     </div>
-                    <div className="lg:col-span-5 border-l-2 border-[#5DB4D1]/30 pl-6 py-2">
-                        <p className="text-gray-400 text-sm md:text-base font-medium leading-relaxed">
-                            An in-depth evaluation of how Vortexian Tech re-architected
-                            digital positioning to unlock enterprise-grade scalability,
-                            performance, and long-term operational excellence.
-                        </p>
-                    </div>
+                    {texts.overview_text && (
+                        <div className="lg:col-span-5 border-l-2 border-[#5DB4D1]/30 pl-6 py-2">
+                            <p className="text-gray-400 text-sm md:text-base font-medium leading-relaxed whitespace-pre-line">
+                                {texts.overview_text}
+                            </p>
+                        </div>
+                    )}
                 </header>
 
                 {/* ── HERO IMAGE FRAME ──────────────────────────────── */}
@@ -276,8 +281,8 @@ export default async function PortfolioDetailPage({ params }) {
                             <span className="text-5xl md:text-6xl font-black text-white/5 tracking-tighter uppercase leading-none select-none transition-colors group-hover:text-[#1D1D7E]/30 font-mono block" aria-hidden="true">
                                 01 
                             </span>
-                            <h2 className="text-2xl md:text-3xl font-black uppercase tracking-tight leading-none" id="sec-challenge">
-                                The Business<br />Challenge Context
+                            <h2 className="text-2xl md:text-3xl font-black uppercase tracking-tight leading-none whitespace-pre-line" id="sec-challenge">
+                                {texts.challenge_heading}
                             </h2>
                         </div>
                         <div className="lg:col-span-7 text-gray-400 text-base md:text-lg font-medium leading-relaxed lg:border-l lg:border-white/5 lg:pl-12">
@@ -296,8 +301,8 @@ export default async function PortfolioDetailPage({ params }) {
                             <span className="text-5xl md:text-6xl font-black text-white/5 tracking-tighter uppercase leading-none select-none transition-colors group-hover:text-[#5DB4D1]/20 font-mono block" aria-hidden="true">
                                 02 
                             </span>
-                            <h2 className="text-2xl md:text-3xl font-black uppercase tracking-tight text-white leading-none" id="sec-solution">
-                                Vortexian Strategy<br />Resolved
+                            <h2 className="text-2xl md:text-3xl font-black uppercase tracking-tight text-white leading-none whitespace-pre-line" id="sec-solution">
+                                {texts.solution_heading}
                             </h2>
                         </div>
                         <div className="lg:col-span-7 text-gray-300 text-base md:text-lg font-medium leading-relaxed lg:border-l lg:border-white/5 lg:pl-12">
