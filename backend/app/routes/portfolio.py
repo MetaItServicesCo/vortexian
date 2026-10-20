@@ -64,6 +64,36 @@ def page_texts(raw: Optional[str]) -> dict:
     return {k: str(data[k] or "").strip()[:limit] for k, limit in PAGE_TEXT_LIMITS.items() if k in data}
 
 
+# Title design (JSON from the editor): only known choices are kept. "lines" (the title with the
+# admin's own line breaks) must keep exactly the title's words, so the heading text never drifts
+# from the title Google and the cards use. Returns JSON text, or None for the standard look.
+TITLE_CHOICES = {"size": {"s", "m", "l", "xl"}, "weight": {"semibold", "bold", "black"}, "case": {"upper", "none"}}
+TITLE_STANDARD = {"size": "l", "weight": "black", "case": "upper", "color": "white", "highlight_color": "blue"}  # = TITLE_DESIGN_DEFAULTS (src/lib/portfolio.js)
+TITLE_COLOR = re.compile(r"^(white|blue|lavender|gradient|#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3})$")
+
+
+def title_design(raw: Optional[str], title: str) -> Optional[str]:
+    try:
+        data = json.loads(raw) if raw else {}
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Title design could not be read.")
+    if not isinstance(data, dict):
+        raise HTTPException(status_code=400, detail="Title design could not be read.")
+    out = {k: data[k] for k, allowed in TITLE_CHOICES.items() if data.get(k) in allowed}
+    for k in ("color", "highlight_color"):
+        if isinstance(data.get(k), str) and TITLE_COLOR.match(data[k]):
+            out[k] = data[k]
+    if isinstance(data.get("highlight"), str) and data["highlight"].strip():
+        out["highlight"] = data["highlight"].strip()[:200]
+    lines = data.get("lines")
+    if isinstance(lines, str) and lines.strip():
+        if " ".join(lines.split()) != " ".join((title or "").split()):
+            raise HTTPException(status_code=400, detail="Title line breaks: keep exactly the same words as the project title (only add line breaks).")
+        out["lines"] = lines.strip()[:400]
+    out = {k: v for k, v in out.items() if TITLE_STANDARD.get(k) != v}  # only what differs from the standard look
+    return json.dumps(out) if out else None
+
+
 # -------------------------------------------------------------
 # CREATE PORTFOLIO
 # -------------------------------------------------------------
@@ -86,6 +116,7 @@ def create_portfolio(
     primary_image_alt: str = Form(None),
     schema_json: Optional[str] = Form(None),
     page_texts_json: Optional[str] = Form(None, alias="page_texts"),
+    title_design_json: Optional[str] = Form(None, alias="title_design"),
 
     db: Session = Depends(get_db),
     admin=Depends(get_current_admin_dependence)
@@ -111,6 +142,7 @@ def create_portfolio(
         meta_keywords=meta_keywords,
         schema_json=schema_json,
         **page_texts(page_texts_json),
+        title_design=title_design(title_design_json, project_title),
     )
 
     db.add(new_portfolio)
@@ -164,6 +196,7 @@ def update_portfolio(
     primary_image_alt: Optional[str] = Form(None),
     schema_json: Optional[str] = Form(None),  # full replace like the other fields: empty removes it
     page_texts_json: Optional[str] = Form(None, alias="page_texts"),
+    title_design_json: Optional[str] = Form(None, alias="title_design"),
     db: Session = Depends(get_db),
     admin = Depends(get_current_admin_dependence)
 ):
@@ -191,6 +224,8 @@ def update_portfolio(
     item.schema_json = clean_schema_json(schema_json)
     for field, value in page_texts(page_texts_json).items():  # older clients don't send them: keep what's saved
         setattr(item, field, value)
+    if title_design_json is not None:  # "{}" = back to the standard look
+        item.title_design = title_design(title_design_json, project_title)
 
     # Replace the image only when a new one is uploaded
     # Every portfolio item has an image, so alt text is always required

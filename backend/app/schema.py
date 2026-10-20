@@ -155,6 +155,7 @@ class BasePortfolio(BaseModel):
     overview_text: Optional[str] = None
     challenge_heading: Optional[str] = None
     solution_heading: Optional[str] = None
+    title_design: Optional[str] = None
 
 
 class CreatePortfolio(BasePortfolio):

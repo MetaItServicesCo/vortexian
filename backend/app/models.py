@@ -93,6 +93,8 @@ class Portfolio(Base):
     overview_text = mapped_column(Text, nullable=True)
     challenge_heading = mapped_column(String(200), nullable=True)
     solution_heading = mapped_column(String(200), nullable=True)
+    # Style of the big title (portfolio editor → Title design), JSON; NULL = standard look
+    title_design = mapped_column(Text, nullable=True)
 
 
 # //////////////contact //////////////

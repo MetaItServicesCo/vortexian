@@ -9,6 +9,7 @@ import SchemaMarkupField, { schemaJsonError } from "@/components/admin/SchemaMar
 import { adminFetch } from "@/lib/adminApi";
 import CategorySelect from "@/components/admin/CategorySelect";
 import PortfolioPageTexts, { pageTextsFrom } from "@/components/admin/portfolio/PortfolioPageTexts";
+import TitleDesign, { titleDesignFrom, titleDesignProblem } from "@/components/admin/portfolio/TitleDesign";
 import { slugify, slugifyTyping } from "@/lib/slugify";
 import dynamic from "next/dynamic";
 import { richTextAltError, isBlankHtml, toEditorHtml } from "@/lib/richText";
@@ -27,6 +28,7 @@ export default function EditPortfolioAssetForm() {
     const [slugTouched, setSlugTouched] = useState(true);   // existing projects keep their address unless edited
     const [originalSlug, setOriginalSlug] = useState("");
     const [texts, setTexts] = useState(() => pageTextsFrom(null));   // Page texts
+    const [design, setDesign] = useState(() => titleDesignFrom(null)); // Title design
 
     const [form, setForm] = useState({
         project_title: "",
@@ -70,6 +72,7 @@ export default function EditPortfolioAssetForm() {
                 });
 
                 setTexts(pageTextsFrom(data));
+                setDesign(titleDesignFrom(data));
                 setOriginalSlug(data.slug || "");
                 setPreview(data.primary_image ? mediaUrl(data.primary_image) : "");
                 setImageAlt(data.primary_image_alt || "");
@@ -115,6 +118,12 @@ export default function EditPortfolioAssetForm() {
             toast.error(missingAlt);
             return;
         }
+        const designProblem = titleDesignProblem(design, form.project_title);
+        if (designProblem) {
+            toast.error(designProblem);
+            document.querySelector("[data-title-design]")?.scrollIntoView({ behavior: "smooth", block: "center" });
+            return;
+        }
         const schemaProblem = schemaJsonError(form.schema_json);
         if (schemaProblem) {
             toast.error(`Schema markup is not valid JSON: ${schemaProblem}`);
@@ -139,6 +148,7 @@ export default function EditPortfolioAssetForm() {
             formData.append("schema_json", (form.schema_json || "").trim());
 
             formData.append("page_texts", JSON.stringify(texts));
+            formData.append("title_design", JSON.stringify(design));
             formData.append("primary_image_alt", imageAlt.trim());
             // The API expects the new file as "image_file" (it was sent as "primary_image", so changes were ignored)
             if (fileObj) {
@@ -194,6 +204,8 @@ export default function EditPortfolioAssetForm() {
                             onChange={(cid, name) => setForm((prev) => ({ ...prev, category_id: cid, category_node: name }))} className={inputStyles} />
                     </div>
                 </div>
+
+                <TitleDesign title={form.project_title} value={design} onChange={setDesign} />
 
                 <div>
                     <label htmlFor="portfolio-slug" className={labelStyles}>Slug (URL) *</label>

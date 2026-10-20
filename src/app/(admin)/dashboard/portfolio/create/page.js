@@ -9,6 +9,7 @@ import SchemaMarkupField, { schemaJsonError } from "@/components/admin/SchemaMar
 import { adminFetch } from "@/lib/adminApi";
 import CategorySelect from "@/components/admin/CategorySelect";
 import PortfolioPageTexts, { pageTextsFrom } from "@/components/admin/portfolio/PortfolioPageTexts";
+import TitleDesign, { titleDesignFrom, titleDesignProblem } from "@/components/admin/portfolio/TitleDesign";
 import { slugify, slugifyTyping } from "@/lib/slugify";
 import dynamic from "next/dynamic";
 import { richTextAltError, isBlankHtml } from "@/lib/richText";
@@ -24,6 +25,7 @@ export default function CreatePortfolioAssetForm() {
     const [imageAlt, setImageAlt] = useState("");
     const [slugTouched, setSlugTouched] = useState(false);
     const [texts, setTexts] = useState(() => pageTextsFrom(null));   // Page texts (standard wording to start)
+    const [design, setDesign] = useState(() => titleDesignFrom(null)); // Title design (standard look to start)
 
     // ✅ CHANGED: field names API ke mutabiq
     const [form, setForm] = useState({
@@ -64,6 +66,12 @@ export default function CreatePortfolioAssetForm() {
             toast.error(missingAlt);
             return;
         }
+        const designProblem = titleDesignProblem(design, form.project_title);
+        if (designProblem) {
+            toast.error(designProblem);
+            document.querySelector("[data-title-design]")?.scrollIntoView({ behavior: "smooth", block: "center" });
+            return;
+        }
         const schemaProblem = schemaJsonError(form.schema_json);
         if (schemaProblem) {
             toast.error(`Schema markup is not valid JSON: ${schemaProblem}`);
@@ -74,6 +82,7 @@ export default function CreatePortfolioAssetForm() {
         const bundle = new FormData();
         Object.keys(form).forEach(key => bundle.append(key, key === "slug" ? (slugify(form.slug) || slugify(form.project_title)) : form[key]));
         bundle.append("page_texts", JSON.stringify(texts));
+        bundle.append("title_design", JSON.stringify(design));
         bundle.append("image_file", fileObj);
         bundle.append("primary_image_alt", imageAlt.trim());
 
@@ -122,6 +131,8 @@ export default function CreatePortfolioAssetForm() {
                             onChange={(cid, name) => setForm((prev) => ({ ...prev, category_id: cid, category_node: name }))} className={inputStyles} />
                     </div>
                 </div>
+
+                <TitleDesign title={form.project_title} value={design} onChange={setDesign} />
 
                 <div>
                     <label htmlFor="portfolio-slug" className={labelStyles}>Slug (URL) *</label>

@@ -8,6 +8,7 @@ import { serverApiUrl } from "@/lib/api";
 import SchemaMarkup from "@/components/seo/SchemaMarkup";
 import RichText from "@/components/content/RichText";
 import { portfolioPath, portfolioTexts } from "@/lib/portfolio";
+import PortfolioTitle from "@/components/portfolio/PortfolioTitle";
 
 const API_BASE = "";
 
@@ -126,9 +127,8 @@ export default async function PortfolioDetailPage({ params }) {
                                 {texts.overview_label}
                             </span>
                         )}
-                        <h1 className="text-4xl md:text-6xl lg:text-7xl font-black uppercase tracking-tighter text-white leading-[0.95]">
-                            {project.project_title}
-                        </h1>
+                        {/* Styled with the project's Title design (portfolio editor) */}
+                        <PortfolioTitle title={project.project_title} design={project.title_design} />
                     </div>
                     {texts.overview_text && (
                         <div className="lg:col-span-5 border-l-2 border-[#5DB4D1]/30 pl-6 py-2">

@@ -22,3 +22,25 @@ export function portfolioTexts(project) {
         solution_heading: pick("solution_heading") || PORTFOLIO_TEXT_DEFAULTS.solution_heading,
     };
 }
+
+// "Title design" of a project's big title (portfolio editor). Saved as JSON; anything not set
+// keeps today's look: large, black weight, UPPERCASE, white.
+export const TITLE_DESIGN_DEFAULTS = { size: "l", weight: "black", case: "upper", color: "white", highlight: "", highlight_color: "blue", lines: "" };
+const TITLE_CHOICES = { size: ["s", "m", "l", "xl"], weight: ["semibold", "bold", "black"], case: ["upper", "none"] };
+const TITLE_COLOR = /^(white|blue|lavender|gradient|#[0-9a-f]{6}|#[0-9a-f]{3})$/i;
+export const sameWords = (a, b) => String(a || "").replace(/\s+/g, " ").trim() === String(b || "").replace(/\s+/g, " ").trim();
+
+export function titleDesign(design, title) {
+    let d = design;
+    if (typeof d === "string") { try { d = JSON.parse(d); } catch { d = {}; } }
+    d = d && typeof d === "object" ? d : {};
+    const out = { ...TITLE_DESIGN_DEFAULTS };
+    for (const [k, list] of Object.entries(TITLE_CHOICES)) if (list.includes(d[k])) out[k] = d[k];
+    if (TITLE_COLOR.test(d.color || "")) out.color = d.color;
+    if (TITLE_COLOR.test(d.highlight_color || "")) out.highlight_color = d.highlight_color;
+    out.highlight = typeof d.highlight === "string" ? d.highlight.slice(0, 200) : "";
+    // Own line breaks only while they keep exactly the title's words (the title stays the H1 text)
+    out.lines = typeof d.lines === "string" && sameWords(d.lines, title) ? d.lines.trim() : "";
+    out.text = out.lines || String(title || "");
+    return out;
+}
