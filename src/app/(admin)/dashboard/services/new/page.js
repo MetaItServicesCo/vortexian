@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { slugify, slugifyTyping } from "@/lib/slugify";
+import { OTHERS } from "@/lib/otherServices";
 import ImageAltField, { altError } from "@/components/admin/ImageAltField";
 import { richTextAltError } from "@/lib/richText";
 import dynamic from "next/dynamic";
@@ -72,6 +73,8 @@ export default function CreateNewService() {
             keywords: ""
         }
     });
+    // "Others" services are cards on the Other Services page only: no page, so no address to set
+    const isOthers = (formData.category || "").trim().toLowerCase() === OTHERS.toLowerCase();
 
     // NESTED CHANGE
     const handleNestedChange = (parent, field, val) => {
@@ -164,9 +167,10 @@ export default function CreateNewService() {
                 formData.title
             );
 
+            // "Others" services have no page: the database still needs a unique address, made from the title
             submitData.append(
                 "url_slug",
-                formData.slug
+                isOthers ? `other-${slugify(formData.title) || Date.now()}` : formData.slug
             );
 
             submitData.append("category_stack", formData.category);
@@ -366,12 +370,17 @@ export default function CreateNewService() {
                             />
                         </div>
 
-                        {/* SLUG */}
+                        {/* SLUG (none for "Others" services: cards only, no page of their own) */}
                         <div>
                             <label className="text-xs font-black uppercase text-gray-400 block mb-1.5">
                                 URL Slug
                             </label>
 
+                            {isOthers ? (
+                            <p className="p-3.5 bg-[#F3F9FC] border border-[#5DB4D1]/40 rounded-xl text-sm text-slate-600">
+                                Not needed: “Others” services are shown as cards on the Other Services page and have no page of their own.
+                            </p>
+                            ) : (<>
                             <input
                                 type="text"
                                 required
@@ -388,6 +397,7 @@ export default function CreateNewService() {
                             <p className="text-xs text-gray-400 mt-1">
                                 Page address: /services/{slugify(formData.slug) || "…"}
                             </p>
+                            </>)}
                         </div>
                     </div>
 

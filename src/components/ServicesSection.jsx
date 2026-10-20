@@ -6,6 +6,7 @@ import { Users, Megaphone, Paintbrush, Cpu, Headset } from "lucide-react";
 import CardCarousel from "@/components/ui/CardCarousel";
 import { useContent } from "@/components/content/SiteContentProvider";
 import DynamicIcon, { ICONS } from "@/components/content/DynamicIcon";
+import { OTHER_SERVICES_PATH, isOtherService } from "@/lib/otherServices";
 
 const ServicesSection = ({ services: apiServices = [] }) => {
   const section = useContent("home.services");
@@ -52,7 +53,7 @@ const ServicesSection = ({ services: apiServices = [] }) => {
     ? apiServices.map((item, index) => ({
         id: String(index + 1).padStart(2, "0"),
         title: item.service_title,
-        href: item.url_slug ? `/services/${encodeURIComponent(item.url_slug)}` : "/services",
+        href: isOtherService(item) ? OTHER_SERVICES_PATH : item.url_slug ? `/services/${encodeURIComponent(item.url_slug)}` : "/services",
         icon: <DynamicIcon name={ICONS[item.lucide_icon] ? item.lucide_icon : "Headset"} size={32} />,
         hoverBg: index % 2 === 0 ? "hover:bg-[#17147B]" : "hover:bg-[#D47253]",
         gridSpan: index < 3 ? "lg:col-span-2" : "lg:col-span-3",

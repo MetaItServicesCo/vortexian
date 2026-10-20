@@ -5,6 +5,7 @@ import { ArrowLeft, Loader2, Save, Image as ImageIcon, Upload, Link2 } from "luc
 import toast, { Toaster } from "react-hot-toast";
 import Link from "next/link";
 import { slugify, slugifyTyping } from "@/lib/slugify";
+import { OTHERS } from "@/lib/otherServices";
 import ImageAltField, { altError } from "@/components/admin/ImageAltField";
 import { richTextAltError } from "@/lib/richText";
 import dynamic from "next/dynamic";
@@ -47,6 +48,8 @@ export default function EditServicePage({ params }) {
         whyChoose: { expertise: "", scalability: "", quality: "" },
         seo: { title: "", description: "", keywords: "" }
     });
+    // "Others" services are cards on the Other Services page only: no page, so no address to set
+    const isOthers = (formData.category || "").trim().toLowerCase() === OTHERS.toLowerCase();
 
     // ✅ FETCH — backend field names se map karo
     useEffect(() => {
@@ -156,7 +159,8 @@ export default function EditServicePage({ params }) {
 
             const updatePayload = {
                 service_title: formData.title,
-                url_slug: formData.slug,
+                // "Others" services have no page: keep the saved address (or make one from the title)
+                url_slug: isOthers ? formData.slug || `other-${slugify(formData.title) || Date.now()}` : formData.slug,
                 category_stack: formData.category,
                 ...(formData.categoryId ? { category_id: Number(formData.categoryId) } : {}),
                 lucide_icon: formData.icon,
@@ -259,6 +263,11 @@ export default function EditServicePage({ params }) {
                         </div>
                         <div>
                             <label className="text-xs font-black uppercase text-gray-400 block mb-1.5">URL Slug</label>
+                            {isOthers ? (
+                            <p className="p-3.5 bg-[#F3F9FC] border border-[#5DB4D1]/40 rounded-xl text-sm text-slate-600">
+                                Not needed: “Others” services are shown as cards on the Other Services page and have no page of their own.
+                            </p>
+                            ) : (<>
                             <input type="text" required value={formData.slug || ""} className="w-full p-3.5 bg-gray-50 border border-gray-200 rounded-xl text-base outline-none focus:ring-2 focus:ring-[#5DB4D1] focus:bg-white transition-all"
                                 onChange={(e) => setFormData({ ...formData, slug: slugifyTyping(e.target.value) })} />
                             <p className={`text-xs mt-1 ${formData.slug && slugify(formData.slug) !== formData.slug ? "text-amber-600 font-semibold" : "text-gray-400"}`}>
@@ -266,6 +275,7 @@ export default function EditServicePage({ params }) {
                                     ? `This address will be cleaned up when you save: /services/${slugify(formData.slug)}`
                                     : `Page address: /services/${formData.slug || "…"}`}
                             </p>
+                            </>)}
                         </div>
                     </div>
 

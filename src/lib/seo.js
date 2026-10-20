@@ -2,7 +2,7 @@
 import { SITE_URL } from "@/lib/api";
 import { blogPath } from "@/lib/blog";
 import { getFreshSiteContent, getJson } from "@/lib/content";
-import { OTHERS, OTHER_SERVICES_PATH } from "@/lib/otherServices";
+import { OTHERS, OTHER_SERVICES_PATH, isOtherService } from "@/lib/otherServices";
 
 // ---------------------------------------------------------------- tracking
 // IDs end up inside <script>, so only the documented formats are used.
@@ -44,13 +44,14 @@ function excluded(path, rules) {
 }
 
 export async function sitemapEntries(settings) {
-    const [services, blogs, projects, pages, gallery, menu] = await Promise.all([
+    const [services, blogs, projects, pages, gallery, menu, serviceCats] = await Promise.all([
         settings.include_services ? getJson("/api/services/", []) : [],
         settings.include_blog ? getJson("/api/blog/public", []) : [],
         settings.include_portfolio ? getJson("/api/portfolio/", []) : [],
         settings.include_pages ? getJson("/api/pages/published", []) : [],
         getJson("/api/gallery/", { albums: [] }),
         settings.include_services ? getJson("/api/services/menu-tree", []) : [],
+        settings.include_services ? getJson("/api/categories/?kind=service", []) : [],
     ]);
     // The gallery is listed only when it isn't hidden from search engines (Site Content → Gallery Page)
     const galleryIndexed = (await getFreshSiteContent())["page.gallery"]?.noindex === false;
@@ -59,7 +60,7 @@ export async function sitemapEntries(settings) {
     const entries = [
         ...STATIC_PAGES,
         ...(list(menu).some((g) => g.name === OTHERS) ? [{ path: OTHER_SERVICES_PATH, priority: 0.7 }] : []),
-        ...list(services).filter((s) => s.url_slug).map((s) => ({ path: `/services/${encodeURIComponent(s.url_slug)}`, priority: 0.8 })),
+        ...list(services).filter((s) => s.url_slug && !isOtherService(s, serviceCats)).map((s) => ({ path: `/services/${encodeURIComponent(s.url_slug)}`, priority: 0.8 })),
         ...list(blogs).map((b) => ({ path: blogPath(b), priority: 0.7 })),
         ...list(projects).map((p) => ({ path: `/portfolio/${p.slug || p.id}`, priority: 0.6 })),
         ...list(pages).map((p) => ({ path: `/${p.slug}`, priority: 0.4, lastModified: p.updated_at })),
@@ -110,7 +111,7 @@ const oneLine = (text, max = 200) => {
 export async function recommendedLlms(content) {
     content = content || (await getFreshSiteContent());
     const s = content.settings;
-    const [services, blogs] = await Promise.all([getJson("/api/services/", []), getJson("/api/blog/public", [])]);
+    const [services, blogs, serviceCats] = await Promise.all([getJson("/api/services/", []), getJson("/api/blog/public", []), getJson("/api/categories/?kind=service", [])]);
     const page = (key) => content[key] || {};
 
     const link = (title, path, description) => `- [${title}](${absolute(path)})${description ? `: ${oneLine(description)}` : ""}`;
@@ -130,7 +131,7 @@ export async function recommendedLlms(content) {
         link("Contact", "/contact", page("page.contact").meta_description),
     ];
 
-    const serviceList = (Array.isArray(services) ? services : []).filter((x) => x.url_slug);
+    const serviceList = (Array.isArray(services) ? services : []).filter((x) => x.url_slug && !isOtherService(x, serviceCats));
     if (serviceList.length) {
         out.push("", "## Services", ...serviceList.map((x) => link(x.service_title, `/services/${encodeURIComponent(x.url_slug)}`, x.short_description || x.meta_description)));
     }

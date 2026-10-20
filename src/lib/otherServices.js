@@ -11,3 +11,13 @@ export function otherServices(menuTree, services) {
     const byId = new Map((Array.isArray(services) ? services : []).map((s) => [s.id, s]));
     return group.services.map((s) => byId.get(s.id)).filter(Boolean);
 }
+
+// "Others" services are cards only: no page of their own (their address forwards to Other
+// Services), not in the sitemap. With the service categories list (/api/categories/?kind=service)
+// a service whose category no longer exists counts too, as in the menu; without it, by name.
+export function isOtherService(service, categories) {
+    const list = Array.isArray(categories) ? categories : [];
+    const others = list.find((c) => c.is_system);
+    if (others) return service?.category_id === others.id || !list.some((c) => c.id === service?.category_id);
+    return (service?.category_stack || "").trim().toLowerCase() === OTHERS.toLowerCase();
+}
