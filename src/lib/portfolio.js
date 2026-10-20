@@ -24,9 +24,9 @@ export function portfolioTexts(project) {
 }
 
 // "Title design" of a project's big title (portfolio editor). Saved as JSON; anything not set
-// keeps today's look: large, black weight, UPPERCASE, white.
-export const TITLE_DESIGN_DEFAULTS = { size: "l", weight: "black", case: "upper", color: "white", highlight: "", highlight_color: "blue", lines: "" };
-const TITLE_CHOICES = { size: ["s", "m", "l", "xl"], weight: ["semibold", "bold", "black"], case: ["upper", "none"] };
+// keeps today's look: large, black weight, UPPERCASE, left-aligned, white.
+export const TITLE_DESIGN_DEFAULTS = { size: "l", weight: "black", case: "upper", align: "left", color: "white", highlight: "", highlight_color: "blue", lines: "" };
+const TITLE_CHOICES = { size: ["s", "m", "l", "xl"], weight: ["semibold", "bold", "black"], case: ["upper", "none"], align: ["left", "center", "right"] };
 const TITLE_COLOR = /^(white|blue|lavender|gradient|#[0-9a-f]{6}|#[0-9a-f]{3})$/i;
 export const sameWords = (a, b) => String(a || "").replace(/\s+/g, " ").trim() === String(b || "").replace(/\s+/g, " ").trim();
 

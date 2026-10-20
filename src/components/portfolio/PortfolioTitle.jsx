@@ -10,6 +10,7 @@ const SIZE = {
     xl: "text-5xl md:text-7xl lg:text-8xl",
 };
 const WEIGHT = { semibold: "font-semibold", bold: "font-bold", black: "font-black" };
+export const ALIGN = { left: "text-left", center: "text-center", right: "text-right" };
 const GRADIENT = "linear-gradient(90deg, #5DB4D1 0%, #A5A5E1 55%, #ffffff 100%)";
 const NAMED = { white: "#ffffff", blue: "#5DB4D1", lavender: "#A5A5E1" };
 
@@ -31,7 +32,7 @@ export default function PortfolioTitle({ title, design, as: Tag = "h1", classNam
     const d = titleDesign(design, title);
     return (
         <Tag
-            className={`${SIZE[d.size]} ${WEIGHT[d.weight]} ${d.case === "upper" ? "uppercase" : ""} tracking-tighter leading-[0.95] whitespace-pre-line ${className}`}
+            className={`${SIZE[d.size]} ${WEIGHT[d.weight]} ${ALIGN[d.align]} ${d.case === "upper" ? "uppercase" : ""} tracking-tighter leading-[0.95] whitespace-pre-line ${className}`}
             style={colorStyle(d.color)}
         >
             {withHighlight(d.text, d.highlight, colorStyle(d.highlight_color))}

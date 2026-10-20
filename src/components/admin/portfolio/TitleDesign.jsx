@@ -9,6 +9,7 @@ import { TITLE_DESIGN_DEFAULTS, sameWords } from "@/lib/portfolio";
 const SIZES = [["s", "Small"], ["m", "Medium"], ["l", "Large"], ["xl", "Extra large"]];
 const WEIGHTS = [["semibold", "Semi-bold"], ["bold", "Bold"], ["black", "Extra bold"]];
 const CASES = [["upper", "UPPERCASE"], ["none", "As typed"]];
+const ALIGNS = [["left", "Left"], ["center", "Centre"], ["right", "Right"]];
 const COLORS = [
     ["white", "White", "#ffffff"],
     ["blue", "Site blue", "#5DB4D1"],
@@ -77,6 +78,12 @@ export default function TitleDesign({ title, value, onChange }) {
                 <div><span className={labelClass}>Letters</span><Choice label="Title letter case" options={CASES} value={d.case} onChange={(c) => set({ case: c })} /></div>
             </div>
 
+            <div>
+                <span className={labelClass}>Alignment</span>
+                <Choice label="Title alignment" options={ALIGNS} value={d.align} onChange={(align) => set({ align })} />
+                <p className="text-[11px] text-slate-400 mt-1">The small label above the title follows it. Centre and right look best without the short paragraph beside the title (Page texts), so the title has the full width.</p>
+            </div>
+
             <div><span className={labelClass}>Colour</span><ColorChoice label="Title colour" value={d.color} onChange={(color) => set({ color })} /></div>
 
             <div className="grid gap-5 md:grid-cols-2">
@@ -111,9 +118,9 @@ export default function TitleDesign({ title, value, onChange }) {
 
             <div>
                 <span className={labelClass}>Preview</span>
-                {/* Shown at 60% scale in a box as wide as the page's title column, so it wraps as on the site */}
+                {/* Shown at 60% scale */}
                 <div className="rounded-xl bg-[#0d0e12] p-6 md:p-8 overflow-hidden" data-title-preview>
-                    <div style={{ zoom: 0.6, width: "min(100%, 760px)" }} className="max-w-none">
+                    <div style={{ zoom: 0.6 }} className="w-full">
                         <PortfolioTitle as="p" title={title || "Project title"} design={d} />
                     </div>
                 </div>

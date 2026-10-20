@@ -67,8 +67,8 @@ def page_texts(raw: Optional[str]) -> dict:
 # Title design (JSON from the editor): only known choices are kept. "lines" (the title with the
 # admin's own line breaks) must keep exactly the title's words, so the heading text never drifts
 # from the title Google and the cards use. Returns JSON text, or None for the standard look.
-TITLE_CHOICES = {"size": {"s", "m", "l", "xl"}, "weight": {"semibold", "bold", "black"}, "case": {"upper", "none"}}
-TITLE_STANDARD = {"size": "l", "weight": "black", "case": "upper", "color": "white", "highlight_color": "blue"}  # = TITLE_DESIGN_DEFAULTS (src/lib/portfolio.js)
+TITLE_CHOICES = {"size": {"s", "m", "l", "xl"}, "weight": {"semibold", "bold", "black"}, "case": {"upper", "none"}, "align": {"left", "center", "right"}}
+TITLE_STANDARD = {"size": "l", "weight": "black", "case": "upper", "align": "left", "color": "white", "highlight_color": "blue"}  # = TITLE_DESIGN_DEFAULTS (src/lib/portfolio.js)
 TITLE_COLOR = re.compile(r"^(white|blue|lavender|gradient|#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3})$")
 
 

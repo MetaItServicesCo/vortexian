@@ -7,8 +7,8 @@ import BreadcrumbHero from "@/components/BreadcrumbHero";
 import { serverApiUrl } from "@/lib/api";
 import SchemaMarkup from "@/components/seo/SchemaMarkup";
 import RichText from "@/components/content/RichText";
-import { portfolioPath, portfolioTexts } from "@/lib/portfolio";
-import PortfolioTitle from "@/components/portfolio/PortfolioTitle";
+import { portfolioPath, portfolioTexts, titleDesign } from "@/lib/portfolio";
+import PortfolioTitle, { ALIGN } from "@/components/portfolio/PortfolioTitle";
 
 const API_BASE = "";
 
@@ -76,6 +76,7 @@ export default async function PortfolioDetailPage({ params }) {
     const nodeId = String(project.id).padStart(8, "0");
     // Label, intro and section headings (portfolio editor → Page texts)
     const texts = portfolioTexts(project);
+    const titleAlign = ALIGN[titleDesign(project.title_design, project.project_title).align];
 
     return (
         <main className="min-h-screen bg-[#0d0e12] text-white font-sans pb-32 relative overflow-hidden selection:bg-[#5DB4D1]/30">
@@ -121,7 +122,7 @@ export default async function PortfolioDetailPage({ params }) {
                 {/* ── HERO HEADER BLOCK ─────────────────────────────── */}
                 {/* No intro paragraph → the title uses the full width */}
                 <header className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-20 items-end mb-20">
-                    <div className={`${texts.overview_text ? "lg:col-span-7" : "lg:col-span-12"} space-y-3`}>
+                    <div className={`${texts.overview_text ? "lg:col-span-7" : "lg:col-span-12"} space-y-3 ${titleAlign}`}>
                         {texts.overview_label && (
                             <span className="text-[#5DB4D1] text-xs font-black uppercase tracking-[0.3em] block">
                                 {texts.overview_label}
