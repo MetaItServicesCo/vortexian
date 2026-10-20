@@ -18,7 +18,7 @@ class Token(BaseModel):
 class BaseService(BaseModel):
 
     service_title:str
-    url_slug:str
+    url_slug:Optional[str]=None  # none for "Others" services (no page of their own)
     category_stack:str
     category_id:Optional[int]=None
     lucide_icon:str
@@ -57,7 +57,7 @@ class ServiceResponse(BaseService):
 class ServiceMenuItem(BaseModel):
     id: int
     service_title: str
-    url_slug: str
+    url_slug: Optional[str] = None
     category_id: Optional[int] = None
 
     class Config:

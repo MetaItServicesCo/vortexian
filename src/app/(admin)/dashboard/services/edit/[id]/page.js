@@ -159,8 +159,8 @@ export default function EditServicePage({ params }) {
 
             const updatePayload = {
                 service_title: formData.title,
-                // "Others" services have no page: keep the saved address (or make one from the title)
-                url_slug: isOthers ? formData.slug || `other-${slugify(formData.title) || Date.now()}` : formData.slug,
+                // "Others" services have no page, so no address (the server clears any old one)
+                ...(isOthers ? {} : { url_slug: formData.slug }),
                 category_stack: formData.category,
                 ...(formData.categoryId ? { category_id: Number(formData.categoryId) } : {}),
                 lucide_icon: formData.icon,

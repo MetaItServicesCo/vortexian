@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 // import Image from "next/image";
 import { cache } from "react";
 import BreadcrumbHero from "@/components/BreadcrumbHero";
@@ -10,7 +10,7 @@ import SchemaMarkup from "@/components/seo/SchemaMarkup";
 import ServiceSections from "@/components/services/ServiceSections";
 import { faqSchema, parseLayout } from "@/lib/serviceLayout";
 import { getJson, getSection } from "@/lib/content";
-import { OTHER_SERVICES_PATH, isOtherService } from "@/lib/otherServices";
+import { isOtherService } from "@/lib/otherServices";
 
 // Next.js passes the segment still percent-encoded ("web%20dev"); decode before
 // re-encoding or the backend receives "web%2520dev" and returns 404.
@@ -72,9 +72,9 @@ export default async function ServiceDetailPage({ params }) {
     const { slug } = await params;
     const [service, settings, categories] = await Promise.all([getLiveServiceData(slug), getSection("settings"), getJson("/api/categories/?kind=service", [])]);
     if (!service) notFound();
-    // "Others" services are cards on the Other Services page only (temporary redirect, so the
-    // page works again if the service is moved to a main category)
-    if (isOtherService(service, categories)) redirect(OTHER_SERVICES_PATH);
+    // "Others" services are cards on the Other Services page only: no page of their own
+    // (an address left over from before the move just isn't a page any more; no redirect)
+    if (isOtherService(service, categories)) notFound();
 
     // FAQ sections also become FAQ results data for Google (unless this service has its own schema)
     const faq = service.schema_json ? null : faqSchema(parseLayout(service.layout).filter((b) => !b.hidden));

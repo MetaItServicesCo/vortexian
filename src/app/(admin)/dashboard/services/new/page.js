@@ -167,11 +167,8 @@ export default function CreateNewService() {
                 formData.title
             );
 
-            // "Others" services have no page: the database still needs a unique address, made from the title
-            submitData.append(
-                "url_slug",
-                isOthers ? `other-${slugify(formData.title) || Date.now()}` : formData.slug
-            );
+            // "Others" services have no page, so no address is sent
+            if (!isOthers) submitData.append("url_slug", formData.slug);
 
             submitData.append("category_stack", formData.category);
             if (formData.categoryId) submitData.append("category_id", String(formData.categoryId));

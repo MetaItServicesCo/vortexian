@@ -19,7 +19,8 @@ class Service(Base):
 
     id:Mapped[int]=mapped_column(Integer,primary_key=True,index=True)
     service_title:Mapped[str]=mapped_column(String(100),nullable=False)
-    url_slug:Mapped[str]=mapped_column(String(150),unique=True,nullable=False)
+    # Page address /services/<slug>; none for "Others" services (cards on Other Services only)
+    url_slug:Mapped[str | None]=mapped_column(String(150),unique=True,nullable=True)
     category_stack:Mapped[str]=mapped_column(String(100),nullable=False)  # category name, kept in sync with category_id
     category_id:Mapped[int | None]=mapped_column(Integer,nullable=True,index=True)
     lucide_icon:Mapped[str]=mapped_column(String(100),nullable=False)

@@ -25,10 +25,28 @@ ORDER = (models.Service.sort_order, models.Service.id)
 class ServiceOrder(BaseModel):
     ids: list[int]
 
+
+def _is_others(db: Session, category: models.Category) -> bool:
+    """"Others" services are cards on the Other Services page only: no page, so no address."""
+    return category.id == cats.others(db, "service").id
+
+
+def _clean_slug(db: Session, value: str | None, service_id: int | None = None) -> str:
+    """A unique page address for a service in a main category (required there)."""
+    slug = slugify(value or "")
+    if not slug:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Please enter a URL slug (letters or numbers) for this service's page.")
+    q = db.query(models.Service).filter(models.Service.url_slug == slug)
+    if service_id is not None:
+        q = q.filter(models.Service.id != service_id)
+    if q.first():
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Service slug already exists")
+    return slug
+
 @router.post("/create-service", response_model=ServiceResponse, status_code=status.HTTP_201_CREATED)
 def create_service(
     service_title: str = Form(...),
-    url_slug: str = Form(...),
+    url_slug: str = Form(None),  # not used for "Others" services
     category_stack: str = Form(None),  # legacy: category name
     lucide_icon: str = Form(...),
     image_source_type: str = Form(...),
@@ -56,16 +74,8 @@ def create_service(
     admin: models.Admin = Depends(get_current_admin_dependence)
 ):
     image_alt = require_alt(True, image_alt)
-    url_slug = slugify(url_slug)
-    if not url_slug:
-        raise HTTPException(status_code=400, detail="URL slug must contain letters or numbers")
-
-    existing_service = db.query(models.Service).filter(
-        models.Service.url_slug == url_slug
-    ).first()
-
-    if existing_service:
-        raise HTTPException(status_code=400, detail="Service slug already exists")
+    category = cats.resolve(db, "service", category_id, name=category_stack, create=True)
+    url_slug = None if _is_others(db, category) else _clean_slug(db, url_slug)
 
     image_path = None
 
@@ -82,7 +92,6 @@ def create_service(
     else:
         raise HTTPException(status_code=400, detail="Invalid image source type")
 
-    category = cats.resolve(db, "service", category_id, name=category_stack, create=True)
     new_service = models.Service(
         service_title=service_title,
         url_slug=url_slug,
@@ -192,17 +201,6 @@ def update_service(
     if not service:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Service not found")
 
-    if data.url_slug is not None:
-        data.url_slug = slugify(data.url_slug)
-        if not data.url_slug:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="URL slug must contain letters or numbers")
-        existing_slug = db.query(models.Service).filter(
-            models.Service.url_slug == data.url_slug,
-            models.Service.id != service_id
-        ).first()
-        if existing_slug:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Slug already exists")
-
     update_data = data.model_dump(exclude_unset=True)
     if "show_in_menu" in update_data and update_data["show_in_menu"] is None:
         del update_data["show_in_menu"]  # never store NULL
@@ -218,6 +216,20 @@ def update_service(
     else:
         update_data.pop("category_id", None)
         update_data.pop("category_stack", None)
+    # Page address: none in "Others"; required (and unique) in a main category
+    category_now = update_data.get("category_id", service.category_id)
+    if category_now is None:
+        # Older record without a category: address handled as before (validated when sent)
+        if update_data.get("url_slug") is not None:
+            update_data["url_slug"] = _clean_slug(db, update_data["url_slug"], service_id)
+        else:
+            update_data.pop("url_slug", None)
+    else:
+        final_category = db.get(models.Category, category_now)
+        if final_category is None or _is_others(db, final_category):
+            update_data["url_slug"] = None
+        elif "url_slug" in update_data or not service.url_slug:
+            update_data["url_slug"] = _clean_slug(db, update_data.get("url_slug"), service_id)
     if update_data.get("long_description") is not None:
         update_data["long_description"] = clean_html(update_data["long_description"])
     old_image = service.image_showcase_url

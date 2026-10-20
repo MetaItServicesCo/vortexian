@@ -223,7 +223,7 @@ export default function AdminServicesList() {
                                                     </p>
 
                                                     <p className="text-gray-400 text-[11px] font-medium truncate mt-0.5">
-                                                        {service.url_slug}
+                                                        {service.url_slug || "No page · card on Other Services"}
                                                     </p>
                                                 </div>
                                             </div>
